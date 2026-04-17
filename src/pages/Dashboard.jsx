@@ -184,39 +184,39 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12 relative text-left italic">
-      {/* FAIXA TIPO JORNAL (TICKER) - PROGRAMAÇÃO */}
+    <div className="max-w-7xl mx-auto space-y-6 pb-12 relative text-left animate-fade-in-up">
+      {/* TICKER PREMIUM — AGENDA */}
       {programacao.length > 0 && (
-        <div 
+        <div
            onClick={() => navigate('/cadastro/programacao')}
-           className="-mt-8 sm:-mt-6 mb-2 w-full bg-slate-900 hover:bg-slate-800 transition-colors cursor-pointer border border-slate-800 rounded-2xl overflow-hidden shadow-xl flex items-center relative h-12"
+           className="-mt-6 mb-4 w-full bg-gradient-hero hover:shadow-elegant transition-all cursor-pointer border border-navy/10 rounded-3xl overflow-hidden shadow-elegant flex items-center relative h-14 group"
         >
-           <div className="absolute left-0 top-0 bottom-0 z-10 bg-slate-900 flex items-center px-6 border-r border-slate-800 shadow-[10px_0_15px_-3px_rgba(15,23,42,1)]">
-              <span className="flex items-center gap-2 text-[10px] font-black text-amber-400 tracking-[0.2em] uppercase animate-pulse">
-                 <span className="w-2 h-2 rounded-full bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.8)]"></span> AGENDA
+           <div className="absolute left-0 top-0 bottom-0 z-10 bg-navy-deep flex items-center px-6 border-r border-gold/20 shadow-[10px_0_30px_-10px_rgba(11,30,63,1)]">
+              <span className="flex items-center gap-2 text-[10px] font-bold text-gold tracking-[0.25em] uppercase">
+                 <span className="w-2 h-2 rounded-full bg-gold animate-pulse"></span> Agenda
               </span>
            </div>
-           
-           <div className="relative w-full h-full overflow-hidden ml-24 whitespace-nowrap">
+
+           <div className="relative w-full h-full overflow-hidden ml-28 whitespace-nowrap">
              <div className="animate-ticker inline-flex items-center flex-nowrap gap-10 whitespace-nowrap h-full pl-[100%] text-white">
                {[...programacao, ...programacao, ...programacao].map((p, i) => (
                  <div key={`${p.id}-${i}`} className="flex items-center gap-3 shrink-0 text-white">
-                    <CalendarDays size={14} className="text-slate-500" />
-                    <span className="font-black text-xs uppercase tracking-wider text-slate-100">{p.titulo}</span>
-                    <span className="text-[9px] text-slate-300 font-black uppercase tracking-widest bg-slate-800 px-2.5 py-1 rounded-md border border-slate-700/50">
-                       {p.isEspecial && p.dataEspecífica 
-                          ? new Date(p.dataEspecífica + "T12:00:00").toLocaleDateString('pt-BR') 
+                    <CalendarDays size={14} className="text-gold/70" />
+                    <span className="font-display font-bold text-sm text-white">{p.titulo}</span>
+                    <span className="text-[9px] text-slate-300 font-bold uppercase tracking-widest bg-white/10 backdrop-blur-sm px-2.5 py-1 rounded-lg border border-white/10">
+                       {p.isEspecial && p.dataEspecífica
+                          ? new Date(p.dataEspecífica + "T12:00:00").toLocaleDateString('pt-BR')
                           : p.diaSemana}
                     </span>
-                    <span className="text-[9px] text-blue-300 font-black px-2.5 py-1 bg-blue-900/30 rounded-md border border-blue-500/20">
-                       {p.horario} HRS
+                    <span className="text-[9px] text-gold font-bold px-2.5 py-1 bg-gold/10 rounded-lg border border-gold/20">
+                       {p.horario}h
                     </span>
                     {!p.isEspecial && p.tipoFrequencia && p.tipoFrequencia !== 'toda_semana' && (
-                       <span className="text-[9px] text-amber-300 font-black px-2.5 py-1 bg-amber-900/30 rounded-md border border-amber-500/20">
+                       <span className="text-[9px] text-royal-glow font-bold px-2.5 py-1 bg-royal/20 rounded-lg border border-royal/30">
                           {frequenciaTexto[p.tipoFrequencia]}
                        </span>
                     )}
-                    <span className="text-slate-700 font-black mx-2">—</span>
+                    <span className="text-gold/30 font-black mx-2">✦</span>
                  </div>
                ))}
              </div>
@@ -224,42 +224,44 @@ export default function Dashboard() {
         </div>
       )}
 
-
-
       {String(usuarioLogado?.id) !== "1" && (
         <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />
       )}
 
-      {/* GRID 1: MÉTRICAS GERAIS - AGORA COM CLICK */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div onClick={() => abrirListagem('todos')} className="cursor-pointer group">
-          <MetricCard icon={<Users className="group-hover:scale-110 transition-transform"/>} label="Membros Ativos" value={carregandoMembros ? "..." : stats.totalAtivos} color="blue" />
+      {/* KPI HERO */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <div onClick={() => abrirListagem('todos')} className="cursor-pointer">
+          <KpiCard icon={<Users/>} label="Membros Ativos" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" />
         </div>
-        <div onClick={() => abrirListagem('jovens')} className="cursor-pointer group">
-          <MetricCard icon={<TrendingUp className="group-hover:scale-110 transition-transform"/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} color="green" />
+        <div onClick={() => abrirListagem('jovens')} className="cursor-pointer">
+          <KpiCard icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" />
         </div>
-        <div onClick={() => abrirListagem('adultos')} className="cursor-pointer group">
-          <MetricCard icon={<UserCheck className="group-hover:scale-110 transition-transform"/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} color="purple" />
+        <div onClick={() => abrirListagem('adultos')} className="cursor-pointer">
+          <KpiCard icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" />
         </div>
-        <div onClick={() => abrirListagem('idosos')} className="cursor-pointer group">
-          <MetricCard icon={<PieChart className="group-hover:scale-110 transition-transform"/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} color="orange" />
+        <div onClick={() => abrirListagem('idosos')} className="cursor-pointer">
+          <KpiCard icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" />
         </div>
       </div>
 
-      {/* GRID 2: MÉTRICAS DA OBRA */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        <MetricCard icon={<Cross/>} label="Membros Batizados" value={carregandoMembros ? "..." : stats.batizados} color="indigo" />
-        <MetricCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} color="rose" />
-        <div className="bg-slate-900 p-6 rounded-3xl shadow-sm border border-slate-800 flex items-center justify-between gap-4">
-           <div>
-              <p className="text-[9px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">Almas este ano</p>
-              <p className="text-2xl font-black text-white tracking-tighter">{stats.almasAno}</p>
+      {/* MÉTRICAS DA OBRA */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <KpiCard icon={<Cross/>} label="Membros Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact />
+        <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact />
+        <div className="card-premium bg-gradient-hero text-white p-6 flex items-center justify-between gap-4 border-0 relative overflow-hidden">
+           <div className="absolute -bottom-8 -right-8 w-32 h-32 rounded-full bg-gold/10 blur-2xl"></div>
+           <div className="relative z-10">
+              <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-2">Almas este ano</p>
+              <p className="font-display text-5xl font-black text-white tracking-tighter leading-none">{stats.almasAno}</p>
            </div>
-           <div className="text-right border-l border-slate-700 pl-4">
-              <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Ganhos no Ano</p>
-              <p className="text-sm font-black text-slate-300 italic">
-                <span className="text-blue-400">{stats.novosAno} N</span> / <span className="text-emerald-400">{stats.retornoAno} R</span>
+           <div className="text-right border-l border-white/10 pl-5 relative z-10">
+              <p className="text-[9px] font-bold text-slate-400 uppercase tracking-widest leading-none mb-2">Ganhos no Ano</p>
+              <p className="font-display text-base font-bold leading-tight">
+                <span className="text-royal-glow">{stats.novosAno}</span>
+                <span className="text-slate-500 mx-1.5">/</span>
+                <span className="text-success">{stats.retornoAno}</span>
               </p>
+              <p className="text-[8px] text-slate-500 font-bold uppercase tracking-widest mt-1">Novos / Retorno</p>
            </div>
         </div>
       </div>
