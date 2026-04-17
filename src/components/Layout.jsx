@@ -199,11 +199,20 @@ export default function Layout({ usuario, aoSair }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const navLinkClass = (p) => `flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${location.pathname.startsWith(p) && p !== '/' || location.pathname === p ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30' : 'text-slate-400 hover:bg-slate-800 hover:text-white'}`;
-  const subLinkClass = (p) => `flex items-center gap-2 px-4 py-2 text-[11px] font-black uppercase italic transition-colors rounded-lg ${location.pathname === p ? 'text-blue-400 bg-blue-500/10' : 'text-slate-500 hover:text-white'}`;
+  const isActive = (p) => (p === '/' ? location.pathname === '/' : location.pathname.startsWith(p));
+  const navLinkClass = (p) => `group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
+    isActive(p)
+      ? 'bg-gradient-royal text-white shadow-royal'
+      : 'text-slate-400 hover:bg-white/5 hover:text-white'
+  }`;
+  const subLinkClass = (p) => `flex items-center gap-2 px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all rounded-xl ${
+    location.pathname === p
+      ? 'text-gold bg-gold/10 border border-gold/20'
+      : 'text-slate-500 hover:text-white hover:bg-white/5'
+  }`;
 
   return (
-    <div className="flex min-h-screen bg-slate-50 font-sans">
+    <div className="flex min-h-screen bg-background font-sans">
       
       {/* 1º ORDEM: EVENTO ESPECIAL */}
       {exibirModalEspecial && !verificandoDestaques && (
