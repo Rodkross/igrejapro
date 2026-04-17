@@ -268,120 +268,151 @@ export default function Dashboard() {
 
       {/* MODAL NOSSA FAMÍLIA (INTEGRAÇÃO DINÂMICA) */}
       {isModalMembrosAberto && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/80 backdrop-blur-md animate-in fade-in duration-300">
-            <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[85vh] text-left italic">
-                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
-                    <div>
-                        <h2 className="text-2xl font-black text-slate-800 uppercase italic leading-none">{tituloModal}</h2>
-                        <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic">Histórias e Vidas Transformadas</p>
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-navy-deep/80 backdrop-blur-md animate-fade-in">
+            <div className="bg-white w-full max-w-2xl rounded-[2.5rem] shadow-elegant overflow-hidden flex flex-col max-h-[85vh] text-left animate-scale-in">
+                <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0 relative overflow-hidden">
+                    <div className="absolute -top-10 -right-10 w-40 h-40 rounded-full bg-gold/10 blur-2xl"></div>
+                    <div className="relative z-10">
+                        <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] mb-2">Comunidade</p>
+                        <h2 className="font-display text-3xl font-black text-white leading-none">{tituloModal}</h2>
+                        <p className="text-[10px] font-bold text-slate-300 uppercase tracking-widest mt-2">Histórias e vidas transformadas</p>
                     </div>
-                    <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-slate-200 rounded-full text-slate-500 transition-colors"><X size={28} /></button>
+                    <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
                 </div>
-                <div className="overflow-y-auto p-6 space-y-4 bg-slate-50/30">
+                <div className="overflow-y-auto p-6 space-y-3 bg-background">
                     {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
-                        <div key={u.id} className="flex items-center gap-6 p-5 bg-white rounded-[2rem] border border-slate-100 hover:shadow-md transition-all">
+                        <div key={u.id} className="flex items-center gap-5 p-5 bg-white rounded-3xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
                             <div className="shrink-0 relative">
                                 {u.fotoUrl ? (
-                                    <img src={u.fotoUrl} alt="" className="w-24 h-24 rounded-[1.5rem] object-cover border-4 border-white shadow-md" />
+                                    <img src={u.fotoUrl} alt="" className="w-20 h-20 rounded-2xl object-cover border-2 border-white shadow-soft" />
                                 ) : (
-                                    <div className="w-24 h-24 rounded-[1.5rem] bg-blue-600 flex items-center justify-center text-white text-3xl font-black shadow-md">{u.nome?.charAt(0)}</div>
+                                    <div className="w-20 h-20 rounded-2xl bg-gradient-royal flex items-center justify-center text-white font-display text-3xl font-black shadow-royal">{u.nome?.charAt(0)}</div>
                                 )}
                             </div>
-                            <div className="min-w-0">
-                                <p className="font-black text-slate-800 uppercase italic text-xl leading-none truncate mb-1">{u.nome}</p>
-                                <p className="text-[10px] font-black text-blue-600 uppercase tracking-widest mb-3 italic">{u.cargoNome || 'Membro'}</p>
-                                <p className="text-xs text-slate-500 font-medium leading-relaxed italic line-clamp-3">{u.biografia || "Esse membro é parte fundamental da nossa igreja e está escrevendo sua história com Deus."}</p>
+                            <div className="min-w-0 flex-1">
+                                <p className="font-display font-bold text-navy text-lg leading-tight truncate">{u.nome}</p>
+                                <p className="text-[10px] font-bold text-royal uppercase tracking-widest mt-1">{u.cargoNome || 'Membro'}</p>
+                                <p className="text-xs text-muted-foreground font-medium leading-relaxed mt-2 line-clamp-2">{u.biografia || "Membro da nossa comunidade, escrevendo sua história com Deus."}</p>
                             </div>
                         </div>
                     )) : (
                       <div className="py-20 text-center opacity-40">
                         <Users className="mx-auto mb-4" size={48} />
-                        <p className="font-black uppercase text-xs">Nenhum membro nesta categoria.</p>
+                        <p className="font-bold uppercase text-xs tracking-widest">Nenhum membro nesta categoria.</p>
                       </div>
                     )}
                 </div>
-                <div className="p-6 bg-slate-50 border-t border-slate-100 text-center flex items-center justify-center gap-2 italic">
-                  <HeartHandshake size={14} className="text-rose-500"/>
-                  <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest">"Alegrei-me quando me disseram: Vamos à casa do Senhor"</p>
+                <div className="p-5 bg-white border-t border-slate-100 text-center flex items-center justify-center gap-2">
+                  <HeartHandshake size={14} className="text-gold"/>
+                  <p className="font-display italic text-xs text-muted-foreground">"Alegrei-me quando me disseram: Vamos à casa do Senhor"</p>
                 </div>
             </div>
         </div>
       )}
 
-      {/* RESTANTE DA PÁGINA (CRONOGRAMA E VERSÍCULO) */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 italic">
-        <div className="lg:col-span-2 bg-white rounded-[2.5rem] border border-slate-100 p-8 shadow-sm italic">
-          <div className="flex items-center justify-between mb-8 italic">
-            <h3 className="font-black text-slate-800 flex items-center gap-2 uppercase text-xs italic">
-              <CalendarDays className="text-blue-500" size={18}/> Aniversariantes do mês
-            </h3>
+      {/* ANIVERSARIANTES + PALAVRA DO DIA */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div className="lg:col-span-2 card-premium">
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] mb-1.5">Celebração</p>
+              <h3 className="font-display text-2xl font-black text-navy flex items-center gap-2 leading-none">
+                <Cake className="text-gold" size={22}/> Aniversariantes
+              </h3>
+            </div>
+            <span className="badge-gold">{proximosAniversariantes.length} próximos</span>
           </div>
 
-          <div className="space-y-3 italic">
+          <div className="space-y-2.5">
             {carregandoMembros ? (
-               <div className="flex justify-center py-10"><Loader2 className="animate-spin text-blue-600" /></div>
+               <div className="flex justify-center py-10"><Loader2 className="animate-spin text-royal" /></div>
             ) : proximosAniversariantes.length > 0 ? (
               proximosAniversariantes.map(u => (
-                <div key={u.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all italic ${
-                  u.diasPara === 0 ? 'bg-blue-50 border-blue-200' : 'bg-slate-50 border-transparent hover:border-slate-200'
+                <div key={u.id} className={`flex items-center justify-between p-4 rounded-2xl border transition-all ${
+                  u.diasPara === 0
+                    ? 'bg-gradient-to-r from-gold/10 to-transparent border-gold/30 shadow-gold'
+                    : 'bg-background border-transparent hover:border-slate-200 hover:bg-slate-50'
                 }`}>
-                  <div className="flex items-center gap-4 italic">
-                    <div className="relative italic">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
                       {u.fotoUrl ? (
-                         <img src={u.fotoUrl} className="w-10 h-10 rounded-full object-cover border-2 border-white shadow-sm" />
+                         <img src={u.fotoUrl} className="w-11 h-11 rounded-xl object-cover border-2 border-white shadow-soft" />
                       ) : (
-                        <div className={`w-10 h-10 rounded-full flex items-center justify-center font-black transition-all italic ${
-                          u.diasPara === 0 ? 'bg-blue-600 text-white' : 'bg-white text-blue-600 shadow-sm'
+                        <div className={`w-11 h-11 rounded-xl flex items-center justify-center font-display font-black transition-all ${
+                          u.diasPara === 0 ? 'bg-gradient-gold text-navy' : 'bg-white text-royal shadow-soft border border-slate-100'
                         }`}>
                           {u.nome?.charAt(0)}
                         </div>
                       )}
                       {u.batizado && (
-                        <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white p-0.5 rounded-md border-2 border-white">
+                        <div className="absolute -bottom-1 -right-1 bg-royal text-white p-0.5 rounded-md border-2 border-white">
                           <Cross size={8} />
                         </div>
                       )}
                     </div>
-                    <div className="italic">
-                      <div className="flex items-center gap-2 leading-none italic">
-                        <p className="font-black text-slate-800 uppercase text-xs italic">{u.nome}</p>
-                        <span className="bg-white/80 text-slate-400 text-[8px] font-black px-1.5 py-0.5 rounded border border-slate-100 uppercase italic">
-                          {u.idadeNova} ANOS
+                    <div>
+                      <div className="flex items-center gap-2">
+                        <p className="font-display font-bold text-navy text-sm leading-none">{u.nome}</p>
+                        <span className="bg-white text-muted-foreground text-[8px] font-bold px-2 py-0.5 rounded-full border border-slate-200 uppercase tracking-wider">
+                          {u.idadeNova} anos
                         </span>
                       </div>
-                      <p className="text-[10px] text-slate-400 font-bold uppercase mt-1 italic">
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase tracking-wider mt-1.5">
                         {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })}
                       </p>
                     </div>
                   </div>
-                  <div className="text-right italic">
+                  <div className="text-right">
                     {u.diasPara === 0 ? (
-                      <span className="bg-blue-600 text-white px-4 py-1.5 rounded-full text-[9px] font-black uppercase animate-pulse italic">HOJE 🎂</span>
+                      <span className="bg-gradient-gold text-navy px-4 py-1.5 rounded-full text-[10px] font-black uppercase tracking-wider shadow-gold animate-pulse">Hoje 🎂</span>
                     ) : (
-                      <span className="font-black text-blue-500 text-xs uppercase tracking-tighter italic">{u.diasPara}d</span>
+                      <div className="text-right">
+                        <span className="font-display font-black text-royal text-2xl leading-none">{u.diasPara}</span>
+                        <span className="block text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-1">dias</span>
+                      </div>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <div className="text-center py-16 opacity-30 italic">
-                <Cake className="mx-auto text-slate-400 mb-2" size={40} />
-                <p className="text-slate-500 text-[10px] font-black uppercase tracking-widest text-center italic">Nenhum aniversário.</p>
+              <div className="text-center py-16 opacity-30">
+                <Cake className="mx-auto text-muted-foreground mb-2" size={40} />
+                <p className="text-muted-foreground text-[10px] font-bold uppercase tracking-widest">Nenhum aniversário próximo.</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="bg-slate-900 rounded-[2.5rem] p-10 text-white shadow-2xl flex flex-col justify-between relative overflow-hidden italic">
-          <div className="relative z-10 italic">
-            <div className="flex items-center gap-2 mb-8 italic">
-              <div className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse"></div>
-              <span className="text-[10px] font-black uppercase tracking-[0.2em] text-blue-400 italic">Palavra do Dia</span>
+        {/* PALAVRA DO DIA — premium com pattern de vitral */}
+        <div className="card-dark pattern-stained flex flex-col justify-between min-h-[400px] group">
+          <div className="absolute inset-0 animate-shimmer pointer-events-none opacity-20"></div>
+          <div className="relative z-10">
+            <div className="flex items-center gap-2 mb-6">
+              <span className="badge-gold">✛ Palavra do Dia</span>
             </div>
-            <p className="text-xl font-medium leading-relaxed italic text-slate-100">"{versiculo.texto}"</p>
-            <p className="mt-8 text-blue-500 font-black uppercase text-[10px] tracking-[0.3em] italic">— {versiculo.referencia}</p>
+            <p className="font-display italic text-2xl leading-relaxed text-white">
+              "{versiculo.texto}"
+            </p>
           </div>
-          <div className="absolute -bottom-10 -right-10 opacity-[0.03] rotate-12 italic">
+          <div className="relative z-10 mt-8">
+            <div className="h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent mb-5"></div>
+            <div className="flex items-center justify-between">
+              <p className="text-gold font-bold uppercase text-[10px] tracking-[0.3em]">— {versiculo.referencia}</p>
+              <button
+                onClick={() => {
+                  if (navigator.share) {
+                    navigator.share({ title: 'Palavra do Dia', text: `"${versiculo.texto}" — ${versiculo.referencia}` });
+                  } else {
+                    navigator.clipboard.writeText(`"${versiculo.texto}" — ${versiculo.referencia}`);
+                  }
+                }}
+                className="text-[9px] font-bold text-white/60 hover:text-gold uppercase tracking-widest transition-colors"
+              >
+                Compartilhar →
+              </button>
+            </div>
+          </div>
+          <div className="absolute -bottom-10 -right-10 opacity-[0.04] rotate-12 z-0">
             <Cross size={250} />
           </div>
         </div>
@@ -390,24 +421,30 @@ export default function Dashboard() {
   );
 }
 
-function MetricCard({ icon, label, value, color }) {
-  const colors = {
-    blue: 'bg-blue-50 text-blue-600',
-    green: 'bg-emerald-50 text-emerald-600',
-    purple: 'bg-purple-50 text-purple-600',
-    orange: 'bg-orange-50 text-orange-600',
-    indigo: 'bg-indigo-50 text-indigo-600',
-    rose: 'bg-rose-50 text-rose-600',
-    emerald: 'bg-emerald-50 text-emerald-600',
+function KpiCard({ icon, label, value, accent = 'royal', compact = false }) {
+  const accents = {
+    royal:   { bg: 'bg-royal/10',   text: 'text-royal',   ring: 'group-hover:shadow-royal' },
+    success: { bg: 'bg-success/10', text: 'text-success', ring: 'group-hover:shadow-soft' },
+    navy:    { bg: 'bg-navy/10',    text: 'text-navy',    ring: 'group-hover:shadow-elegant' },
+    gold:    { bg: 'bg-gold/10',    text: 'text-gold',    ring: 'group-hover:shadow-gold' },
+    danger:  { bg: 'bg-danger/10',  text: 'text-danger',  ring: 'group-hover:shadow-soft' },
   };
-  
+  const a = accents[accent] || accents.royal;
+
   return (
-    <div className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm flex items-center gap-4 hover:shadow-md transition-shadow italic">
-      <div className={`p-3 rounded-2xl ${colors[color]}`}>{icon}</div>
-      <div>
-        <p className="text-[9px] font-black uppercase text-slate-400 tracking-widest leading-none mb-1 italic">{label}</p>
-        <p className="text-2xl font-black text-slate-800 tracking-tighter italic">{value}</p>
+    <div className={`group bg-white rounded-3xl border border-slate-100 p-6 shadow-soft hover:-translate-y-1 transition-all duration-300 ${a.ring}`}>
+      <div className="flex items-start justify-between mb-4">
+        <div className={`w-11 h-11 rounded-2xl ${a.bg} ${a.text} flex items-center justify-center group-hover:scale-110 transition-transform`}>
+          {icon}
+        </div>
+        <div className={`text-[9px] font-bold uppercase tracking-widest ${a.text} opacity-60`}>↗</div>
       </div>
+      <p className={`font-display font-black text-navy tracking-tighter leading-none ${compact ? 'text-3xl' : 'text-5xl'}`}>
+        {value}
+      </p>
+      <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-3">
+        {label}
+      </p>
     </div>
   );
 }
