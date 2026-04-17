@@ -1,15 +1,15 @@
 import React, { useState, useEffect, useMemo } from 'react';
-import { db } from '../database/firebase'; 
+import { db } from '../database/firebase';
 import { collection, query, where, onSnapshot } from 'firebase/firestore';
-import { 
-  ChevronDown, CreditCard, History, 
-  Package, Star, Loader2, Wallet2, ReceiptText, HeartHandshake
+import {
+  ChevronDown, CreditCard,
+  Package, Loader2, Wallet2, ReceiptText, HeartHandshake
 } from 'lucide-react';
 
 export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
   const [expandido, setExpandido] = useState(false);
   const [carregando, setCarregando] = useState(true);
-  
+
   const [itensConvenio, setItensConvenio] = useState([]);
   const [restosFinanceiro, setRestosFinanceiro] = useState([]);
   const [valorCredito, setValorCredito] = useState(0);
@@ -39,12 +39,11 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
     const lista = [];
     itensConvenio.forEach(i => lista.push({ id: i.id, desc: i.produtoNome, valor: Number(i.valorTotal), data: i.data }));
     restosFinanceiro.forEach(r => lista.push({ id: r.id, desc: r.descricao || "Restante Pendente", valor: Number(r.valor), data: r.vencimento }));
-    
+
     const saldoLiquido = Number((lista.reduce((acc, cur) => acc + cur.valor, 0) - valorCredito).toFixed(2));
     return { total: saldoLiquido, itens: lista.sort((a, b) => new Date(b.data) - new Date(a.data)), temCredito: saldoLiquido < 0 };
   }, [itensConvenio, restosFinanceiro, valorCredito]);
 
-  // --- LÓGICA DE RESPOSTAS DINÂMICAS ---
   const getMensagemStatus = () => {
     if (resumo.total > 0) return "Há pendências para acertar";
     if (resumo.total < 0) return "Você possui saldo positivo";
@@ -53,26 +52,42 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
   if (!nomeReal) return null;
 
-  const estilo = {
-    devedor: { bg: 'bg-rose-50', icon: 'bg-white text-rose-500', text: 'text-rose-600', border: 'border-rose-100' },
-    credito: { bg: 'bg-emerald-50', icon: 'bg-white text-emerald-500', text: 'text-emerald-600', border: 'border-emerald-100' },
-    zerado: { bg: 'bg-slate-50', icon: 'bg-white text-slate-400', text: 'text-slate-600', border: 'border-slate-100' }
-  };
-
+  // Estilos premium por status
   const status = resumo.total > 0 ? 'devedor' : resumo.total < 0 ? 'credito' : 'zerado';
+  const estilo = {
+    devedor: {
+      bg: 'bg-gradient-to-br from-danger/5 to-white',
+      iconBg: 'bg-danger/10 text-danger border border-danger/20',
+      text: 'text-danger',
+      label: 'A pagar',
+    },
+    credito: {
+      bg: 'bg-gradient-to-br from-success/5 to-white',
+      iconBg: 'bg-success/10 text-success border border-success/20',
+      text: 'text-success',
+      label: 'Crédito',
+    },
+    zerado: {
+      bg: 'bg-gradient-to-br from-gold/5 to-white',
+      iconBg: 'bg-gold/10 text-gold border border-gold/20',
+      text: 'text-navy',
+      label: 'Em dia',
+    },
+  };
   const config = estilo[status];
 
   return (
-    <div className={`group bg-white rounded-[2.5rem] border transition-all duration-500 overflow-hidden italic ${expandido ? 'border-slate-300 shadow-2xl' : 'border-slate-100 shadow-sm'}`}>
-      
-      <div onClick={() => setExpandido(!expandido)} className={`p-5 flex items-center justify-between cursor-pointer transition-colors ${config.bg}`}>
+    <div className={`group rounded-3xl border transition-all duration-500 overflow-hidden ${expandido ? 'border-slate-200 shadow-elegant' : 'border-slate-100 shadow-soft'}`}>
+
+      <div onClick={() => setExpandido(!expandido)} className={`p-6 flex items-center justify-between cursor-pointer transition-colors ${config.bg}`}>
         <div className="flex items-center gap-4">
-          <div className={`w-12 h-12 rounded-2xl flex items-center justify-center shadow-sm ${config.icon}`}>
-            {resumo.total === 0 ? <HeartHandshake size={22} /> : <Wallet2 size={22} />}
+          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${config.iconBg}`}>
+            {resumo.total === 0 ? <HeartHandshake size={24} /> : <Wallet2 size={24} />}
           </div>
           <div className="text-left">
-            <h3 className="font-black text-slate-700 uppercase tracking-tighter text-base leading-none">Cantina</h3>
-            <span className={`text-[10px] font-bold uppercase tracking-tight ${config.text}`}>
+            <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] mb-1">Cantina</p>
+            <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
+            <span className={`text-[10px] font-bold uppercase tracking-wider mt-1 inline-block ${config.text}`}>
               {getMensagemStatus()}
             </span>
           </div>
@@ -80,54 +95,55 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
         <div className="flex items-center gap-5">
           <div className="text-right">
-            <p className="text-[8px] font-black text-slate-400 uppercase leading-none mb-1">
-              {resumo.temCredito ? 'Crédito' : 'A pagar'}
+            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+              {config.label}
             </p>
-            <p className={`text-xl font-black tracking-tighter flex items-center gap-1.5 justify-end ${config.text}`}>
+            <p className={`font-display text-3xl font-black tracking-tighter leading-none ${config.text}`}>
               R$ {Math.abs(resumo.total).toFixed(2)}
             </p>
           </div>
-          <div className={`p-2 rounded-full bg-white/50 border ${config.border} transition-transform duration-500 ${expandido ? 'rotate-180' : ''}`}>
-            <ChevronDown size={16} className="text-slate-400" />
+          <div className={`p-2 rounded-full bg-white/70 border border-slate-200 transition-transform duration-500 ${expandido ? 'rotate-180' : ''}`}>
+            <ChevronDown size={16} className="text-muted-foreground" />
           </div>
         </div>
       </div>
 
       {expandido && (
-        <div className="px-6 pb-6 bg-white animate-in fade-in slide-in-from-top-2 duration-300">
+        <div className="px-6 pb-6 pt-2 bg-white animate-fade-in">
           <div className="space-y-2 mt-4">
             <div className="flex items-center gap-2 mb-3">
-              <ReceiptText size={14} className="text-slate-300" />
-              <span className="text-[9px] font-black text-slate-400 uppercase tracking-widest">Extrato Simples</span>
+              <ReceiptText size={14} className="text-gold" />
+              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Extrato</span>
             </div>
 
             {carregando ? (
-              <div className="py-4 flex justify-center"><Loader2 className="animate-spin text-slate-200" /></div>
+              <div className="py-4 flex justify-center"><Loader2 className="animate-spin text-royal" /></div>
             ) : resumo.itens.length > 0 ? (
               resumo.itens.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3.5 bg-slate-50/50 rounded-2xl border border-slate-50">
+                <div key={item.id} className="flex items-center justify-between p-3.5 bg-background rounded-2xl border border-slate-100">
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 bg-white rounded-lg flex items-center justify-center text-slate-300 border border-slate-100"><Package size={14} /></div>
+                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-royal border border-slate-100"><Package size={14} /></div>
                     <div className="text-left leading-tight">
-                      <p className="text-[11px] font-black text-slate-700 uppercase tracking-tight">{item.desc}</p>
-                      <p className="text-[8px] text-slate-400 font-bold uppercase">{item.data || 'Registrado'}</p>
+                      <p className="font-display text-sm font-bold text-navy">{item.desc}</p>
+                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{item.data || 'Registrado'}</p>
                     </div>
                   </div>
-                  <p className="text-xs font-black text-slate-800 tracking-tighter">R$ {item.valor.toFixed(2)}</p>
+                  <p className="font-display font-black text-navy tracking-tight">R$ {item.valor.toFixed(2)}</p>
                 </div>
               ))
             ) : (
-              <p className="text-center py-6 text-slate-300 font-black uppercase text-[9px]">Nenhum lançamento pendente</p>
+              <p className="text-center py-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Nenhum lançamento pendente</p>
             )}
 
             {resumo.total > 0 && (
-              <div className="mt-5 p-4 bg-slate-900 rounded-[1.8rem] flex items-center gap-3 shadow-lg">
-                <div className="w-9 h-9 bg-rose-500/10 text-rose-400 rounded-xl flex items-center justify-center shrink-0 border border-rose-500/20">
+              <div className="mt-5 p-4 bg-gradient-hero rounded-2xl flex items-center gap-3 shadow-elegant relative overflow-hidden">
+                <div className="absolute -bottom-6 -right-6 w-24 h-24 rounded-full bg-gold/10 blur-2xl"></div>
+                <div className="w-10 h-10 bg-gold/20 text-gold rounded-xl flex items-center justify-center shrink-0 border border-gold/30 relative z-10">
                   <CreditCard size={18} />
                 </div>
-                <p className="text-[9px] font-black text-slate-400 uppercase leading-snug">
-                  Valor total em aberto. <br/>
-                  <span className="text-white">Fale com a tesouraria para pagar.</span>
+                <p className="text-[10px] font-bold text-slate-300 uppercase leading-snug tracking-wider relative z-10">
+                  Valor total em aberto.<br/>
+                  <span className="text-gold">Fale com a tesouraria para pagar.</span>
                 </p>
               </div>
             )}

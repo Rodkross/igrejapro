@@ -1,27 +1,217 @@
 @import "tailwindcss";
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+
+/* ============================================================
+   IGREJA PRO — DESIGN SYSTEM (Tailwind v4)
+   Paleta: Azul Profundo (Navy) + Azul Royal + Dourado
+   Tipografia: Fraunces (títulos) + Inter (corpo)
+   ============================================================ */
+
+@theme {
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-display: 'Fraunces', Georgia, serif;
+  --font-serif: 'Fraunces', Georgia, serif;
+
+  /* Brand colors */
+  --color-navy: hsl(222 65% 14%);
+  --color-navy-deep: hsl(224 71% 8%);
+  --color-royal: hsl(221 83% 53%);
+  --color-royal-glow: hsl(217 91% 60%);
+  --color-gold: hsl(43 65% 52%);
+  --color-gold-soft: hsl(45 80% 70%);
+
+  /* Semantic colors */
+  --color-background: hsl(220 33% 98%);
+  --color-foreground: hsl(222 47% 11%);
+  --color-surface: hsl(0 0% 100%);
+  --color-primary: hsl(222 65% 14%);
+  --color-primary-foreground: hsl(0 0% 100%);
+  --color-accent: hsl(43 65% 52%);
+  --color-accent-foreground: hsl(222 65% 14%);
+  --color-muted: hsl(220 14% 92%);
+  --color-muted-foreground: hsl(220 10% 45%);
+  --color-border: hsl(220 16% 90%);
+  --color-ring: hsl(221 83% 53%);
+  --color-success: hsl(152 60% 42%);
+  --color-danger: hsl(0 72% 55%);
+  --color-warning: hsl(38 92% 55%);
+
+  /* Legacy church palette */
+  --color-church-900: hsl(222 65% 14%);
+  --color-church-600: hsl(221 83% 53%);
+
+  /* Border radius */
+  --radius-4xl: 2rem;
+  --radius-5xl: 2.5rem;
+
+  /* Shadows */
+  --shadow-soft: 0 4px 16px -4px hsl(222 65% 14% / 0.08);
+  --shadow-elegant: 0 20px 50px -20px hsl(222 65% 14% / 0.25);
+  --shadow-gold: 0 12px 30px -10px hsl(43 65% 52% / 0.4);
+  --shadow-royal: 0 12px 30px -10px hsl(221 83% 53% / 0.35);
+
+  /* Animations */
+  --animate-fade-in: fade-in 0.4s ease-out;
+  --animate-scale-in: scale-in 0.25s ease-out;
+}
+
+/* CSS variables for use inside custom properties (gradients/shadows) */
+:root {
+  --gradient-hero: linear-gradient(135deg, hsl(224 71% 8%) 0%, hsl(222 65% 14%) 50%, hsl(221 83% 28%) 100%);
+  --gradient-gold: linear-gradient(135deg, hsl(43 65% 52%) 0%, hsl(45 85% 65%) 100%);
+  --gradient-royal: linear-gradient(135deg, hsl(221 83% 53%) 0%, hsl(217 91% 60%) 100%);
+  --gradient-sidebar: linear-gradient(180deg, hsl(224 71% 8%) 0%, hsl(222 65% 14%) 100%);
+}
+
+/* ============================================================
+   BASE
+   ============================================================ */
 
 @layer base {
   body {
-    @apply bg-slate-50 text-slate-900 antialiased;
+    background: hsl(220 33% 98%);
+    color: hsl(222 47% 11%);
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  h1, h2, h3, h4, h5, h6, .font-display {
+    font-family: 'Fraunces', Georgia, serif;
+    font-optical-sizing: auto;
+    letter-spacing: -0.02em;
   }
 }
 
-.card-financeiro {
-  @apply bg-white p-6 rounded-xl shadow-sm border border-slate-200;
+/* ============================================================
+   GRADIENT UTILITIES (background-image)
+   ============================================================ */
+
+.bg-gradient-hero    { background-image: var(--gradient-hero); }
+.bg-gradient-gold    { background-image: var(--gradient-gold); }
+.bg-gradient-royal   { background-image: var(--gradient-royal); }
+.bg-gradient-sidebar { background-image: var(--gradient-sidebar); }
+
+/* ============================================================
+   PREMIUM COMPONENTS
+   ============================================================ */
+
+.card-premium {
+  background: hsl(0 0% 100%);
+  border-radius: 1.5rem;
+  border: 1px solid hsl(220 16% 92%);
+  padding: 2rem;
+  box-shadow: var(--shadow-soft);
+  transition: box-shadow .35s ease, transform .35s ease;
+}
+.card-premium:hover {
+  box-shadow: var(--shadow-elegant);
 }
 
+.card-financeiro {
+  background: hsl(0 0% 100%);
+  padding: 1.5rem;
+  border-radius: 1rem;
+  border: 1px solid hsl(220 16% 92%);
+  box-shadow: var(--shadow-soft);
+}
+
+.card-dark {
+  border-radius: 1.5rem;
+  color: white;
+  padding: 2rem;
+  position: relative;
+  overflow: hidden;
+  background-image: var(--gradient-hero);
+  box-shadow: var(--shadow-elegant);
+}
+
+.text-gradient-gold {
+  background: var(--gradient-gold);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.badge-gold {
+  display: inline-flex;
+  align-items: center;
+  gap: .375rem;
+  padding: .25rem .75rem;
+  border-radius: 9999px;
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: .15em;
+  background: hsl(43 65% 52% / 0.12);
+  color: hsl(43 65% 52%);
+  border: 1px solid hsl(43 65% 52% / 0.25);
+}
+
+.pattern-stained {
+  background-image:
+    radial-gradient(circle at 20% 30%, hsl(221 83% 53% / 0.18) 0%, transparent 40%),
+    radial-gradient(circle at 80% 70%, hsl(43 65% 52% / 0.12) 0%, transparent 45%),
+    radial-gradient(circle at 50% 100%, hsl(217 91% 60% / 0.10) 0%, transparent 50%);
+}
+
+.pattern-grid {
+  background-image:
+    linear-gradient(hsl(220 16% 90% / 0.6) 1px, transparent 1px),
+    linear-gradient(90deg, hsl(220 16% 90% / 0.6) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* ============================================================
+   ANIMATIONS
+   ============================================================ */
+
+@keyframes fade-in {
+  0%   { opacity: 0; transform: translateY(10px); }
+  100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes scale-in {
+  0%   { opacity: 0; transform: scale(0.95); }
+  100% { opacity: 1; transform: scale(1); }
+}
 @keyframes ticker {
-  0% { transform: translate3d(0, 0, 0); }
+  0%   { transform: translate3d(0, 0, 0); }
   100% { transform: translate3d(-100%, 0, 0); }
+}
+@keyframes fade-in-up {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
+}
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 0 0 hsl(43 65% 52% / 0.5); }
+  50%      { box-shadow: 0 0 0 10px hsl(43 65% 52% / 0); }
 }
 
 .animate-ticker {
   animation: ticker 180s linear infinite;
   will-change: transform;
 }
-.animate-ticker:hover {
-  animation-play-state: paused;
+.animate-ticker:hover { animation-play-state: paused; }
+
+.animate-fade-in-up { animation: fade-in-up .5s ease-out both; }
+
+.animate-shimmer {
+  background: linear-gradient(90deg, transparent, hsl(43 65% 52% / 0.25), transparent);
+  background-size: 1000px 100%;
+  animation: shimmer 3s infinite;
 }
+
+.animate-pulse-glow { animation: pulse-glow 2s infinite; }
+
+/* Scrollbar premium */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: hsl(222 65% 14% / 0.15);
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover { background: hsl(222 65% 14% / 0.3); }
