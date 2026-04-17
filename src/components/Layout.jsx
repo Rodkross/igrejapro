@@ -407,27 +407,31 @@ export default function Layout({ usuario, aoSair }) {
               </div>
             </button>
             {userMenuAberto && (
-              <div className="absolute right-0 mt-4 w-56 bg-white rounded-3xl shadow-2xl border border-slate-100 p-2 text-left z-50">
+              <div className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-elegant border border-slate-100 p-3 text-left z-50 animate-scale-in origin-top-right">
+                <div className="px-3 py-2 mb-2 border-b border-slate-100">
+                  <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-[0.25em]">Conta</p>
+                  <p className="font-display text-sm font-bold text-navy mt-1 truncate">{dadosSincronizados?.nome}</p>
+                </div>
                 {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
-                  <button 
+                  <button
                     onClick={() => {
                        setConfigModalAberto(true);
                        setUserMenuAberto(false);
-                    }} 
-                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-500 hover:bg-slate-50 hover:text-blue-600 rounded-2xl transition-all font-black text-[10px] uppercase italic text-left mb-1"
+                    }}
+                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left mb-1"
                   >
-                    <Settings size={18} /> Configurações
+                    <Settings size={16} /> Configurações
                   </button>
                 )}
-                <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-rose-500 hover:bg-rose-50 rounded-2xl transition-all font-black text-[10px] uppercase italic text-left">
-                  <LogOut size={18} /> Sair do Sistema
+                <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-danger hover:bg-danger/5 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
+                  <LogOut size={16} /> Sair do Sistema
                 </button>
               </div>
             )}
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 text-left bg-slate-50/50">
+        <div className="flex-1 overflow-y-auto p-8 text-left">
           <Outlet context={{ usuario: dadosSincronizados }} />
         </div>
       </main>
