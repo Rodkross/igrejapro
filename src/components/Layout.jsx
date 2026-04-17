@@ -232,37 +232,50 @@ export default function Layout({ usuario, aoSair }) {
         />
       )}
 
-      <aside className="w-64 bg-slate-950 text-white hidden md:flex flex-col shadow-2xl z-50 text-left">
-        <div className="p-6 border-b border-white/5 flex items-center gap-4">
-          {configGeral?.igrejaLogo && (
-             <img src={configGeral.igrejaLogo} alt="Logo da Igreja" className="w-12 h-12 object-contain rounded-xl bg-white/5" />
+      <aside className="w-64 hidden md:flex flex-col shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
+        {/* Decorative gold accent */}
+        <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
+        <div className="absolute -top-20 -right-20 w-48 h-48 rounded-full bg-royal/10 blur-3xl pointer-events-none"></div>
+        <div className="absolute bottom-32 -left-16 w-40 h-40 rounded-full bg-gold/5 blur-3xl pointer-events-none"></div>
+
+        <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
+          {configGeral?.igrejaLogo ? (
+             <img src={configGeral.igrejaLogo} alt="Logo da Igreja" className="w-12 h-12 object-contain rounded-2xl bg-white/10 backdrop-blur-sm border border-white/10 p-1.5" />
+          ) : (
+             <div className="w-12 h-12 rounded-2xl bg-gradient-gold flex items-center justify-center shadow-gold">
+               <span className="font-display font-black text-navy text-xl">✛</span>
+             </div>
           )}
-          <h1 className="text-lg font-black text-blue-500 tracking-tighter italic uppercase leading-none line-clamp-2">
-            {configGeral?.igrejaNome || 'Igreja Pro'}
-          </h1>
+          <div className="leading-tight">
+            <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">
+              {configGeral?.igrejaNome || 'Igreja Pro'}
+            </h1>
+            <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5">Gestão Pastoral</p>
+          </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-2 overflow-y-auto">
+        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto relative">
           <Link to="/" className={navLinkClass('/')}>
-            <LayoutDashboard size={20} />
-            <span className="font-black uppercase text-[11px] tracking-widest italic text-left leading-none">Dashboard</span>
+            <LayoutDashboard size={18} />
+            <span className="font-bold uppercase text-[11px] tracking-widest leading-none">Dashboard</span>
+            {isActive('/') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold"></span>}
           </Link>
 
           {/* CADASTROS */}
           {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('planoContas') || temAcesso('contas') || temAcesso('cantina') || temAcesso('programacao')) && (
-            <div className="space-y-1">
-              <button 
+            <div className="space-y-1 pt-2">
+              <button
                 onClick={() => {
                   setMenuCadastroAberto(!menuCadastroAberto);
                   if (!menuCadastroAberto) setMenuFinanceiroAberto(false);
-                }} 
-                className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-slate-900 rounded-xl transition-all outline-none"
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none"
               >
-                <div className="flex items-center gap-3"><Settings size={20} /><span className="font-black uppercase text-[11px] tracking-widest italic">Cadastros</span></div>
+                <div className="flex items-center gap-3"><Settings size={18} /><span className="font-bold uppercase text-[11px] tracking-widest">Cadastros</span></div>
                 {menuCadastroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuCadastroAberto && (
-                <div className="ml-6 border-l-2 border-slate-800 py-1 space-y-1 text-left italic">
+                <div className="ml-5 pl-3 border-l border-white/10 py-1 space-y-0.5 animate-fade-in">
                   {temAcesso('programacao') && <Link to="/cadastro/programacao" className={subLinkClass('/cadastro/programacao')}>Programação</Link>}
                   {temAcesso('usuarios') && <Link to="/cadastro/usuarios" className={subLinkClass('/cadastro/usuarios')}>Membros</Link>}
                   {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Cargos</Link>}
@@ -277,18 +290,18 @@ export default function Layout({ usuario, aoSair }) {
           {/* FINANCEIRO */}
           {temAcesso('fluxo') && (
             <div className="space-y-1">
-              <button 
+              <button
                 onClick={() => {
                   setMenuFinanceiroAberto(!menuFinanceiroAberto);
                   if (!menuFinanceiroAberto) setMenuCadastroAberto(false);
-                }} 
-                className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-slate-900 rounded-xl transition-all outline-none"
+                }}
+                className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none"
               >
-                <div className="flex items-center gap-3"><CreditCard size={20} /><span className="font-black uppercase text-[11px] tracking-widest italic">Financeiro</span></div>
+                <div className="flex items-center gap-3"><CreditCard size={18} /><span className="font-bold uppercase text-[11px] tracking-widest">Financeiro</span></div>
                 {menuFinanceiroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuFinanceiroAberto && (
-                <div className="ml-6 border-l-2 border-slate-800 py-1 space-y-1 text-left italic">
+                <div className="ml-5 pl-3 border-l border-white/10 py-1 space-y-0.5 animate-fade-in">
                   <Link to="/financeiro/fluxo" className={subLinkClass('/financeiro/fluxo')}>Fluxo de Caixa</Link>
                   <Link to="/financeiro/lancamentos" className={subLinkClass('/financeiro/lancamentos')}>Lançamentos</Link>
                   <Link to="/financeiro/transferencias" className={subLinkClass('/financeiro/transferencias')}>Transferências</Link>
@@ -302,11 +315,23 @@ export default function Layout({ usuario, aoSair }) {
 
           {temAcesso('relatorios') && (
             <Link to="/financeiro/relatorios" className={navLinkClass('/financeiro/relatorios')}>
-              <BarChart3 size={20} />
-              <span className="font-black uppercase text-[11px] tracking-widest italic text-left leading-none">Relatórios BI</span>
+              <BarChart3 size={18} />
+              <span className="font-bold uppercase text-[11px] tracking-widest leading-none">Relatórios BI</span>
+              {isActive('/financeiro/relatorios') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold"></span>}
             </Link>
           )}
         </nav>
+
+        {/* Footer da sidebar com versículo */}
+        <div className="p-5 border-t border-white/5 relative">
+          <div className="bg-white/5 backdrop-blur-sm rounded-2xl p-4 border border-white/10">
+            <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mb-2">✛ Versículo</p>
+            <p className="font-display italic text-[11px] text-slate-300 leading-relaxed">
+              "Tudo posso naquele que me fortalece."
+            </p>
+            <p className="text-[9px] text-slate-500 font-bold uppercase tracking-widest mt-2">— Filipenses 4:13</p>
+          </div>
+        </div>
       </aside>
 
       <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-slate-50/50">
