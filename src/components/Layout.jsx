@@ -334,39 +334,48 @@ export default function Layout({ usuario, aoSair }) {
         </div>
       </aside>
 
-      <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-slate-50/50">
-        <header className="h-20 bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 border-b border-transparent flex items-center justify-between px-10 shrink-0 z-40 shadow-md">
-          <div className="flex items-center gap-3 text-left">
+      <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-background">
+        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-40 shadow-elegant relative overflow-hidden">
+          <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
+
+          <div className="flex items-center gap-3 text-left relative z-10">
             {eventoAoVivo ? (
               <>
-                <div className="relative w-11 h-11 rounded-xl overflow-hidden border-2 border-rose-400 shadow-[0_0_12px_rgba(244,63,94,0.4)] shrink-0 flex items-center justify-center bg-rose-500/20 backdrop-blur-sm">
+                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-gold shadow-gold shrink-0 flex items-center justify-center bg-gold/10 backdrop-blur-sm">
                   {eventoAoVivo.bannerUrl ? (
                     <>
                       <img src={eventoAoVivo.bannerUrl} alt="Ao Vivo" className="w-full h-full object-cover" />
-                      <div className="absolute top-1 right-1 w-2 h-2 bg-rose-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(244,63,94,0.9)] border border-white"></div>
+                      <div className="absolute top-1 right-1 w-2 h-2 bg-gold rounded-full animate-pulse border border-white"></div>
                     </>
                   ) : (
-                    <div className="w-4 h-4 bg-rose-400 rounded-full animate-pulse shadow-[0_0_10px_rgba(244,63,94,0.6)]"></div>
+                    <div className="w-3 h-3 bg-gold rounded-full animate-pulse"></div>
                   )}
                 </div>
                 <div className="text-left flex flex-col justify-center">
-                  <p className="text-[9px] font-black text-rose-200 uppercase tracking-widest leading-none mb-1.5 text-left flex items-center gap-1">
-                    {!eventoAoVivo.bannerUrl && <span className="w-1.5 h-1.5 rounded-full bg-rose-400 animate-pulse"></span>}
+                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>
                     Acontecendo agora
                   </p>
-                  <p className="text-xs font-black text-white uppercase italic leading-none text-left truncate max-w-[200px]">
+                  <p className="font-display text-base font-bold text-white leading-none truncate max-w-[260px]">
                     {eventoAoVivo.titulo}
                   </p>
                 </div>
               </>
             ) : (
               <>
-                <div className="p-2.5 bg-white/20 backdrop-blur-md rounded-xl border border-white/10 shadow-inner">
-                  <CalendarDays size={18} className="text-white" />
+                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
+                  <CalendarDays size={18} className="text-gold" />
                 </div>
                 <div className="text-left">
-                  <p className="text-[10px] font-black text-blue-100 uppercase tracking-widest leading-none mb-1 text-left">Data de Hoje</p>
-                  <p className="text-xs font-black text-white uppercase italic leading-none text-left">
+                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5">
+                    {(() => {
+                      const h = new Date().getHours();
+                      if (h < 12) return 'Bom dia';
+                      if (h < 18) return 'Boa tarde';
+                      return 'Boa noite';
+                    })()}, {formatarNome(dadosSincronizados?.nome)}
+                  </p>
+                  <p className="font-display text-base font-bold text-white capitalize leading-none">
                     {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
                   </p>
                 </div>
@@ -377,22 +386,22 @@ export default function Layout({ usuario, aoSair }) {
           <div className="relative text-left" ref={userMenuRef}>
             <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group">
               <div className="text-right leading-none">
-                <p className="text-xs font-black text-white uppercase italic tracking-tighter leading-none">
-                  Olá, {dadosSincronizados?.nome || 'Usuário'}
+                <p className="font-display text-sm font-bold text-white leading-none">
+                  {dadosSincronizados?.nome || 'Usuário'}
                 </p>
-                <p className="text-[9px] text-blue-200 font-black uppercase tracking-widest mt-1 leading-none">
+                <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none">
                   {dadosSincronizados?.cargoNome || 'Membro'}
                 </p>
               </div>
               <div className="relative shrink-0">
-                <div className="w-12 h-12 rounded-2xl bg-indigo-900 border border-indigo-500/50 text-white flex items-center justify-center shadow-lg shadow-indigo-900/30 overflow-hidden">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden">
                   {dadosSincronizados?.fotoUrl ? (
                     <img src={dadosSincronizados.fotoUrl} alt="Avatar" className="w-full h-full object-cover" />
                   ) : (
-                    <UserIcon size={24} />
+                    <UserIcon size={22} />
                   )}
                 </div>
-                <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-white border-2 border-indigo-600 rounded-full flex items-center justify-center text-indigo-700 shadow-sm transition-transform duration-300 ${userMenuAberto ? 'bg-blue-100' : 'group-hover:scale-110'}`}>
+                <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-gold border-2 border-navy rounded-full flex items-center justify-center text-navy shadow-sm transition-transform duration-300 ${userMenuAberto ? '' : 'group-hover:scale-110'}`}>
                    <ChevronDown size={10} className={`transition-transform duration-300 ${userMenuAberto ? 'rotate-180' : ''}`} />
                 </div>
               </div>
