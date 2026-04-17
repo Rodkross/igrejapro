@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { db } from '../database/firebase'; 
+import { db } from '../database/firebase';
 import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
 import { LogIn, Lock, User, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 
@@ -16,12 +16,9 @@ export default function Login({ onLoginSucesso }) {
 
     try {
       const usuariosRef = collection(db, "usuarios");
-      
-      // BUSCA FLEXÍVEL: O operador 'in' permite testar se o idAcesso é 
-      // o número 1 OU o texto "1". Isso resolve o conflito com int64.
       const q = query(
-        usuariosRef, 
-        where("idAcesso", "in", [Number(idAcesso), String(idAcesso)]), 
+        usuariosRef,
+        where("idAcesso", "in", [Number(idAcesso), String(idAcesso)]),
         where("senha", "==", senha)
       );
 
@@ -29,22 +26,18 @@ export default function Login({ onLoginSucesso }) {
 
       if (!querySnapshot.empty) {
         const usuarioDoc = querySnapshot.docs[0];
-        
-        // No Firebase, o ID do documento (a primeira coluna) é sempre String.
-        // Convertemos para String para garantir que usuario.id === "1" funcione.
         const usuarioData = { id: String(usuarioDoc.id), ...usuarioDoc.data() };
 
         let permissoes = {};
         let cargoNome = usuarioData.cargoNome || 'Membro';
 
-        // REGRA MESTRE: Suporte Master (Documento com ID "1")
         if (usuarioData.id === "1" || usuarioData.nome?.toLowerCase() === 'suporte') {
           cargoNome = "SISTEMA";
-          permissoes = { admin: true }; 
+          permissoes = { admin: true };
         } else if (usuarioData.cargoId) {
           const cargoDocRef = doc(db, "cargos", String(usuarioData.cargoId));
           const cargoSnap = await getDoc(cargoDocRef);
-          
+
           if (cargoSnap.exists()) {
             const dataCargo = cargoSnap.data();
             cargoNome = dataCargo.nome;
@@ -54,7 +47,7 @@ export default function Login({ onLoginSucesso }) {
 
         const sessaoUsuario = { ...usuarioData, cargoNome, permissoes };
         sessionStorage.setItem('usuarioLogado', JSON.stringify(sessaoUsuario));
-        
+
         if (onLoginSucesso) {
           onLoginSucesso(sessaoUsuario);
         }
@@ -70,35 +63,42 @@ export default function Login({ onLoginSucesso }) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 flex items-center justify-center p-6 font-sans text-left">
-      <div className="max-w-md w-full bg-white p-10 rounded-[3.5rem] shadow-2xl border border-white relative overflow-hidden">
-        <div className="absolute top-0 left-0 w-full h-2 bg-blue-600"></div>
+    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6 font-sans text-left relative overflow-hidden">
+      {/* Decorative blobs */}
+      <div className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-royal/20 blur-3xl pointer-events-none"></div>
+      <div className="absolute -bottom-32 -right-20 w-96 h-96 rounded-full bg-gold/10 blur-3xl pointer-events-none"></div>
+      <div className="absolute inset-0 pattern-stained opacity-30 pointer-events-none"></div>
+
+      <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-elegant border border-white/20 relative overflow-hidden animate-scale-in z-10">
+        <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-gold"></div>
 
         <div className="text-center mb-10">
-          <div className="w-20 h-20 bg-blue-50 text-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-inner">
-            <ShieldCheck size={40} strokeWidth={2.5} />
+          <div className="w-20 h-20 bg-gradient-hero text-gold rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-elegant relative">
+            <ShieldCheck size={40} strokeWidth={2} />
+            <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-gold rounded-full flex items-center justify-center text-navy text-xs font-black shadow-gold">✛</div>
           </div>
-          <h1 className="text-3xl font-black text-slate-900 uppercase italic tracking-tighter">Igreja Pro</h1>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mt-2 italic">Acesso Cloud</p>
+          <p className="text-[10px] font-bold text-gold uppercase tracking-[0.3em] mb-2">Bem-vindo de volta</p>
+          <h1 className="font-display text-4xl font-black text-navy tracking-tight">Igreja Pro</h1>
+          <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-2">Gestão Pastoral & Financeira</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={handleSubmit} className="space-y-5">
           {erro && (
-            <div className="bg-rose-50 border border-rose-100 text-rose-600 p-4 rounded-2xl text-[10px] font-black uppercase flex items-center gap-3 animate-in fade-in slide-in-from-top-1 italic">
+            <div className="bg-danger/5 border border-danger/20 text-danger p-4 rounded-2xl text-[11px] font-bold uppercase tracking-wider flex items-center gap-3 animate-fade-in">
               <AlertCircle size={18} /> {erro}
             </div>
           )}
 
           <div className="space-y-4">
             <div className="relative group">
-              <label className="text-[9px] font-black text-slate-400 uppercase ml-4 mb-1 block tracking-widest leading-none">Matrícula</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase ml-4 mb-1.5 block tracking-[0.2em] leading-none">Matrícula</label>
               <div className="relative">
-                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-all" size={20} />
+                <User className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-royal transition-all" size={18} />
                 <input
                   required
                   type="number"
                   placeholder="ID DE ACESSO"
-                  className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl py-5 pl-12 pr-4 text-xs font-black outline-none focus:bg-white focus:border-blue-500 transition-all"
+                  className="w-full bg-background border-2 border-transparent rounded-2xl py-5 pl-12 pr-4 text-sm font-bold text-navy outline-none focus:bg-white focus:border-royal transition-all"
                   value={idAcesso}
                   onChange={e => setIdAcesso(e.target.value)}
                 />
@@ -106,14 +106,14 @@ export default function Login({ onLoginSucesso }) {
             </div>
 
             <div className="relative group">
-              <label className="text-[9px] font-black text-slate-400 uppercase ml-4 mb-1 block tracking-widest leading-none">Segurança</label>
+              <label className="text-[10px] font-bold text-muted-foreground uppercase ml-4 mb-1.5 block tracking-[0.2em] leading-none">Senha</label>
               <div className="relative">
-                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-blue-500 transition-all" size={20} />
+                <Lock className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-royal transition-all" size={18} />
                 <input
                   required
                   type="password"
                   placeholder="SUA SENHA"
-                  className="w-full bg-slate-50 border-2 border-slate-50 rounded-2xl py-5 pl-12 pr-4 text-xs font-black outline-none focus:bg-white focus:border-blue-500 transition-all"
+                  className="w-full bg-background border-2 border-transparent rounded-2xl py-5 pl-12 pr-4 text-sm font-bold text-navy outline-none focus:bg-white focus:border-royal transition-all"
                   value={senha}
                   onChange={e => setSenha(e.target.value)}
                 />
@@ -124,16 +124,21 @@ export default function Login({ onLoginSucesso }) {
           <button
             type="submit"
             disabled={carregando}
-            className="w-full bg-slate-900 text-white py-6 rounded-[2.5rem] font-black uppercase text-xs tracking-[0.2em] italic shadow-xl hover:bg-blue-600 active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:active:scale-100"
+            className="w-full bg-gradient-hero text-white py-5 rounded-2xl font-bold uppercase text-xs tracking-[0.2em] shadow-elegant hover:shadow-gold active:scale-95 transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:active:scale-100 relative overflow-hidden group"
           >
+            <span className="absolute inset-0 bg-gradient-gold opacity-0 group-hover:opacity-10 transition-opacity"></span>
             {carregando ? (
               <Loader2 className="animate-spin" size={20} />
             ) : (
               <>
-                <LogIn size={20} /> Entrar no Sistema
+                <LogIn size={18} /> <span className="relative">Entrar no Sistema</span>
               </>
             )}
           </button>
+
+          <p className="text-center text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-6">
+            ✛ Sistema protegido por autenticação
+          </p>
         </form>
       </div>
     </div>
