@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../database/firebase';
 import {
   collection, query, orderBy, onSnapshot,
-  addDoc, deleteDoc, doc, writeBatch
+  addDoc, deleteDoc, doc, writeBatch, updateDoc
 } from 'firebase/firestore';
 import {
   CheckCircle, Trash2, Plus, Loader2,
   Search, CreditCard, CheckSquare, Square,
-  MessageSquare, Hash, X, Calendar
+  MessageSquare, Hash, X, Calendar, Edit
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
@@ -17,6 +17,7 @@ export default function ContasPagar() {
   const [fornecedores, setFornecedores] = useState([]);
   const [selecionadas, setSelecionadas] = useState([]);
   const [isModalAberto, setIsModalAberto] = useState(false);
+  const [isModalEditAberto, setIsModalEditAberto] = useState(false);
 
   const [filtroNome, setFiltroNome] = useState('');
   const [filtroStatus, setFiltroStatus] = useState('pendente');
@@ -35,6 +36,13 @@ export default function ContasPagar() {
     valorUnitario: '',
     parcelas: '1',
     vencimentoBase: new Date().toISOString().split('T')[0],
+  });
+
+  const [formEditData, setFormEditData] = useState({
+    id: '',
+    descricao: '',
+    valor: '',
+    vencimento: ''
   });
 
   useEffect(() => {
@@ -105,6 +113,34 @@ export default function ContasPagar() {
       await alertModal('Sucesso', 'Parcelas geradas com sucesso!', 'success');
     } catch (err) {
       await alertModal('Erro', 'Erro ao salvar.', 'danger');
+    }
+  };
+
+  const handleEditar = async (e) => {
+    e.preventDefault();
+    if (!formEditData.valor || !formEditData.vencimento) {
+      return alertModal('Atenção', 'Preencha o valor e o vencimento!', 'warning');
+    }
+
+    try {
+      const valorNumerico = typeof formEditData.valor === 'string'
+        ? parseFloat(formEditData.valor.replace(',', '.'))
+        : parseFloat(formEditData.valor);
+
+      if (isNaN(valorNumerico)) {
+        return alertModal('Atenção', 'Valor inválido!', 'warning');
+      }
+
+      const ref = doc(db, 'contasPagar', formEditData.id);
+      await updateDoc(ref, {
+        descricao: formEditData.descricao.toUpperCase(),
+        valor: valorNumerico,
+        vencimento: formEditData.vencimento
+      });
+      setIsModalEditAberto(false);
+      await alertModal('Sucesso', 'Conta atualizada com sucesso!', 'success');
+    } catch (err) {
+      await alertModal('Erro', 'Erro ao atualizar a conta.', 'danger');
     }
   };
 
@@ -300,6 +336,63 @@ export default function ContasPagar() {
         </div>
       )}
 
+      {isModalEditAberto && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
+          <div className="bg-white w-full max-w-2xl rounded-[3rem] shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+              <div className="flex items-center gap-3">
+                <Edit className="text-blue-600" size={24} />
+                <h2 className="text-xl font-black text-slate-800 uppercase italic">Editar Conta a Pagar</h2>
+              </div>
+              <button onClick={() => setIsModalEditAberto(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
+                <X size={24} />
+              </button>
+            </div>
+
+            <form onSubmit={handleEditar} className="p-8 space-y-6 overflow-y-auto italic text-left">
+              <div className="text-left italic">
+                <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block ml-1 italic">Descrição (Nome da Parcela)</label>
+                <input
+                  className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold bg-slate-50 outline-none focus:bg-white focus:border-blue-600 transition-all uppercase italic"
+                  value={formEditData.descricao}
+                  onChange={(e) => setFormEditData({ ...formEditData, descricao: e.target.value })}
+                />
+              </div>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 italic">
+                <div className="text-left italic">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block ml-1 italic">Valor da Conta (R$)</label>
+                  <input
+                    className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 font-black text-blue-600 bg-slate-50 outline-none focus:bg-white focus:border-blue-600 transition-all italic text-lg"
+                    placeholder="0,00"
+                    value={formEditData.valor}
+                    onChange={(e) => setFormEditData({ ...formEditData, valor: e.target.value })}
+                  />
+                </div>
+                <div className="text-left italic">
+                  <label className="text-[10px] font-black text-slate-400 uppercase mb-2 block ml-1 italic">Data de Vencimento</label>
+                  <input
+                    type="date"
+                    className="w-full border-2 border-slate-100 rounded-2xl px-5 py-4 font-bold bg-slate-50 outline-none focus:bg-white focus:border-blue-600 transition-all italic"
+                    value={formEditData.vencimento}
+                    onChange={(e) => setFormEditData({ ...formEditData, vencimento: e.target.value })}
+                  />
+                </div>
+              </div>
+
+              <div className="flex gap-4 pt-4 italic">
+                <button type="button" onClick={() => setIsModalEditAberto(false)} className="flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-slate-100 text-slate-500 hover:bg-slate-200 transition-all italic">
+                  Cancelar
+                </button>
+                <button type="submit" className="flex-1 py-5 rounded-2xl font-black text-[11px] uppercase tracking-widest bg-slate-900 text-white hover:bg-blue-600 transition-all shadow-xl italic">
+                  Salvar Alterações
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
       <div className="bg-slate-900 p-7 rounded-[2.5rem] flex flex-col xl:flex-row xl:items-center xl:justify-between gap-4 shadow-2xl italic overflow-hidden">
         <div className="flex flex-col lg:flex-row lg:flex-wrap items-stretch lg:items-center gap-4 lg:gap-3 w-full min-w-0">
           <select
@@ -369,7 +462,7 @@ export default function ContasPagar() {
             <div
               key={conta.id}
               onClick={() => conta.status === 'pendente' && toggleSelecao(conta.id)}
-              className={`bg-white px-3 py-2.5 md:px-4 md:py-2 rounded-[1.5rem] border-2 transition-all grid items-center gap-3 cursor-pointer shadow-sm group overflow-hidden grid-cols-[20px_110px_minmax(180px,1fr)_92px_150px_150px_32px] ${selecionadas.includes(conta.id) ? 'border-blue-600 ring-4 ring-blue-50' : 'border-white hover:border-slate-200'} ${conta.status === 'pago' ? 'opacity-60 grayscale-[0.5]' : ''}`}
+              className={`bg-white px-3 py-2.5 md:px-4 md:py-2 rounded-[1.5rem] border-2 transition-all grid items-center gap-3 cursor-pointer shadow-sm group overflow-hidden grid-cols-[20px_110px_minmax(180px,1fr)_92px_150px_150px_60px] ${selecionadas.includes(conta.id) ? 'border-blue-600 ring-4 ring-blue-50' : 'border-white hover:border-slate-200'} ${conta.status === 'pago' ? 'opacity-60 grayscale-[0.5]' : ''}`}
             >
               <div className="transition-all shrink-0">
                 {conta.status === 'pago'
@@ -418,19 +511,36 @@ export default function ContasPagar() {
                 )}
               </div>
 
-              <div className="w-8 flex justify-end">
+              <div className="w-16 flex justify-end gap-1">
                 {conta.status === 'pendente' && (
-                  <button
-                    onClick={async (e) => {
-                      e.stopPropagation();
-                      if (await confirmModal('Deletar', 'Excluir este lançamento?', 'danger')) {
-                        deleteDoc(doc(db, 'contasPagar', conta.id));
-                      }
-                    }}
-                    className="text-slate-200 hover:text-rose-500 p-1.5 transition-colors opacity-0 group-hover:opacity-100 bg-slate-50 rounded-lg hover:bg-rose-50"
-                  >
-                    <Trash2 size={14} />
-                  </button>
+                  <>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setFormEditData({
+                          id: conta.id,
+                          descricao: conta.descricao,
+                          valor: conta.valor.toString(),
+                          vencimento: conta.vencimento
+                        });
+                        setIsModalEditAberto(true);
+                      }}
+                      className="text-slate-200 hover:text-blue-500 p-1.5 transition-colors opacity-0 group-hover:opacity-100 bg-slate-50 rounded-lg hover:bg-blue-50"
+                    >
+                      <Edit size={14} />
+                    </button>
+                    <button
+                      onClick={async (e) => {
+                        e.stopPropagation();
+                        if (await confirmModal('Deletar', 'Excluir este lançamento?', 'danger')) {
+                          deleteDoc(doc(db, 'contasPagar', conta.id));
+                        }
+                      }}
+                      className="text-slate-200 hover:text-rose-500 p-1.5 transition-colors opacity-0 group-hover:opacity-100 bg-slate-50 rounded-lg hover:bg-rose-50"
+                    >
+                      <Trash2 size={14} />
+                    </button>
+                  </>
                 )}
               </div>
             </div>
