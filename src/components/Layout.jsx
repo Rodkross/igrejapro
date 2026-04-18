@@ -301,7 +301,9 @@ export default function Layout({ usuario, aoSair }) {
 
           {/* BOTÃO VOLTAR - ESQUERDA */}
           {location.pathname !== '/' && (
-            <Link to="/" className="flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10">
+            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
+              location.pathname.startsWith('/entretenimento/quiz') ? 'md:hidden' : ''
+            }`}>
               <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
               <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
             </Link>
@@ -309,7 +311,9 @@ export default function Layout({ usuario, aoSair }) {
 
           {/* EVENTO AO VIVO - ESQUERDA */}
           <div className={`flex items-center gap-1 relative z-10 text-left ${
-            location.pathname.startsWith('/cadastro') ? 'hidden md:flex' : 'flex'
+            location.pathname.startsWith('/cadastro') || location.pathname.startsWith('/entretenimento/quiz')
+              ? 'hidden md:flex'
+              : 'flex'
           }`}>
             {eventoAoVivo ? (
               <>
@@ -360,7 +364,7 @@ export default function Layout({ usuario, aoSair }) {
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 text-left bg-background">
+        <div className="flex-1 overflow-y-auto px-8 py-4 text-left bg-background">
           <Outlet context={{ usuario: dadosSincronizados }} />
         </div>
       </main>

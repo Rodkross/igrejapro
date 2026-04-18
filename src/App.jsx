@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
@@ -45,6 +45,11 @@ const RotaPrivada = ({ usuario, modulo, children }) => {
   return temPermissao ? children : <Navigate to="/" replace />;
 };
 
+const RotaMobilePermitida = ({ isMobile, allowMobile = false, children }) => {
+  if (isMobile && !allowMobile) return <Navigate to="/" replace />;
+  return children;
+};
+
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
     try {
@@ -54,6 +59,27 @@ export default function App() {
       return null;
     }
   });
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === 'undefined') return false;
+    return window.matchMedia('(max-width: 767px)').matches;
+  });
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return undefined;
+
+    const mediaQuery = window.matchMedia('(max-width: 767px)');
+    const syncIsMobile = (event) => setIsMobile(event.matches);
+
+    setIsMobile(mediaQuery.matches);
+
+    if (typeof mediaQuery.addEventListener === 'function') {
+      mediaQuery.addEventListener('change', syncIsMobile);
+      return () => mediaQuery.removeEventListener('change', syncIsMobile);
+    }
+
+    mediaQuery.addListener(syncIsMobile);
+    return () => mediaQuery.removeListener(syncIsMobile);
+  }, []);
 
   const logout = () => {
     sessionStorage.removeItem('usuarioLogado');
@@ -76,60 +102,94 @@ export default function App() {
             <Route index element={<Dashboard />} />
             
             {/* Bloco de Entretenimento */}
-            <Route path="entretenimento/quiz" element={<QuizGame />} />
+            <Route path="entretenimento/quiz" element={
+              <RotaMobilePermitida isMobile={isMobile} allowMobile>
+                <QuizGame />
+              </RotaMobilePermitida>
+            } />
             
             {/* Rota temporária para importar os dados do Quiz */}
             <Route path="entretenimento/importar" element={
-              <RotaPrivada usuario={usuario} modulo="usuarios">
-                <ImportadorQuiz />
-              </RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="usuarios">
+                  <ImportadorQuiz />
+                </RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
             {/* Bloco de Cadastros */}
-            <Route path="cadastro/programacao" element={<Programacao />} />
+            <Route path="cadastro/programacao" element={
+              <RotaMobilePermitida isMobile={isMobile} allowMobile>
+                <Programacao />
+              </RotaMobilePermitida>
+            } />
             <Route path="cadastro/usuarios" element={
-              <RotaPrivada usuario={usuario} modulo="usuarios"><Usuarios /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="usuarios"><Usuarios /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             <Route path="cadastro/cargos" element={
-              <RotaPrivada usuario={usuario} modulo="cargos"><NiveisAcesso /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="cargos"><NiveisAcesso /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             <Route path="cadastro/plano-contas" element={
-              <RotaPrivada usuario={usuario} modulo="planoContas"><PlanoContas /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="planoContas"><PlanoContas /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             <Route path="cadastro/contas" element={
-              <RotaPrivada usuario={usuario} modulo="contas"><Contas /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="contas"><Contas /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             <Route path="cadastro/cantina" element={
-              <RotaPrivada usuario={usuario} modulo="cantina"><Produtos /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="cantina"><Produtos /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             
             {/* Bloco Financeiro */}
             <Route path="financeiro/fluxo" element={
-              <RotaPrivada usuario={usuario} modulo="fluxo"><FluxoFinanceiro /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="fluxo"><FluxoFinanceiro /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             
             <Route path="financeiro/lancamentos" element={
-              <RotaPrivada usuario={usuario} modulo="lancamentos"><Lancamentos /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="lancamentos"><Lancamentos /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
             
             <Route path="financeiro/transferencias" element={
-              <RotaPrivada usuario={usuario} modulo="lancamentos"><Transferencias /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="lancamentos"><Transferencias /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
             <Route path="financeiro/pagar" element={
-              <RotaPrivada usuario={usuario} modulo="pagar"><ContasPagar /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="pagar"><ContasPagar /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
             <Route path="financeiro/receber" element={
-              <RotaPrivada usuario={usuario} modulo="receber"><ContasReceber /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="receber"><ContasReceber /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
             <Route path="financeiro/convenio" element={
-              <RotaPrivada usuario={usuario} modulo="convenio"><Convenio /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="convenio"><Convenio /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
             <Route path="financeiro/relatorios" element={
-              <RotaPrivada usuario={usuario} modulo="relatorios"><RelatoriosFinanceiros /></RotaPrivada>
+              <RotaMobilePermitida isMobile={isMobile}>
+                <RotaPrivada usuario={usuario} modulo="relatorios"><RelatoriosFinanceiros /></RotaPrivada>
+              </RotaMobilePermitida>
             } />
 
           </Route>

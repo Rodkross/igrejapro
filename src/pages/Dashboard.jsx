@@ -269,7 +269,7 @@ export default function Dashboard() {
       <div className="hidden md:block space-y-4">
         {/* TICKER — AGENDA */}
         {programacao.length > 0 && (
-          <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-2 mb-0">
+          <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-1 mb-0">
             <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
               <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
             </div>
