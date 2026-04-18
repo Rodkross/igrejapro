@@ -125,11 +125,6 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
             <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] leading-none mt-1">Cantina</p>
             <div className="flex items-center gap-2">
               <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
-              {valorCredito > 0 && (
-                <span className="bg-success/10 text-success text-[8px] px-2 py-0.5 rounded border border-success/20 font-black tracking-widest uppercase shadow-sm">
-                  Crédito Disponível: R$ {valorCredito.toFixed(2)}
-                </span>
-              )}
             </div>
             <span className={`text-[10px] font-bold uppercase tracking-wider inline-block leading-none mt-0.5 ${config.text}`}>
               {getMensagemStatus()}
