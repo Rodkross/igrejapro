@@ -98,7 +98,9 @@ export default function Layout({ usuario, aoSair }) {
     };
 
     buscarDestaques();
-  }, [dadosSincronizados?.id, dadosSincronizados?.avisoVistoId, dadosSincronizados?.avisosVistos]);
+    // A dependência foi alterada para reagir apenas a mudanças no ID do usuário ou na lista de avisos já vistos.
+    // Isso impede que outras atualizações no perfil do usuário (como pontuação de jogos) reativem o modal desnecessariamente.
+  }, [dadosSincronizados?.id, JSON.stringify(dadosSincronizados?.avisosVistos)]);
 
   const silenciarEvento = async (eventoId) => {
     if (dadosSincronizados?.id && eventoId) {
@@ -159,6 +161,25 @@ export default function Layout({ usuario, aoSair }) {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const toggleCadastroMenu = () => {
+    setMenuCadastroAberto((prev) => {
+      if (!prev) setMenuFinanceiroAberto(false);
+      return !prev;
+    });
+  };
+
+  const toggleFinanceiroMenu = () => {
+    setMenuFinanceiroAberto((prev) => {
+      if (!prev) setMenuCadastroAberto(false);
+      return !prev;
+    });
+  };
+
+  const fecharMenus = () => {
+    setMenuCadastroAberto(false);
+    setMenuFinanceiroAberto(false);
+  };
+
   const isActive = (p) => (p === '/' ? location.pathname === '/' : location.pathname.startsWith(p));
   const navLinkClass = (p) => `group relative flex items-center gap-3 px-4 py-3 rounded-2xl transition-all duration-300 ${
     isActive(p) ? 'bg-gradient-royal text-white shadow-royal' : 'text-slate-400 hover:bg-white/5 hover:text-white'
@@ -168,7 +189,7 @@ export default function Layout({ usuario, aoSair }) {
   }`;
 
   return (
-    <div className="flex min-h-screen bg-background font-sans">
+    <div className="flex min-h-screen bg-background font-sans overflow-x-hidden">
       
       {/* MODAIS GLOBAIS */}
       {exibirModalEspecial && !verificandoDestaques && (
@@ -180,7 +201,7 @@ export default function Layout({ usuario, aoSair }) {
       )}
 
       {/* SIDEBAR ROYAL */}
-      <aside className="w-64 hidden md:flex flex-col shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
+      <aside className="w-64 flex-shrink-0 hidden md:flex flex-col h-screen sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
         <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
           {configGeral?.igrejaLogo ? (
@@ -196,39 +217,47 @@ export default function Layout({ usuario, aoSair }) {
           </div>
         </div>
 
-        <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto relative text-left">
-          <Link to="/" className={navLinkClass('/')}>
+        <nav className="flex-1 p-2 space-y-1 overflow-y-auto relative text-left">
+<Link to="/" onClick={fecharMenus} className={navLinkClass('/')}> 
             <LayoutDashboard size={18} />
             <span className="font-bold uppercase text-[11px] tracking-widest leading-none text-left">Dashboard</span>
             {isActive('/') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
           </Link>
 
           {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('programacao')) && (
-            <div className="space-y-1 pt-2 text-left">
-              <button onClick={() => setMenuCadastroAberto(!menuCadastroAberto)} className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none">
+            <div className="space-y-1 pt-1.5 text-left">
+              <button onClick={toggleCadastroMenu} className="w-full flex items-center justify-between px-3 py-2.5 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none">
                 <div className="flex items-center gap-3"><Settings size={18} /><span className="font-bold uppercase text-[11px] tracking-widest text-left">Cadastros</span></div>
                 {menuCadastroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuCadastroAberto && (
-                <div className="ml-5 pl-3 border-l border-white/10 py-1 space-y-0.5 text-left">
+                <div className="ml-4 pl-2 border-l border-white/10 py-1 space-y-0.5 text-left">
                   {temAcesso('programacao') && <Link to="/cadastro/programacao" className={subLinkClass('/cadastro/programacao')}>Programação</Link>}
                   {temAcesso('usuarios') && <Link to="/cadastro/usuarios" className={subLinkClass('/cadastro/usuarios')}>Membros</Link>}
                   {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Cargos</Link>}
+                  {temAcesso('planoContas') && <Link to="/cadastro/plano-contas" className={subLinkClass('/cadastro/plano-contas')}>Plano de Contas</Link>}
+                  {temAcesso('contas') && <Link to="/cadastro/contas" className={subLinkClass('/cadastro/contas')}>Contas</Link>}
+                  {temAcesso('cantina') && <Link to="/cadastro/cantina" className={subLinkClass('/cadastro/cantina')}>Cantina</Link>}
                 </div>
               )}
             </div>
           )}
 
-          {temAcesso('fluxo') && (
-            <div className="space-y-1 pt-2 text-left">
-              <button onClick={() => setMenuFinanceiroAberto(!menuFinanceiroAberto)} className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none text-left">
+          {(temAcesso('fluxo') || temAcesso('lancamentos') || temAcesso('pagar') || temAcesso('receber') || temAcesso('convenio') || temAcesso('relatorios')) && (
+            <div className="space-y-1 pt-1.5 text-left">
+              <button onClick={toggleFinanceiroMenu} className="w-full flex items-center justify-between px-3 py-2.5 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none text-left">
                 <div className="flex items-center gap-3"><CreditCard size={18} /><span className="font-bold uppercase text-[11px] tracking-widest text-left">Financeiro</span></div>
                 {menuFinanceiroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuFinanceiroAberto && (
-                <div className="ml-5 pl-3 border-l border-white/10 py-1 space-y-0.5 text-left">
-                  <Link to="/financeiro/fluxo" className={subLinkClass('/financeiro/fluxo')}>Fluxo de Caixa</Link>
-                  <Link to="/financeiro/lancamentos" className={subLinkClass('/financeiro/lancamentos')}>Lançamentos</Link>
+                <div className="ml-4 pl-2 border-l border-white/10 py-1 space-y-0.5 text-left">
+                  {temAcesso('fluxo') && <Link to="/financeiro/fluxo" className={subLinkClass('/financeiro/fluxo')}>Fluxo de Caixa</Link>}
+                  {temAcesso('lancamentos') && <Link to="/financeiro/lancamentos" className={subLinkClass('/financeiro/lancamentos')}>Lançamentos</Link>}
+                  {temAcesso('lancamentos') && <Link to="/financeiro/transferencias" className={subLinkClass('/financeiro/transferencias')}>Transferências</Link>}
+                  {temAcesso('pagar') && <Link to="/financeiro/pagar" className={subLinkClass('/financeiro/pagar')}>Contas a Pagar</Link>}
+                  {temAcesso('receber') && <Link to="/financeiro/receber" className={subLinkClass('/financeiro/receber')}>Contas a Receber</Link>}
+                  {temAcesso('convenio') && <Link to="/financeiro/convenio" className={subLinkClass('/financeiro/convenio')}>Convênio</Link>}
+                  {temAcesso('relatorios') && <Link to="/financeiro/relatorios" className={subLinkClass('/financeiro/relatorios')}>Relatórios</Link>}
                 </div>
               )}
             </div>

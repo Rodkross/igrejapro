@@ -32,7 +32,39 @@ export default function Dashboard() {
     const qProg = query(collection(db, "programacaoSemanal"));
     const unsubProg = onSnapshot(qProg, (snapshot) => {
       const dias = { 'DOMINGO': 1, 'SEGUNDA': 2, 'TERÇA': 3, 'QUARTA': 4, 'QUINTA': 5, 'SEXTA': 6, 'SÁBADO': 7 };
+      const agora = new Date();
+      const diaAtual = agora.getDay() + 1; // 1=domingo, 7=sábado
+      const horaAtual = agora.getHours() * 100 + agora.getMinutes(); // formato HHMM
       let listaProg = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      listaProg = listaProg.filter(p => {
+        if (p.isEspecial) {
+          // CORREÇÃO: Exibir eventos especiais apenas se a data/hora atual for ANTERIOR à data de INÍCIO.
+          if (!p.dataEspecífica) return false;
+          try {
+            const [ano, mes, dia] = p.dataEspecífica.split('-');
+            const [hora, minuto] = (p.horario || "00:00").split(':');
+            const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
+
+            // Mantém o evento apenas se a data/hora atual for anterior à data de início.
+            return agora < dataInicio;
+          } catch (e) {
+            return false; // Se houver erro no parsing da data, não exibe.
+          }
+        } else {
+          // CORREÇÃO: Eventos semanais (recorrentes) devem sempre ser exibidos na agenda,
+          // pois representam a programação fixa da semana. A ordenação cuidará de mostrá-los
+          // na sequência correta.
+          return true;
+        }
+      });
+      // Remover duplicatas por titulo (ignorando case)
+      const seen = new Set();
+      listaProg = listaProg.filter(p => {
+        const tituloLower = p.titulo.toLowerCase();
+        if (seen.has(tituloLower)) return false;
+        seen.add(tituloLower);
+        return true;
+      });
       listaProg.sort((a, b) => {
         const pesoA = a.isEspecial ? 1 : (a.tipoFrequencia === 'toda_semana' ? 2 : 3);
         const pesoB = b.isEspecial ? 1 : (b.tipoFrequencia === 'toda_semana' ? 2 : 3);
@@ -137,12 +169,12 @@ export default function Dashboard() {
   }, [usuarios, hojeZerado]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-4 pb-12 px-4 text-left animate-fade-in-up">
+    <div className="max-w-7xl mx-auto space-y-2 pb-12 px-4 text-left animate-fade-in-up">
       
       {/* TICKER — AGENDA */}
       {programacao.length > 0 && (
-        <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer">
-           <div className="z-10 bg-navy-deep px-4 h-full flex items-center border-r border-gold/20">
+        <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-2 mb-0">
+           <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
               <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
            </div>
            <div className="relative w-full overflow-hidden whitespace-nowrap">
@@ -162,40 +194,18 @@ export default function Dashboard() {
       {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
 
       {/* KPI GRID COMPACTO */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" />
-        <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" />
-        <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" />
-        <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
+        <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
+        <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
+        <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
+        <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+        <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
       </div>
 
-      {/* MÉTRICAS SECUNDÁRIAS */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact />
-        <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact />
-        
-        {/* CARD ALMAS */}
-        <div className="bg-gradient-hero rounded-2xl p-4 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[110px]">
-           <div className="relative z-10">
-              <p className="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
-              <p className="font-display text-4xl font-black text-white leading-none">{stats.almasAno}</p>
-           </div>
-           <div className="h-8 w-px bg-white/20 mx-2"></div>
-           <div className="text-right relative z-10">
-              <p className="text-[8px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
-              <div className="text-lg font-bold text-white leading-none">
-                <span className="text-gold">{stats.novosAno}</span>
-                <span className="text-white/20 mx-1">/</span>
-                <span className="text-green-400">{stats.retornoAno}</span>
-              </div>
-              <p className="text-[7px] text-slate-400 font-bold uppercase mt-1">Novo / Retorno</p>
-           </div>
-        </div>
-      </div>
-
-      {/* ANIVERSÁRIOS VERTICAIS COM FOTO */}
+      {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col max-h-[400px]">
+        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col">
           <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
             <Cake size={18} className="text-gold" /> Aniversariantes do Mês
           </h3>
@@ -238,14 +248,34 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* PALAVRA DO DIA */}
-        <div className="bg-navy-deep rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between min-h-[250px] shadow-elegant">
-          <div className="relative z-10">
-            <span className="text-gold font-bold text-[9px] uppercase tracking-widest border-b border-gold/30 pb-1">✦ Palavra do Dia</span>
-            <p className="font-display italic text-base mt-4 text-slate-100 leading-relaxed">"{versiculo.texto}"</p>
+        <div className="flex flex-col gap-4">
+          {/* CARD ALMAS */}
+          <div className="bg-gradient-hero rounded-2xl p-3 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px]">
+             <div className="relative z-10">
+                <p className="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
+                <p className="font-display text-4xl font-black text-white leading-none">{stats.almasAno}</p>
+             </div>
+             <div className="h-8 w-px bg-white/20 mx-2"></div>
+             <div className="text-right relative z-10">
+                <p className="text-[8px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
+                <div className="text-lg font-bold text-white leading-none">
+                  <span className="text-gold">{stats.novosAno}</span>
+                  <span className="text-white/20 mx-1">/</span>
+                  <span className="text-green-400">{stats.retornoAno}</span>
+                </div>
+                <p className="text-[7px] text-slate-400 font-bold uppercase mt-1">Novo / Retorno</p>
+             </div>
           </div>
-          <div className="relative z-10 pt-4"><p className="text-gold font-bold text-[10px] tracking-widest">— {versiculo.referencia}</p></div>
-          <Cross className="absolute -bottom-6 -right-6 text-white opacity-[0.03]" size={150} />
+
+          {/* PALAVRA DO DIA */}
+          <div className="bg-navy-deep rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between flex-1 shadow-elegant">
+            <div className="relative z-10">
+              <span className="text-gold font-bold text-[9px] uppercase tracking-widest border-b border-gold/30 pb-1">✦ Palavra do Dia</span>
+              <p className="font-display italic text-base mt-4 text-slate-100 leading-relaxed">"{versiculo.texto}"</p>
+            </div>
+            <div className="relative z-10 pt-4"><p className="text-gold font-bold text-[10px] tracking-widest">— {versiculo.referencia}</p></div>
+            <Cross className="absolute -bottom-6 -right-6 text-white opacity-[0.03]" size={150} />
+          </div>
         </div>
       </div>
 
@@ -292,7 +322,7 @@ export default function Dashboard() {
   );
 }
 
-function KpiCard({ icon, label, value, accent, compact, onClick }) {
+function KpiCard({ icon, label, value, accent, compact, inline, onClick }) {
   const accents = {
     royal:   { bg: 'bg-blue-50',  text: 'text-blue-600',  border: 'hover:border-blue-200' },
     success: { bg: 'bg-emerald-50', text: 'text-emerald-600', border: 'hover:border-emerald-200' },
@@ -301,17 +331,28 @@ function KpiCard({ icon, label, value, accent, compact, onClick }) {
     danger:  { bg: 'bg-rose-50',    text: 'text-rose-600',   border: 'hover:border-rose-200' },
   };
   const a = accents[accent] || accents.royal;
+  const cardPadding = inline ? 'p-2' : compact ? 'p-3' : 'p-4';
+  const cardMinHeight = inline ? 'min-h-[72px]' : compact ? 'min-h-[80px]' : 'min-h-[110px]';
 
   return (
     <div 
       onClick={onClick}
-      className={`bg-white rounded-2xl border border-slate-100 p-4 shadow-soft transition-all flex flex-col justify-between min-h-[110px] ${onClick ? 'cursor-pointer hover:-translate-y-1' : ''} ${a.border}`}
+      className={`bg-white rounded-2xl border border-slate-100 ${cardPadding} shadow-soft transition-all flex flex-col justify-between ${cardMinHeight} ${onClick ? 'cursor-pointer hover:-translate-y-1' : ''} ${a.border}`}
     >
-      <div className={`w-8 h-8 rounded-lg ${a.bg} ${a.text} flex items-center justify-center mb-2`}>
-        {React.cloneElement(icon, { size: 16 })}
-      </div>
+      {inline ? (
+        <div className="flex items-center gap-2 mb-2">
+          <div className={`w-8 h-8 rounded-lg ${a.bg} ${a.text} flex items-center justify-center`}>
+            {React.cloneElement(icon, { size: 16 })}
+          </div>
+          <p className={`font-display font-black text-navy leading-none ${compact ? 'text-2xl' : 'text-3xl'}`}>{value}</p>
+        </div>
+      ) : (
+        <div className={`w-8 h-8 rounded-lg ${a.bg} ${a.text} flex items-center justify-center mb-2`}>
+          {React.cloneElement(icon, { size: 16 })}
+        </div>
+      )}
       <div>
-        <p className={`font-display font-black text-navy leading-none ${compact ? 'text-2xl' : 'text-3xl'}`}>{value}</p>
+        {!inline && <p className={`font-display font-black text-navy leading-none ${compact ? 'text-2xl' : 'text-3xl'}`}>{value}</p>}
         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{label}</p>
       </div>
     </div>
