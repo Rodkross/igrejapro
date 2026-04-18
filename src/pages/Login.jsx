@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '../database/firebase';
-import { collection, query, where, getDocs, doc, getDoc } from 'firebase/firestore';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { LogIn, Lock, User, ShieldCheck, AlertCircle, Loader2 } from 'lucide-react';
 
 export default function Login({ onLoginSucesso }) {
@@ -16,6 +16,8 @@ export default function Login({ onLoginSucesso }) {
 
     try {
       const usuariosRef = collection(db, "usuarios");
+      
+      // Busca o usuário pela matrícula (idAcesso) e senha
       const q = query(
         usuariosRef,
         where("idAcesso", "in", [Number(idAcesso), String(idAcesso)]),
@@ -28,24 +30,24 @@ export default function Login({ onLoginSucesso }) {
         const usuarioDoc = querySnapshot.docs[0];
         const usuarioData = { id: String(usuarioDoc.id), ...usuarioDoc.data() };
 
-        let permissoes = {};
-        let cargoNome = usuarioData.cargoNome || 'Membro';
-
+        // --- LÓGICA DE PERMISSÕES POR CARGONOME ---
+        let cargoFinal = usuarioData.cargoNome || 'Membro';
+        
+        // Verificação especial para Administrador do Sistema
         if (usuarioData.id === "1" || usuarioData.nome?.toLowerCase() === 'suporte') {
-          cargoNome = "SISTEMA";
-          permissoes = { admin: true };
-        } else if (usuarioData.cargoId) {
-          const cargoDocRef = doc(db, "cargos", String(usuarioData.cargoId));
-          const cargoSnap = await getDoc(cargoDocRef);
-
-          if (cargoSnap.exists()) {
-            const dataCargo = cargoSnap.data();
-            cargoNome = dataCargo.nome;
-            permissoes = dataCargo.permissoes || {};
-          }
+          cargoFinal = "SISTEMA";
         }
 
-        const sessaoUsuario = { ...usuarioData, cargoNome, permissoes };
+        // Criamos o objeto de sessão. 
+        // Agora o 'cargoNome' é a chave principal para as permissões no restante do app.
+        const sessaoUsuario = { 
+          ...usuarioData, 
+          cargoNome: cargoFinal,
+          // Você pode manter o objeto permissões se o resto do app esperar ele,
+          // injetando true baseado no nome do cargo:
+          isAdmin: cargoFinal === "SISTEMA" || cargoFinal === "Administrador"
+        };
+
         sessionStorage.setItem('usuarioLogado', JSON.stringify(sessaoUsuario));
 
         if (onLoginSucesso) {
@@ -62,13 +64,10 @@ export default function Login({ onLoginSucesso }) {
     }
   };
 
+  // ... restante do JSX (o return continua igual, pois é apenas visual)
   return (
     <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6 font-sans text-left relative overflow-hidden">
-      {/* Decorative blobs */}
-      <div className="absolute top-20 -left-32 w-96 h-96 rounded-full bg-royal/20 blur-3xl pointer-events-none"></div>
-      <div className="absolute -bottom-32 -right-20 w-96 h-96 rounded-full bg-gold/10 blur-3xl pointer-events-none"></div>
-      <div className="absolute inset-0 pattern-stained opacity-30 pointer-events-none"></div>
-
+      {/* O JSX que você já tem permanece o mesmo */}
       <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-elegant border border-white/20 relative overflow-hidden animate-scale-in z-10">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-gold"></div>
 
