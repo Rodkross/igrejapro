@@ -5,7 +5,7 @@ import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUni
 import {
   LayoutDashboard, Users, CreditCard, ChevronDown, ChevronUp,
   Settings, LogOut, User as UserIcon, CalendarDays, PlusCircle,
-  ArrowRightLeft, BarChart3, Trophy, Gamepad2
+  ArrowRightLeft, BarChart3, Trophy, Gamepad2, ArrowLeft
 } from 'lucide-react';
 import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
@@ -296,25 +296,33 @@ export default function Layout({ usuario, aoSair }) {
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-background">
-        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-40 shadow-elegant relative">
+        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          <div className="flex items-center gap-3 relative z-10 text-left">
+          {/* BOTÃO VOLTAR - ESQUERDA */}
+          {location.pathname !== '/' && (
+            <Link to="/" className="flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10">
+              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
+              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
+            </Link>
+          )}
+
+          {/* EVENTO AO VIVO - ESQUERDA */}
+          <div className={`flex items-center gap-1 relative z-10 text-left ${
+            location.pathname.startsWith('/cadastro') ? 'hidden md:flex' : 'flex'
+          }`}>
             {eventoAoVivo ? (
               <>
-                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-gold shadow-gold flex items-center justify-center bg-gold/10 backdrop-blur-sm text-left">
-                  {eventoAoVivo.bannerUrl ? <img src={eventoAoVivo.bannerUrl} alt="Ao Vivo" className="w-full h-full object-cover" /> : <div className="w-3 h-3 bg-gold rounded-full animate-pulse"></div>}
-                </div>
                 <div className="text-left flex flex-col justify-center">
-                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left"><span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse mr-1"></span>Acontecendo agora</p>
-                  <p className="font-display text-base font-bold text-white leading-none truncate max-w-[260px] text-left">{eventoAoVivo.titulo}</p>
+                  <p className="text-[8px] font-bold text-gold uppercase tracking-[0.2em] leading-none mb-0.5 text-left"><span className="w-2 h-2 rounded-full bg-gold animate-pulse mr-0.5 inline-block"></span>Ao vivo</p>
+                  <p className="font-display text-xs font-bold text-white leading-tight text-left">{eventoAoVivo.titulo}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 text-left"><CalendarDays size={18} className="text-gold" /></div>
+                <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 text-left"><CalendarDays size={14} className="text-gold" /></div>
                 <div className="text-left">
-                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left">
+                  <p className="text-[7px] font-bold text-gold uppercase tracking-[0.15em] leading-none mb-0.5 text-left">
                     {(() => {
                       const h = new Date().getHours();
                       if (h < 12) return 'Bom dia';
@@ -322,18 +330,15 @@ export default function Layout({ usuario, aoSair }) {
                       return 'Boa noite';
                     })()}
                   </p>
-                  <p className="font-display text-base font-bold text-white capitalize leading-none text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
+                  <p className="text-xs font-bold text-white capitalize leading-tight text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
                 </div>
               </>
             )}
           </div>
 
-          <div className="relative text-left" ref={userMenuRef}>
-            <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
-              <div className="text-right leading-none text-left">
-                <p className="font-display text-sm font-bold text-white leading-none text-left">{dadosSincronizados?.nome || 'Usuário'}</p>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none text-right">{dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Membro'}</p>
-              </div>
+          {/* AVATAR DO USUÁRIO - DIREITA */}
+          <div className="relative text-left ml-auto -mr-2" ref={userMenuRef}>
+            <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
               <div className="relative shrink-0 text-left">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden text-left">
                   {dadosSincronizados?.fotoUrl ? <img src={dadosSincronizados.fotoUrl} alt="Avatar" className="w-full h-full object-cover" /> : <UserIcon size={22} />}

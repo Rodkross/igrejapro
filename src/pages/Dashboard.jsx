@@ -3,16 +3,16 @@ import { useOutletContext, useNavigate } from 'react-router-dom';
 import { db } from '../database/firebase'; 
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import MeuConvenio from '../components/MeuConvenio';
+import PalavraDodia from '../components/PalavraDodia';
 import { 
   Users, TrendingUp, UserCheck, PieChart, CalendarDays, 
-  Cake, Loader2, Cross, Heart, X, HeartHandshake 
+  Cake, Loader2, Cross, Heart, X, HeartHandshake, Gamepad2, BookOpen, Church
 } from 'lucide-react';
 
 export default function Dashboard() {
   const { usuario: usuarioLogado } = useOutletContext();
   const navigate = useNavigate();
   
-  const [versiculo, setVersiculo] = useState({ texto: "Carregando palavra...", referencia: "" });
   const [usuarios, setUsuarios] = useState([]);
   const [programacao, setProgramacao] = useState([]);
   const [carregandoMembros, setCarregandoMembros] = useState(true);
@@ -33,8 +33,6 @@ export default function Dashboard() {
     const unsubProg = onSnapshot(qProg, (snapshot) => {
       const dias = { 'DOMINGO': 1, 'SEGUNDA': 2, 'TERÇA': 3, 'QUARTA': 4, 'QUINTA': 5, 'SEXTA': 6, 'SÁBADO': 7 };
       const agora = new Date();
-      const diaAtual = agora.getDay() + 1; // 1=domingo, 7=sábado
-      const horaAtual = agora.getHours() * 100 + agora.getMinutes(); // formato HHMM
       let listaProg = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       listaProg = listaProg.filter(p => {
         if (p.isEspecial) {
@@ -47,7 +45,7 @@ export default function Dashboard() {
 
             // Mantém o evento apenas se a data/hora atual for anterior à data de início.
             return agora < dataInicio;
-          } catch (e) {
+          } catch {
             return false; // Se houver erro no parsing da data, não exibe.
           }
         } else {
@@ -76,28 +74,6 @@ export default function Dashboard() {
       setProgramacao(listaProg);
     });
     return () => { unsubUsers(); unsubProg(); };
-  }, []);
-
-  useEffect(() => {
-    const obterVersiculo = async () => {
-      const HOJE = new Date().toLocaleDateString('pt-BR');
-      const cacheVersiculo = localStorage.getItem('versiculo_dia');
-      const cacheData = localStorage.getItem('versiculo_data');
-      if (cacheVersiculo && cacheData === HOJE) {
-        try { setVersiculo(JSON.parse(cacheVersiculo)); return; } catch { }
-      }
-      try {
-        const res = await fetch('https://bible-api.com/?random=verse&translation=almeida');
-        const data = await res.json();
-        const novaPalavra = { texto: data.text.replace(/\n/g, ' '), referencia: data.reference };
-        setVersiculo(novaPalavra);
-        localStorage.setItem('versiculo_dia', JSON.stringify(novaPalavra));
-        localStorage.setItem('versiculo_data', HOJE);
-      } catch (err) {
-        setVersiculo({ texto: "O SENHOR é o meu pastor; nada me faltará.", referencia: "Salmo 23:1" });
-      }
-    };
-    obterVersiculo();
   }, []);
 
   const hojeZerado = useMemo(() => {
@@ -169,94 +145,214 @@ export default function Dashboard() {
   }, [usuarios, hojeZerado]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-2 pb-12 px-4 text-left animate-fade-in-up">
+    <div className="space-y-4 pb-12 px-4 text-left animate-fade-in-up">
       
-      {/* TICKER — AGENDA */}
-      {programacao.length > 0 && (
-        <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-2 mb-0">
-           <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
-              <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
-           </div>
-           <div className="relative w-full overflow-hidden whitespace-nowrap">
-             <div className="animate-ticker inline-flex items-center gap-8 h-full text-white">
-               {[...programacao, ...programacao].map((p, i) => (
-                 <div key={`${p.id}-${i}`} className="flex items-center gap-2 shrink-0">
-                    <span className="font-bold text-xs text-white">{p.titulo}</span>
-                    <span className="text-[8px] font-bold bg-white/10 px-1.5 py-0.5 rounded text-slate-200">{p.horario}h</span>
-                    <span className="text-gold/30 text-[10px]">✦</span>
-                 </div>
-               ))}
-             </div>
-           </div>
-        </div>
-      )}
-
-      {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
-
-      {/* KPI GRID COMPACTO */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
-        <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
-        <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
-        <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
-        <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
-        <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+      {/* HEADER MOBILE - ÍCONE DA CONGREGAÇÃO E NOME */}
+      <div className="hidden md:flex flex-col gap-4">
+        {/* Desktop view mantém layout original */}
       </div>
 
-      {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col">
-          <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
-            <Cake size={18} className="text-gold" /> Aniversariantes do Mês
+      {/* MOBILE VIEW - OPTIMIZADO */}
+      <div className="block md:hidden space-y-4">
+        {/* Ícone da Congregação e Nome */}
+        <div className="bg-gradient-hero rounded-2xl p-4 flex items-center gap-4 border border-white/10 shadow-elegant">
+          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+            <Church size={24} className="text-gold" />
+          </div>
+          <div className="flex-1">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-widest">Sua Congregação</p>
+            <h2 className="font-display text-lg font-black text-white leading-tight">Igreja Pro</h2>
+          </div>
+          <button 
+            onClick={() => navigate('/cadastro/programacao')}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+            title="Ver Programação"
+          >
+            <CalendarDays size={18} className="text-gold" />
+          </button>
+        </div>
+
+        {/* CARD DO DESAFIO BÍBLICO */}
+        <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl p-5 border border-blue-500/30 text-center shadow-xl">
+          <div className="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center shadow-lg mx-auto mb-3">
+            <BookOpen size={28} />
+          </div>
+          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-[0.3em] mb-2">Desafio Bíblico</p>
+          <h3 className="font-display text-lg font-black text-white leading-tight mb-3 italic uppercase">
+            Quiz do<br/><span className="text-blue-400 text-xl">Reino</span>
           </h3>
-          <div className="overflow-y-auto space-y-2 pr-1 custom-scroll">
+          <button 
+            onClick={() => navigate('/entretenimento/quiz')}
+            className="w-full bg-white text-slate-900 font-black text-[9px] uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-blue-400 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+          >
+            <Gamepad2 size={14} /> Jogar Agora
+          </button>
+        </div>
+
+        {/* KPI GRID MOBILE */}
+        <div className="grid grid-cols-3 gap-2">
+          <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
+          <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
+          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+        </div>
+
+        {/* CARD ALMAS */}
+        <div className="bg-gradient-hero rounded-2xl p-4 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden">
+          <div className="relative z-10">
+            <p className="text-[8px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
+            <p className="font-display text-3xl font-black text-white leading-none">{stats.almasAno}</p>
+          </div>
+          <div className="h-8 w-px bg-white/20 mx-2"></div>
+          <div className="text-right relative z-10">
+            <p className="text-[7px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
+            <div className="text-base font-bold text-white leading-none">
+              <span className="text-gold">{stats.novosAno}</span>
+              <span className="text-white/20 mx-1">/</span>
+              <span className="text-green-400">{stats.retornoAno}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* PALAVRA DO DIA */}
+        <PalavraDodia />
+
+        {/* MEU CONVÊNIO */}
+        {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
+
+        {/* ANIVERSARIANTES */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-soft flex flex-col">
+          <h3 className="font-display text-base font-black text-navy mb-3 flex items-center gap-2 shrink-0">
+            <Cake size={16} className="text-gold" /> Aniversários
+          </h3>
+          <div className="overflow-y-auto space-y-2 pr-1">
             {proximosAniversariantes.length > 0 ? (
-              proximosAniversariantes.map(u => (
-                <div key={u.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
+              proximosAniversariantes.slice(0, 5).map(u => (
+                <div key={u.id} className={`flex items-center justify-between p-2 rounded-lg border text-[10px] transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent'}`}>
+                  <div className="flex items-center gap-2">
                     <div className="shrink-0">
-                        {u.fotoUrl ? (
-                            <img src={u.fotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white shadow-sm" />
-                        ) : (
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
-                              {u.nome?.charAt(0)}
-                            </div>
-                        )}
+                      {u.fotoUrl ? (
+                        <img src={u.fotoUrl} alt="" className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm" />
+                      ) : (
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
+                          {u.nome?.charAt(0)}
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-navy leading-tight">{u.nome}</p>
-                      <p className="text-[10px] text-slate-500 font-medium uppercase italic">
-                        {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} • {u.idadeNova} anos
-                      </p>
+                      <p className="font-bold text-navy leading-tight truncate">{u.nome}</p>
+                      <p className="text-[8px] text-slate-400 uppercase">{u.idadeNova} anos</p>
                     </div>
                   </div>
                   <div className="text-right">
                     {u.diasPara === 0 ? (
-                      <span className="text-[10px] font-black text-gold-dark bg-gold/20 px-2 py-1 rounded-lg animate-pulse">HOJE! 🎂</span>
+                      <span className="text-[8px] font-black text-gold bg-gold/20 px-1.5 py-0.5 rounded">HOJE 🎂</span>
                     ) : (
-                      <div className="flex flex-col items-end leading-none">
-                        <span className="text-xs font-black text-royal">{u.diasPara}</span>
-                        <span className="text-[8px] text-slate-400 font-bold uppercase">dias</span>
-                      </div>
+                      <span className="font-black text-royal">{u.diasPara}d</span>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center py-10 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Nenhum aniversário próximo</p>
+              <p className="text-center py-4 text-slate-400 text-[9px] font-bold uppercase">Nenhum aniversário próximo</p>
             )}
           </div>
         </div>
+      </div>
 
-        <div className="flex flex-col gap-4">
-          {/* CARD ALMAS */}
-          <div className="bg-gradient-hero rounded-2xl p-3 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px]">
-             <div className="relative z-10">
+      {/* DESKTOP VIEW - LAYOUT ORIGINAL */}
+      <div className="hidden md:block space-y-4">
+        {/* TICKER — AGENDA */}
+        {programacao.length > 0 && (
+          <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-2 mb-0">
+            <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
+              <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
+            </div>
+            <div className="relative w-full overflow-hidden whitespace-nowrap">
+              <div className="animate-ticker inline-flex items-center gap-8 h-full text-white">
+                {[...programacao, ...programacao].map((p, i) => (
+                  <div key={`${p.id}-${i}`} className="flex items-center gap-2 shrink-0">
+                    <span className="font-bold text-xs text-white">{p.titulo}</span>
+                    <span className="text-[8px] font-bold bg-white/10 px-1.5 py-0.5 rounded text-slate-200">{p.horario}h</span>
+                    <span className="text-gold/30 text-[10px]">✦</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
+
+        {/* KPI GRID COMPACTO */}
+        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+          <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
+          <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
+          <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
+          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+        </div>
+
+        {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+          <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col">
+            <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
+              <Cake size={18} className="text-gold" /> Aniversariantes do Mês
+            </h3>
+            <div className="overflow-y-auto space-y-2 pr-1 custom-scroll">
+              {proximosAniversariantes.length > 0 ? (
+                proximosAniversariantes.map(u => (
+                  <div key={u.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                    <div className="flex items-center gap-3">
+                      <div className="shrink-0">
+                        {u.fotoUrl ? (
+                          <img src={u.fotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white shadow-sm" />
+                        ) : (
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
+                            {u.nome?.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div>
+                        <p className="text-sm font-bold text-navy leading-tight">{u.nome}</p>
+                        <p className="text-[10px] text-slate-500 font-medium uppercase italic">
+                          {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} • {u.idadeNova} anos
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      {u.diasPara === 0 ? (
+                        <span className="text-[10px] font-black text-gold-dark bg-gold/20 px-2 py-1 rounded-lg animate-pulse">HOJE! 🎂</span>
+                      ) : (
+                        <div className="flex flex-col items-end leading-none">
+                          <span className="text-xs font-black text-royal">{u.diasPara}</span>
+                          <span className="text-[8px] text-slate-400 font-bold uppercase">dias</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center py-10 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Nenhum aniversário próximo</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            {/* CARD ALMAS */}
+            <div className="bg-gradient-hero rounded-2xl p-3 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px]">
+              <div className="relative z-10">
                 <p className="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
                 <p className="font-display text-4xl font-black text-white leading-none">{stats.almasAno}</p>
-             </div>
-             <div className="h-8 w-px bg-white/20 mx-2"></div>
-             <div className="text-right relative z-10">
+              </div>
+              <div className="h-8 w-px bg-white/20 mx-2"></div>
+              <div className="text-right relative z-10">
                 <p className="text-[8px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
                 <div className="text-lg font-bold text-white leading-none">
                   <span className="text-gold">{stats.novosAno}</span>
@@ -264,17 +360,11 @@ export default function Dashboard() {
                   <span className="text-green-400">{stats.retornoAno}</span>
                 </div>
                 <p className="text-[7px] text-slate-400 font-bold uppercase mt-1">Novo / Retorno</p>
-             </div>
-          </div>
-
-          {/* PALAVRA DO DIA */}
-          <div className="bg-navy-deep rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between flex-1 shadow-elegant">
-            <div className="relative z-10">
-              <span className="text-gold font-bold text-[9px] uppercase tracking-widest border-b border-gold/30 pb-1">✦ Palavra do Dia</span>
-              <p className="font-display italic text-base mt-4 text-slate-100 leading-relaxed">"{versiculo.texto}"</p>
+              </div>
             </div>
-            <div className="relative z-10 pt-4"><p className="text-gold font-bold text-[10px] tracking-widest">— {versiculo.referencia}</p></div>
-            <Cross className="absolute -bottom-6 -right-6 text-white opacity-[0.03]" size={150} />
+
+            {/* PALAVRA DO DIA */}
+            <PalavraDodia />
           </div>
         </div>
       </div>

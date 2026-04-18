@@ -167,7 +167,8 @@ export default function Programacao() {
   };
 
   return (
-    <div className="max-w-[1600px] mx-auto p-4 pb-32 space-y-8 text-left italic font-sans">
+    <div className="w-full flex flex-col items-center p-4 pb-32 space-y-8 text-left italic font-sans">
+      <div className="w-full max-w-7xl space-y-8">
       
       <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
         <div>
@@ -280,9 +281,11 @@ export default function Programacao() {
             <h3 className="text-sm font-black text-amber-500 uppercase tracking-[0.3em] flex items-center gap-3 italic">
                <Star size={20} className="fill-amber-500"/> Destaques
             </h3>
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 w-full justify-items-center">
               {programacoes.filter(p => p.isEspecial).map(evento => (
-                <CardEvento key={evento.id} evento={evento} especial aoEditar={() => iniciarEdicao(evento)} isPodeEditar={isPodeEditar} onExpandirImagem={setImagemExpandida} />
+                <div key={evento.id} className="w-full max-w-sm">
+                  <CardEvento evento={evento} especial aoEditar={() => iniciarEdicao(evento)} isPodeEditar={isPodeEditar} onExpandirImagem={setImagemExpandida} />
+                </div>
               ))}
             </div>
           </div>
@@ -297,14 +300,17 @@ export default function Programacao() {
                  <div className="h-1.5 w-10 bg-blue-500 rounded-full text-left"></div>
                  <h3 className="text-lg font-black text-slate-400 uppercase tracking-[0.3em] italic text-left">{dia}</h3>
               </div>
-              <div className="grid grid-cols-[repeat(auto-fill,minmax(380px,1fr))] gap-8 text-left">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 text-left w-full justify-items-center">
                 {eventosNoDia.map(evento => (
-                  <CardEvento key={evento.id} evento={evento} aoEditar={() => iniciarEdicao(evento)} isPodeEditar={isPodeEditar} onExpandirImagem={setImagemExpandida} />
+                  <div key={evento.id} className="w-full max-w-sm">
+                    <CardEvento evento={evento} aoEditar={() => iniciarEdicao(evento)} isPodeEditar={isPodeEditar} onExpandirImagem={setImagemExpandida} />
+                  </div>
                 ))}
               </div>
             </div>
           );
         })}
+      </div>
       </div>
 
       {imagemExpandida && (
