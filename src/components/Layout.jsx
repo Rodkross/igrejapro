@@ -5,7 +5,7 @@ import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUni
 import {
   LayoutDashboard, Users, CreditCard, ChevronDown, ChevronUp,
   Settings, LogOut, User as UserIcon, CalendarDays, PlusCircle,
-  ArrowRightLeft, BarChart3
+  ArrowRightLeft, BarChart3, Trophy, Gamepad2
 } from 'lucide-react';
 import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
@@ -62,11 +62,7 @@ export default function Layout({ usuario, aoSair }) {
       }
 
       try {
-        const q = query(
-          collection(db, "programacaoSemanal"), 
-          where("isEspecial", "==", true)
-        );
-        
+        const q = query(collection(db, "programacaoSemanal"), where("isEspecial", "==", true));
         const querySnapshot = await getDocs(q);
         const agora = new Date();
         const listaCompleta = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -108,18 +104,12 @@ export default function Layout({ usuario, aoSair }) {
     if (dadosSincronizados?.id && eventoId) {
       try {
         const userRef = doc(db, "usuarios", String(dadosSincronizados.id));
-        await updateDoc(userRef, {
-          avisosVistos: arrayUnion(eventoId)
-        });
-      } catch (err) {
-        console.error("Erro ao silenciar aviso:", err);
-      }
+        await updateDoc(userRef, { avisosVistos: arrayUnion(eventoId) });
+      } catch (err) { console.error("Erro ao silenciar aviso:", err); }
     }
   };
 
-  const fecharVariosModais = () => {
-    setExibirModalEspecial(false);
-  };
+  const fecharVariosModais = () => setExibirModalEspecial(false);
 
   // --- VERIFICAÇÃO DE EVENTO AO VIVO ---
   useEffect(() => {
@@ -146,20 +136,16 @@ export default function Layout({ usuario, aoSair }) {
         setEventoAoVivo(ativo || null);
       };
       verificarAoVivo();
-      if (inter) clearInterval(inter);
       inter = setInterval(verificarAoVivo, 60000);
     });
-    return () => { unsub(); if (inter) clearInterval(inter); };
+    return () => { unsub(); clearInterval(inter); };
   }, []);
 
   const temAcesso = (modulo) => {
     const userAtual = dadosSincronizados;
-    if (String(userAtual?.id) === "1" && modulo === 'convenio') return false;
     const nome = userAtual?.nome?.toLowerCase() || '';
     const cargo = userAtual?.cargoNome?.toLowerCase() || '';
-    if (String(userAtual?.id) === "1" || nome === 'rodrigo' || cargo.includes('pastor') || cargo.includes('admin')) {
-      return true;
-    }
+    if (String(userAtual?.id) === "1" || nome === 'rodrigo' || cargo.includes('pastor') || cargo.includes('admin')) return true;
     return userAtual?.permissoes && userAtual?.permissoes[modulo] === true;
   };
 
@@ -184,6 +170,7 @@ export default function Layout({ usuario, aoSair }) {
   return (
     <div className="flex min-h-screen bg-background font-sans">
       
+      {/* MODAIS GLOBAIS */}
       {exibirModalEspecial && !verificandoDestaques && (
         <ModalDestaque eventos={eventosEspeciais} aoSilenciar={silenciarEvento} aoFechar={fecharVariosModais} />
       )}
@@ -192,6 +179,7 @@ export default function Layout({ usuario, aoSair }) {
         <AniversarioOverlay nome={formatarNome(dadosSincronizados?.nome)} onFinalizar={finalizarAniversario} DURACAO_MS={DURACAO_ANIMACAO} />
       )}
 
+      {/* SIDEBAR ROYAL */}
       <aside className="w-64 hidden md:flex flex-col shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
         <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
@@ -204,21 +192,21 @@ export default function Layout({ usuario, aoSair }) {
           )}
           <div className="leading-tight">
             <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
-            <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5">Gestão Pastoral</p>
+            <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5 text-left">Gestão Pastoral</p>
           </div>
         </div>
 
         <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto relative text-left">
           <Link to="/" className={navLinkClass('/')}>
             <LayoutDashboard size={18} />
-            <span className="font-bold uppercase text-[11px] tracking-widest leading-none">Dashboard</span>
-            {isActive('/') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold"></span>}
+            <span className="font-bold uppercase text-[11px] tracking-widest leading-none text-left">Dashboard</span>
+            {isActive('/') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
           </Link>
 
-          {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('planoContas') || temAcesso('contas') || temAcesso('cantina') || temAcesso('programacao')) && (
+          {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('programacao')) && (
             <div className="space-y-1 pt-2 text-left">
               <button onClick={() => setMenuCadastroAberto(!menuCadastroAberto)} className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none">
-                <div className="flex items-center gap-3"><Settings size={18} /><span className="font-bold uppercase text-[11px] tracking-widest">Cadastros</span></div>
+                <div className="flex items-center gap-3"><Settings size={18} /><span className="font-bold uppercase text-[11px] tracking-widest text-left">Cadastros</span></div>
                 {menuCadastroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuCadastroAberto && (
@@ -226,9 +214,6 @@ export default function Layout({ usuario, aoSair }) {
                   {temAcesso('programacao') && <Link to="/cadastro/programacao" className={subLinkClass('/cadastro/programacao')}>Programação</Link>}
                   {temAcesso('usuarios') && <Link to="/cadastro/usuarios" className={subLinkClass('/cadastro/usuarios')}>Membros</Link>}
                   {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Cargos</Link>}
-                  {temAcesso('planoContas') && <Link to="/cadastro/plano-contas" className={subLinkClass('/cadastro/plano-contas')}>Plano Contas</Link>}
-                  {temAcesso('contas') && <Link to="/cadastro/contas" className={subLinkClass('/cadastro/contas')}>Fornecedores</Link>}
-                  {temAcesso('cantina') && <Link to="/cadastro/cantina" className={subLinkClass('/cadastro/cantina')}>Produtos Cantina</Link>}
                 </div>
               )}
             </div>
@@ -237,74 +222,68 @@ export default function Layout({ usuario, aoSair }) {
           {temAcesso('fluxo') && (
             <div className="space-y-1 pt-2 text-left">
               <button onClick={() => setMenuFinanceiroAberto(!menuFinanceiroAberto)} className="w-full flex items-center justify-between px-4 py-3 text-slate-400 hover:bg-white/5 hover:text-white rounded-2xl transition-all outline-none text-left">
-                <div className="flex items-center gap-3"><CreditCard size={18} /><span className="font-bold uppercase text-[11px] tracking-widest">Financeiro</span></div>
+                <div className="flex items-center gap-3"><CreditCard size={18} /><span className="font-bold uppercase text-[11px] tracking-widest text-left">Financeiro</span></div>
                 {menuFinanceiroAberto ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
               </button>
               {menuFinanceiroAberto && (
                 <div className="ml-5 pl-3 border-l border-white/10 py-1 space-y-0.5 text-left">
                   <Link to="/financeiro/fluxo" className={subLinkClass('/financeiro/fluxo')}>Fluxo de Caixa</Link>
                   <Link to="/financeiro/lancamentos" className={subLinkClass('/financeiro/lancamentos')}>Lançamentos</Link>
-                  <Link to="/financeiro/transferencias" className={subLinkClass('/financeiro/transferencias')}>Transferências</Link>
-                  <Link to="/financeiro/pagar" className={subLinkClass('/financeiro/pagar')}>Contas a Pagar</Link>
-                  <Link to="/financeiro/receber" className={subLinkClass('/financeiro/receber')}>Contas a Receber</Link>
-                  <Link to="/financeiro/convenio" className={subLinkClass('/financeiro/convenio')}>Convênio Cantina</Link>
                 </div>
               )}
             </div>
           )}
-
-          {temAcesso('relatorios') && (
-            <Link to="/financeiro/relatorios" className={navLinkClass('/financeiro/relatorios')}>
-              <BarChart3 size={18} />
-              <span className="font-bold uppercase text-[11px] tracking-widest leading-none">Relatórios BI</span>
-              {isActive('/financeiro/relatorios') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold"></span>}
-            </Link>
-          )}
         </nav>
 
-        {/* CARD PALAVRA DO DIA ESTILO DASHBOARD */}
+        {/* CARD DE ENTRETENIMENTO (QUIZ BÍBLICO) INTEGRADO NA SIDEBAR */}
         <div className="p-4 border-t border-white/5 relative">
-          <div className="bg-slate-900 rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl min-h-[160px] flex flex-col justify-center text-left">
-            <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none">
+          <div className="bg-slate-900 rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl min-h-[160px] flex flex-col justify-center text-left group cursor-pointer hover:border-gold/30 transition-all">
+            <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
               <PlusCircle size={100} strokeWidth={1} className="text-white" />
             </div>
             <div className="relative z-10">
-              <div className="flex items-center gap-2 mb-2.5">
-                <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></div>
-                <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em]">Palavra do Dia</p>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></div>
+                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em]">Quiz do Reino</p>
+                </div>
+                <span className="bg-gold text-navy text-[8px] font-black px-2 py-0.5 rounded-full uppercase tracking-tighter shadow-gold">Novo</span>
               </div>
-              <p className="font-display italic text-[11.5px] text-white/90 leading-relaxed font-medium mb-3">
-                "Depois me levou ao átrio interior, que olha para o oriente; e mediu a porta conforme estas medidas;"
-              </p>
-              <div className="flex items-center gap-2">
-                <div className="h-[1px] w-4 bg-gold/50"></div>
-                <p className="text-[10px] text-gold font-bold uppercase tracking-widest leading-none">Ezequiel 40:32</p>
-              </div>
+              
+              <h2 className="font-display text-lg font-black text-white leading-tight mb-2 italic uppercase tracking-tighter">
+                Desafio<br/><span className="text-gold text-xl">Bíblico</span>
+              </h2>
+              
+              <Link 
+                to="/entretenimento/quiz" 
+                className="mt-2 inline-flex items-center gap-2 bg-white text-navy font-black text-[9px] uppercase tracking-widest px-4 py-2 rounded-xl hover:bg-gold transition-all shadow-xl active:scale-95"
+              >
+                <Gamepad2 size={12} /> Jogar Agora
+              </Link>
             </div>
           </div>
         </div>
       </aside>
 
+      {/* CONTEÚDO PRINCIPAL */}
       <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-background">
-        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-40 shadow-elegant relative text-left">
+        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
           <div className="flex items-center gap-3 relative z-10 text-left">
             {eventoAoVivo ? (
               <>
-                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-gold shadow-gold flex items-center justify-center bg-gold/10 backdrop-blur-sm">
+                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-gold shadow-gold flex items-center justify-center bg-gold/10 backdrop-blur-sm text-left">
                   {eventoAoVivo.bannerUrl ? <img src={eventoAoVivo.bannerUrl} alt="Ao Vivo" className="w-full h-full object-cover" /> : <div className="w-3 h-3 bg-gold rounded-full animate-pulse"></div>}
                 </div>
                 <div className="text-left flex flex-col justify-center">
-                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 flex items-center gap-1.5 text-left"><span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse"></span>Acontecendo agora</p>
+                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left"><span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse mr-1"></span>Acontecendo agora</p>
                   <p className="font-display text-base font-bold text-white leading-none truncate max-w-[260px] text-left">{eventoAoVivo.titulo}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10">
-                  <CalendarDays size={18} className="text-gold" />
-                </div>
+                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 text-left"><CalendarDays size={18} className="text-gold" /></div>
                 <div className="text-left">
                   <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left">
                     {(() => {
@@ -314,25 +293,20 @@ export default function Layout({ usuario, aoSair }) {
                       return 'Boa noite';
                     })()}
                   </p>
-                  <p className="font-display text-base font-bold text-white capitalize leading-none text-left">
-                    {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
-                  </p>
+                  <p className="font-display text-base font-bold text-white capitalize leading-none text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
                 </div>
               </>
             )}
           </div>
 
           <div className="relative text-left" ref={userMenuRef}>
-            <button 
-              onClick={() => setUserMenuAberto(!userMenuAberto)} 
-              className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50"
-            >
+            <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
               <div className="text-right leading-none text-left">
                 <p className="font-display text-sm font-bold text-white leading-none text-left">{dadosSincronizados?.nome || 'Usuário'}</p>
                 <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none text-right">{dadosSincronizados?.cargoNome || 'Membro'}</p>
               </div>
               <div className="relative shrink-0 text-left">
-                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden">
+                <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden text-left">
                   {dadosSincronizados?.fotoUrl ? <img src={dadosSincronizados.fotoUrl} alt="Avatar" className="w-full h-full object-cover" /> : <UserIcon size={22} />}
                 </div>
                 <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-gold border-2 border-navy rounded-full flex items-center justify-center text-navy shadow-sm transition-transform duration-300 ${userMenuAberto ? 'rotate-180' : ''}`}>
@@ -344,16 +318,9 @@ export default function Layout({ usuario, aoSair }) {
             {userMenuAberto && (
               <div className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
                 {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
-                  <button
-                    onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }}
-                    className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left mb-1"
-                  >
-                    <Settings size={16} /> Configurações
-                  </button>
+                  <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left mb-1"><Settings size={16} /> Configurações</button>
                 )}
-                <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-danger hover:bg-danger/5 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
-                  <LogOut size={16} /> Sair do Sistema
-                </button>
+                <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-danger hover:bg-danger/5 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left"><LogOut size={16} /> Sair do Sistema</button>
               </div>
             )}
           </div>
