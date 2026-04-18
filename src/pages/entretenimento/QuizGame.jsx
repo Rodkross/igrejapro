@@ -179,29 +179,56 @@ export default function QuizGame() {
         </div>
       </div>
 
-      <div className="bg-slate-900 rounded-[3rem] p-8 border border-white/5 text-left relative overflow-hidden shadow-2xl">
-        <h3 className="text-xl md:text-2xl font-black text-white mb-10 relative z-10 text-left leading-tight tracking-tight">"{perguntas[indiceAtual]?.pergunta}"</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 relative z-10 text-left">
-          {perguntas[indiceAtual]?.opcoes.map((op, i) => (
-            <button key={i} disabled={respondido} onClick={() => validarResposta(op)}
-              className={`p-6 rounded-2xl border-2 font-black text-left transition-all min-h-[80px] ${respondido ? (op === perguntas[indiceAtual].resposta_correta ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500' : (op === opcaoSelecionada ? 'bg-rose-500/10 border-rose-500 text-rose-500' : 'opacity-10 border-white/5')) : 'bg-white/5 border-white/10 text-slate-300 hover:border-gold/40'}`}>
-              <span className="text-left leading-tight">{op}</span>
-            </button>
-          ))}
+      <div className={`bg-slate-900 rounded-[3rem] transition-all duration-500 border border-white/5 text-left relative overflow-hidden shadow-2xl ${respondido ? 'p-6 md:p-8' : 'p-8'}`}>
+        <h3 className={`font-black text-white relative z-10 text-left leading-tight tracking-tight transition-all duration-300 ${respondido ? 'text-lg md:text-xl mb-4' : 'text-xl md:text-2xl mb-10'}`}>"{perguntas[indiceAtual]?.pergunta}"</h3>
+        <div className={`grid grid-cols-1 md:grid-cols-2 relative z-10 text-left transition-all duration-300 ${respondido ? 'gap-2 md:gap-3' : 'gap-4'}`}>
+          {perguntas[indiceAtual]?.opcoes.map((op, i) => {
+            const isSelected = op === opcaoSelecionada;
+            const isCorrect = op === perguntas[indiceAtual].resposta_correta;
+            
+            // Lógica UX: Quando respondido, as opções erradas que não foram selecionadas ficam menores para economizar espaço
+            const isUnessential = respondido && !isSelected && !isCorrect;
+
+            return (
+              <button key={i} disabled={respondido} onClick={() => validarResposta(op)}
+                className={`rounded-2xl border-2 font-black text-left transition-all duration-300 flex items-center justify-between
+                ${respondido 
+                  ? (isCorrect 
+                      ? 'bg-emerald-500/10 border-emerald-500 text-emerald-500 p-4 md:p-5 min-h-[60px]' 
+                      : (isSelected 
+                          ? 'bg-rose-500/10 border-rose-500 text-rose-500 p-4 md:p-5 min-h-[60px]' 
+                          : 'opacity-40 border-white/5 text-slate-500 p-3 min-h-[40px] text-xs md:text-sm'
+                        )
+                    ) 
+                  : 'bg-white/5 border-white/10 text-slate-300 hover:border-gold/40 p-6 min-h-[80px]'
+                } ${isUnessential ? 'hidden md:flex' : 'flex'}`}>
+                <span className="text-left leading-tight pr-2">{op}</span>
+                {respondido && (
+                  <div className="flex-shrink-0">
+                    {isCorrect && <CheckCircle2 size={isUnessential ? 16 : 20} className="text-emerald-500 animate-in zoom-in" />}
+                    {isSelected && !isCorrect && <XCircle size={20} className="text-rose-500 animate-in zoom-in" />}
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
 
         {respondido && (
-          <div className="mt-10 space-y-4 animate-in slide-in-from-bottom-3 duration-500 text-left">
-            <div className="p-6 bg-gold/5 rounded-2xl border-l-4 border-gold text-left">
-              <p className="text-gold text-[10px] font-black uppercase tracking-widest mb-1 text-left">Fonte da Verdade</p>
-              <p className="text-white font-black italic text-lg leading-snug text-left">{perguntas[indiceAtual].referencia}</p>
+          <div className="mt-4 space-y-3 animate-in slide-in-from-bottom-3 duration-500 text-left relative z-20">
+            <div className="p-4 md:p-5 bg-gold/5 rounded-2xl border-l-4 border-gold text-left flex flex-col justify-center">
+              <p className="text-gold text-[9px] md:text-[10px] font-black uppercase tracking-widest mb-1 text-left">Fonte da Verdade</p>
+              <p className="text-white font-bold italic text-sm md:text-lg leading-snug text-left">{perguntas[indiceAtual].referencia}</p>
             </div>
-            <button onClick={proximaQuestao} className="w-full bg-gold text-navy font-black py-5 rounded-xl uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl">
-              Próxima Questão <ArrowRight size={20}/>
-            </button>
-            <button onClick={() => setGameOver(true)} className="w-full bg-white/5 text-white/40 font-black py-3 rounded-xl uppercase text-[10px] tracking-widest hover:bg-rose-500/20 hover:text-rose-500 transition-all shadow-none">
-              Parar e Ver Ranking
-            </button>
+            
+            <div className="flex flex-col sm:flex-row gap-3 mt-2">
+              <button onClick={proximaQuestao} className="w-full sm:flex-1 bg-gold text-navy font-black py-3 md:py-4 rounded-xl uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl text-sm md:text-base">
+                Próxima Questão <ArrowRight size={18}/>
+              </button>
+              <button onClick={() => setGameOver(true)} className="w-full sm:w-auto bg-white/5 text-white/40 font-black py-3 md:py-4 px-6 rounded-xl uppercase text-[10px] tracking-widest hover:bg-rose-500/20 hover:text-rose-500 transition-all shadow-none">
+                Parar e Ver Ranking
+              </button>
+            </div>
           </div>
         )}
       </div>
