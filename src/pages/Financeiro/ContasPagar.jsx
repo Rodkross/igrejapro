@@ -5,7 +5,7 @@ import {
   addDoc, deleteDoc, doc, writeBatch, updateDoc
 } from 'firebase/firestore';
 import {
-  CheckCircle, Trash2, Plus, Loader2,
+  CheckCircle, Trash2, ArrowUpCircle, Plus, Loader2,
   Search, CreditCard, CheckSquare, Square,
   MessageSquare, Hash, X, Calendar, Edit
 } from 'lucide-react';
@@ -212,15 +212,13 @@ export default function ContasPagar() {
 
   return (
     <div className="max-w-7xl mx-auto p-4 pb-32 space-y-8 text-left bg-slate-50/30 min-h-screen font-sans italic">
-      <header className="flex flex-col lg:flex-row justify-between items-center border-b-2 border-slate-100 pb-6 gap-4 italic">
-        <div className="flex items-center gap-4 w-full lg:w-auto">
-          <div className="p-3 bg-slate-900 rounded-2xl text-white shadow-xl">
-            <CreditCard size={32} />
-          </div>
-          <div>
-            <h1 className="text-3xl font-black text-slate-900 uppercase italic tracking-tighter leading-none">Contas a Pagar</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 italic">Fluxo de Saídas e Compromissos</p>
-          </div>
+      <header className="flex flex-col lg:flex-row justify-between items-center border-b-2 border-slate-100 pb-6 gap-4 text-left">
+        <div className="w-full lg:w-auto">
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <ArrowUpCircle className="text-blue-600" size={28} />
+            Contas a Pagar
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Fluxo de Saídas e Compromissos</p>
         </div>
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full lg:w-auto lg:min-w-[520px]">
           <div className="relative flex-1 italic">

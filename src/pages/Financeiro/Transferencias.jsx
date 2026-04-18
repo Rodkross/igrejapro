@@ -109,16 +109,15 @@ export default function Transferencias() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 text-left italic">
-      {/* HEADER */}
-      <div className="flex items-center gap-4">
-        <div className="bg-blue-600 p-3 rounded-[1.2rem] text-white shadow-lg shadow-blue-100">
-          <ArrowRightLeft size={28} />
-        </div>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter leading-none">Transferência entre Contas</h1>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Movimentação interna de recursos</p>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <ArrowRightLeft className="text-blue-600" size={28} />
+            Transferência entre Contas
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Movimentação interna de recursos</p>
         </div>
-      </div>
+      </header>
 
       {/* FORMULÁRIO */}
       <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">

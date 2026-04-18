@@ -5,7 +5,7 @@ import {
   addDoc, doc, updateDoc, getDocs, limit, writeBatch, serverTimestamp
 } from 'firebase/firestore';
 import { 
-  Search, Banknote, Landmark, ChevronDown, ChevronRight, 
+  Search, Banknote, Landmark, ChevronDown, ChevronRight, ArrowDownCircle,
   ReceiptText, Wallet, Loader2, CheckSquare, Square, Star, AlertCircle
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
@@ -194,9 +194,12 @@ export default function ContasReceber() {
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-32 p-4 text-left font-sans italic min-h-screen bg-slate-50/20">
       <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
-        <div className="text-left flex items-center gap-3">
-            <div className="p-2.5 bg-slate-900 rounded-2xl text-white shadow-xl"><ReceiptText size={28} /></div>
-            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter italic">Contas a Receber</h1>
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <ArrowDownCircle className="text-blue-600" size={28} />
+            Contas a Receber
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Controle de Mensalidades e Acertos</p>
         </div>
         <div className="flex bg-white border border-slate-200 p-1.5 rounded-2xl gap-1 italic">
           {['aberto', 'pago'].map(s => (

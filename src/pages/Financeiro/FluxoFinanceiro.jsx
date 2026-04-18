@@ -7,7 +7,7 @@ import {
 import { 
     Wallet, Landmark, Banknote, RotateCcw, 
     ArrowRightLeft, ShoppingCart, 
-    Loader2, Ban, Search, History
+    Loader2, Ban, Search, History, Activity
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
@@ -123,13 +123,13 @@ export default function FluxoFinanceiro() {
     return (
         <div className="max-w-7xl mx-auto space-y-8 pb-12 p-4 text-left bg-slate-50/30 min-h-screen font-sans italic">
             {/* HEADER COM FILTRO DE AUDITORIA */}
-            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6">
-                <div className="flex items-center gap-3">
-                    <div className="p-2.5 bg-slate-900 rounded-2xl text-white shadow-xl"><ArrowRightLeft size={28} /></div>
-                    <div>
-                        <h1 className="text-3xl font-black text-slate-900 uppercase leading-none">Fluxo de Caixa</h1>
-                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-[0.2em] mt-2 italic">Auditoria e Conciliação</p>
-                    </div>
+            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+                <div>
+                    <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+                        <Activity className="text-blue-600" size={28} />
+                        Fluxo de Caixa
+                    </h1>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Auditoria e Conciliação</p>
                 </div>
 
                 <div className="flex bg-white border-2 border-slate-100 p-1.5 rounded-2xl gap-1">

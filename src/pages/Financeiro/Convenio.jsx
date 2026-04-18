@@ -5,7 +5,7 @@ import {
   addDoc, deleteDoc, doc, updateDoc, serverTimestamp, orderBy, getDocs
 } from 'firebase/firestore';
 import { 
-  ShoppingCart, Trash2, ChevronRight, ChevronDown, 
+  ShoppingCart, Trash2, ChevronRight, ChevronDown, CreditCard,
   Minus, Plus, Edit3, Loader2, Wallet, Star, Search, ListFilter, AlertCircle, Eye, EyeOff, X
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
@@ -146,15 +146,13 @@ export default function Convenio() {
     <div className="max-w-7xl mx-auto space-y-6 p-4 text-left font-sans italic">
       
       {/* HEADER INTEGRADO */}
-      <header className="bg-white p-4 md:p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4 w-full md:w-auto">
-          <div className="bg-slate-900 p-3 rounded-2xl text-white shadow-lg shrink-0">
-            <ShoppingCart size={24} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 uppercase leading-none italic">Cantina</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Gestão Fiado</p>
-          </div>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <CreditCard className="text-blue-600" size={28} />
+            Cantina Fiados
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Controle e Fechamento de Contas</p>
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto justify-end">

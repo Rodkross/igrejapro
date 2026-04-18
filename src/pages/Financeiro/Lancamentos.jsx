@@ -15,7 +15,8 @@ import {
   ArrowRightLeft, 
   Loader2,
   CheckCircle2,
-  Banknote
+  Banknote,
+  FileText
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
@@ -88,19 +89,17 @@ export default function Lancamentos() {
     <div className="max-w-7xl mx-auto space-y-6 pb-12 text-left italic">
       
       {/* CABEÇALHO PADRONIZADO */}
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
-          <div className="bg-slate-900 p-3 rounded-[1.2rem] text-white shadow-lg shadow-slate-200">
-            <ArrowRightLeft size={28} />
-          </div>
-          <div>
-            <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter leading-none">Lançamentos Diretos</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">
-              Operador: <span className="text-blue-600">{usuario?.nome}</span>
-            </p>
-          </div>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <FileText className="text-blue-600" size={28} />
+            Lançamentos Diretos
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">
+            Operador: <span className="text-blue-600">{usuario?.nome}</span>
+          </p>
         </div>
-      </div>
+      </header>
 
       {/* BOX DE FORMULÁRIO AMPLO */}
       <div className="bg-white p-10 rounded-[2.5rem] border border-slate-100 shadow-sm relative overflow-hidden">

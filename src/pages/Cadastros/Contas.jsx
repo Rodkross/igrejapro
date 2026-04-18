@@ -83,19 +83,15 @@ export default function FornecedoresContas() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 pb-10 text-left">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div className="flex items-center gap-3 text-left">
-                    <div className="bg-blue-600 p-2.5 rounded-2xl text-white shadow-lg shadow-blue-100">
-                        <Building2 size={24} />
-                    </div>
-                    <div className="text-left">
-                        <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter text-left italic">
-                            Contas / Fornecedores
-                        </h1>
-                        <p className="text-slate-500 text-xs font-bold flex items-center gap-1 text-left">
-                            <ShieldCheck size={12} className="text-emerald-500"/> Vinculado apenas a Planos de Despesas
-                        </p>
-                    </div>
+            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+                <div>
+                    <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+                        <Building2 className="text-blue-600" size={28} />
+                        Contas / Fornecedores
+                    </h1>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left flex items-center gap-1">
+                        <ShieldCheck size={12} className="text-blue-600"/> Vinculado apenas a Planos de Despesas
+                    </p>
                 </div>
                 <button 
                     onClick={() => setIsModalAberto(true)} 
@@ -103,7 +99,7 @@ export default function FornecedoresContas() {
                 >
                     <Plus size={18} strokeWidth={3}/> Adicionar
                 </button>
-            </div>
+            </header>
 
             {isModalAberto && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">

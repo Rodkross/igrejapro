@@ -11,15 +11,15 @@ export default function RelatoriosFinanceiros() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-6 pb-12 text-left italic">
-      <div className="flex items-center gap-4">
-        <div className="bg-slate-900 p-3 rounded-[1.2rem] text-white shadow-lg">
-          <BarChart3 size={28} />
-        </div>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
         <div>
-          <h1 className="text-2xl font-black text-slate-800 uppercase tracking-tighter leading-none">Relatórios</h1>
-          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">Inteligência de Dados</p>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <BarChart3 className="text-blue-600" size={28} />
+            Relatórios
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Inteligência de Dados</p>
         </div>
-      </div>
+      </header>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mt-8">
         {cards.map((card, idx) => (

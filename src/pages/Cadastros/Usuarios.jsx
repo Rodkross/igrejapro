@@ -168,10 +168,13 @@ export default function Usuarios() {
 
     return (
         <div className="max-w-6xl mx-auto space-y-6 pb-20 p-4 font-sans italic relative text-left">
-            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b pb-6">
+            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
                 <div>
-                    <h1 className="text-2xl font-black text-slate-800 uppercase leading-none italic">Membros</h1>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Gestão e Matrículas</p>
+                    <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+                        <Users className="text-blue-600" size={28} />
+                        Membros
+                    </h1>
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Gestão e Matrículas</p>
                 </div>
                 
                 <div className="flex items-center gap-3 w-full md:w-auto">

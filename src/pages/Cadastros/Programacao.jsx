@@ -169,15 +169,13 @@ export default function Programacao() {
   return (
     <div className="max-w-[1600px] mx-auto p-4 pb-32 space-y-8 text-left italic font-sans">
       
-      <header className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-slate-100 flex flex-col md:flex-row items-center justify-between gap-6">
-        <div className="flex items-center gap-4 text-left">
-          <div className="p-3 bg-slate-900 rounded-2xl text-white shadow-xl">
-            <CalendarDays size={32}/>
-          </div>
-          <div className="text-left">
-            <h1 className="text-3xl font-black text-slate-900 uppercase tracking-tighter leading-none italic">Agenda Oficial</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-[0.3em] mt-2 italic leading-none">Cultos e Eventos Especiais</p>
-          </div>
+      <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <CalendarDays className="text-blue-600" size={28}/>
+            Agenda Oficial
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Cultos e Eventos Especiais</p>
         </div>
         {isPodeEditar && (
           <button onClick={abrirParaCriar} className="bg-slate-900 text-white px-8 py-4 rounded-2xl font-black text-[11px] uppercase tracking-widest hover:bg-blue-600 transition-all shadow-xl flex items-center gap-2 italic active:scale-95">

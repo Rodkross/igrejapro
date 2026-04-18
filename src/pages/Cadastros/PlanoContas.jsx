@@ -96,13 +96,13 @@ export default function PlanoContas() {
 
     return (
         <div className="max-w-5xl mx-auto space-y-6 text-left p-4 pb-20">
-            <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4">
-                <div className="text-left">
-                    <h1 className="text-2xl font-black text-slate-800 flex items-center gap-2 uppercase italic leading-none">
+            <header className="flex flex-col md:flex-row justify-between items-center gap-4 border-b-2 border-slate-100 pb-6 text-left">
+                <div>
+                    <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
                         <ListTree className="text-blue-600" size={28} />
                         Plano de Contas
                     </h1>
-                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2">
+                    <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">
                         Estruturação de Receitas (1.xxx) e Despesas (2.xxx)
                     </p>
                 </div>

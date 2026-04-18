@@ -4,7 +4,7 @@ import {
   collection, query, orderBy, onSnapshot, 
   addDoc, deleteDoc, doc, updateDoc, where 
 } from 'firebase/firestore';
-import { Utensils, Trash2, Edit3, Save, Search, Plus, DollarSign, Loader2, X } from 'lucide-react';
+import { Utensils, Store, Trash2, Edit3, Save, Search, Plus, DollarSign, Loader2, X } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
 export default function Cantina() {
@@ -114,15 +114,13 @@ export default function Cantina() {
     <div className="max-w-6xl mx-auto space-y-6 text-left p-4 pb-20">
       
       {/* HEADER */}
-      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b pb-4 text-left">
-        <div className="flex items-center gap-3 text-left">
-          <div className="bg-orange-500 p-2.5 rounded-2xl text-white shadow-lg shadow-orange-100">
-            <Utensils size={24} />
-          </div>
-          <div className="text-left">
-            <h1 className="text-2xl font-black text-slate-800 uppercase italic leading-none text-left">Cardápio da Cantina</h1>
-            <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 text-left">Sincronizado com Plano de Contas</p>
-          </div>
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b-2 border-slate-100 pb-6 text-left">
+        <div>
+          <h1 className="text-2xl font-black text-slate-800 flex items-center gap-3 uppercase italic leading-none text-left">
+            <Store className="text-blue-600" size={28} />
+            Cardápio da Cantina
+          </h1>
+          <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-2 italic text-left">Sincronizado com Plano de Contas</p>
         </div>
 
         <div className="flex flex-col sm:flex-row gap-4 items-center">
@@ -151,7 +149,7 @@ export default function Cantina() {
             <div className="bg-white w-full max-w-md rounded-[2.5rem] shadow-2xl overflow-hidden flex flex-col">
                 <div className={`p-6 border-b flex justify-between items-center ${editandoId ? 'bg-amber-50 border-amber-100' : 'bg-slate-50 border-slate-100'}`}>
                     <h2 className={`text-lg font-black uppercase italic flex items-center gap-2 leading-none ${editandoId ? 'text-amber-600' : 'text-slate-800'}`}>
-                        {editandoId ? <Edit3 size={24} /> : <Utensils className="text-orange-500" size={24} />} 
+                        {editandoId ? <Edit3 size={24} /> : <Store className="text-orange-500" size={24} />} 
                         {editandoId ? 'Editar Item' : 'Novo Lanche/Bebida'}
                     </h2>
                     <button onClick={() => setIsModalAberto(false)} className="p-2 hover:bg-slate-200 rounded-full transition-colors"><X size={20}/></button>
