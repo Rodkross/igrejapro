@@ -20,27 +20,64 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
   useEffect(() => {
     if (!nomeReal) return;
+    
+    // O sistema de gestão do convênio (admin) salva o nome sempre em MAIÚSCULO.
+    // É obrigatório fazer a query com a string em .toUpperCase() para haver MATCH perfeito.
+    const nomeNormalizado = nomeReal.toUpperCase();
 
-    const qConv = query(collection(db, "convenio"), where("usuarioNome", "==", nomeReal), where("status", "==", "pendente"));
-    const qFin = query(collection(db, "financeiro"), where("origem", "==", nomeReal), where("status", "==", "aberto"), where("categoria", "in", ["Convenio", "Fiado"]));
-    const qCred = query(collection(db, "saldosCredito"), where("origem", "==", nomeReal));
+    const qConv = query(collection(db, "convenio"), where("usuarioNome", "==", nomeNormalizado), where("status", "==", "pendente"));
+    const qFin = query(collection(db, "financeiro"), where("origem", "==", nomeNormalizado), where("status", "==", "aberto"), where("categoria", "in", ["Convenio", "Fiado"]));
+    const qCred = collection(db, "saldosCredito"); // Busca tolerante
 
     const unsubConv = onSnapshot(qConv, (snap) => setItensConvenio(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
     const unsubFin = onSnapshot(qFin, (snap) => {
       setRestosFinanceiro(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(f => !f.convenioUuid));
       setCarregando(false);
     });
-    const unsubCred = onSnapshot(qCred, (snap) => setValorCredito(!snap.empty ? Number(snap.docs[0].data().saldo || 0) : 0));
+    
+    // Filtro manual + Captura e exibição de falhas silenciosas do Firebase
+    const unsubCred = onSnapshot(qCred, (snap) => {
+      const docsDoUsuario = snap.docs.filter(d => {
+        const origemDb = d.data().origem || "";
+        return origemDb.trim().toUpperCase() === nomeNormalizado;
+      });
+      const somaCreditos = docsDoUsuario.reduce((acc, d) => acc + Number(d.data().saldo || 0), 0);
+      setValorCredito(somaCreditos);
+    }, (error) => {
+      alert("ERRO FIREBASE SALDOS: " + error.message);
+      console.error("ERRO AO LER SALDOS: ", error);
+    });
 
     return () => { unsubConv(); unsubFin(); unsubCred(); };
   }, [nomeReal]);
 
   const resumo = useMemo(() => {
     const lista = [];
-    itensConvenio.forEach(i => lista.push({ id: i.id, desc: i.produtoNome, valor: Number(i.valorTotal), data: i.data }));
-    restosFinanceiro.forEach(r => lista.push({ id: r.id, desc: r.descricao || "Restante Pendente", valor: Number(r.valor), data: r.vencimento }));
+    let totalDividas = 0;
 
-    const saldoLiquido = Number((lista.reduce((acc, cur) => acc + cur.valor, 0) - valorCredito).toFixed(2));
+    itensConvenio.forEach(i => {
+      const v = Number(i.valorTotal);
+      lista.push({ id: i.id, desc: i.produtoNome, valor: v, data: i.data, isCredito: false });
+      totalDividas += v;
+    });
+
+    restosFinanceiro.forEach(r => {
+      const v = Number(r.valor);
+      lista.push({ id: r.id, desc: r.descricao || "Restante Pendente", valor: v, data: r.vencimento, isCredito: false });
+      totalDividas += v;
+    });
+
+    if (valorCredito > 0) {
+      lista.push({ 
+        id: 'credito-abater', 
+        desc: "Saldo de Crédito a Abater", 
+        valor: -Math.abs(valorCredito), 
+        data: new Date().toISOString().split('T')[0], 
+        isCredito: true 
+      });
+    }
+
+    const saldoLiquido = Number((totalDividas - valorCredito).toFixed(2));
     return { total: saldoLiquido, itens: lista.sort((a, b) => new Date(b.data) - new Date(a.data)), temCredito: saldoLiquido < 0 };
   }, [itensConvenio, restosFinanceiro, valorCredito]);
 
@@ -84,10 +121,17 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
           <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${config.iconBg}`}>
             {resumo.total === 0 ? <HeartHandshake size={24} /> : <Wallet2 size={24} />}
           </div>
-          <div className="text-left">
-            <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] mb-1">Cantina</p>
-            <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
-            <span className={`text-[10px] font-bold uppercase tracking-wider mt-1 inline-block ${config.text}`}>
+          <div className="text-left flex flex-col items-start gap-1">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] leading-none mt-1">Cantina</p>
+            <div className="flex items-center gap-2">
+              <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
+              {valorCredito > 0 && (
+                <span className="bg-success/10 text-success text-[8px] px-2 py-0.5 rounded border border-success/20 font-black tracking-widest uppercase shadow-sm">
+                  Crédito Disponível: R$ {valorCredito.toFixed(2)}
+                </span>
+              )}
+            </div>
+            <span className={`text-[10px] font-bold uppercase tracking-wider inline-block leading-none mt-0.5 ${config.text}`}>
               {getMensagemStatus()}
             </span>
           </div>
@@ -120,15 +164,19 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
               <div className="py-4 flex justify-center"><Loader2 className="animate-spin text-royal" /></div>
             ) : resumo.itens.length > 0 ? (
               resumo.itens.map((item) => (
-                <div key={item.id} className="flex items-center justify-between p-3.5 bg-background rounded-2xl border border-slate-100">
+                <div key={item.id} className={`flex items-center justify-between p-3.5 bg-background rounded-2xl border ${item.isCredito ? 'border-success/20 bg-success/5 shadow-sm' : 'border-slate-100'}`}>
                   <div className="flex items-center gap-3">
-                    <div className="w-9 h-9 bg-white rounded-xl flex items-center justify-center text-royal border border-slate-100"><Package size={14} /></div>
+                    <div className={`w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-slate-100 ${item.isCredito ? 'text-success' : 'text-royal'}`}>
+                      {item.isCredito ? <Wallet2 size={14} /> : <Package size={14} />}
+                    </div>
                     <div className="text-left leading-tight">
-                      <p className="font-display text-sm font-bold text-navy">{item.desc}</p>
+                      <p className={`font-display text-sm font-bold ${item.isCredito ? 'text-success' : 'text-navy'}`}>{item.desc}</p>
                       <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{item.data || 'Registrado'}</p>
                     </div>
                   </div>
-                  <p className="font-display font-black text-navy tracking-tight">R$ {item.valor.toFixed(2)}</p>
+                  <p className={`font-display font-black tracking-tight ${item.isCredito ? 'text-success' : 'text-navy'}`}>
+                    {item.isCredito ? '-' : ''}R$ {Math.abs(item.valor).toFixed(2)}
+                  </p>
                 </div>
               ))
             ) : (
