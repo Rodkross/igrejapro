@@ -141,4 +141,4 @@ export default function App() {
   );
 }
 
-//Deus seja louvado! Elohim! Adonai! Aleluia! Yeshua! Amém!!
+//Deus seja louvado! Elohim! Adonai! Aleluia! Yeshua! Amém!
