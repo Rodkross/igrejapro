@@ -7,7 +7,7 @@ import { ModalProvider } from "./contexts/ModalContext";
 // --- PÁGINAS DE CADASTRO ---
 import Dashboard from "./pages/Dashboard"; 
 import Usuarios from "./pages/Cadastros/Usuarios";
-import Cargos from "./pages/Cadastros/Cargos";
+import NiveisAcesso from "./pages/Cadastros/NiveisAcesso";
 import PlanoContas from "./pages/Cadastros/PlanoContas";
 import Contas from "./pages/Cadastros/Contas"; 
 import Produtos from "./pages/Cadastros/Cantina";
@@ -91,7 +91,7 @@ export default function App() {
               <RotaPrivada usuario={usuario} modulo="usuarios"><Usuarios /></RotaPrivada>
             } />
             <Route path="cadastro/cargos" element={
-              <RotaPrivada usuario={usuario} modulo="cargos"><Cargos /></RotaPrivada>
+              <RotaPrivada usuario={usuario} modulo="cargos"><NiveisAcesso /></RotaPrivada>
             } />
             <Route path="cadastro/plano-contas" element={
               <RotaPrivada usuario={usuario} modulo="planoContas"><PlanoContas /></RotaPrivada>

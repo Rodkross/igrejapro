@@ -151,8 +151,15 @@ export default function QuizGame() {
           {ranking.map((p, i) => (
             <div key={p.id} className={`flex justify-between items-center p-4 rounded-2xl border ${p.id === String(usuario.id) ? 'bg-gold/10 border-gold/50 shadow-gold/5 shadow-lg' : 'bg-white/5 border-white/10'}`}>
               <div className="flex items-center gap-3 text-left">
-                <span className="font-black text-gold text-lg">#{i+1}</span>
-                <span className="font-bold text-white uppercase text-[10px] tracking-widest leading-none">{p.nome}</span>
+                <span className="font-black text-gold text-lg shrink-0">#{i+1}</span>
+                <div className="shrink-0">
+                  {p.fotoUrl ? (
+                    <img src={p.fotoUrl} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10 shadow-sm" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-white uppercase">{p.nome?.charAt(0) || '?'}</div>
+                  )}
+                </div>
+                <span className="font-bold text-white uppercase text-[10px] tracking-widest leading-none truncate">{p.nome}</span>
               </div>
               <span className="font-black text-white bg-white/10 px-3 py-1 rounded-lg text-sm">{p.recordeQuiz || 0}</span>
             </div>

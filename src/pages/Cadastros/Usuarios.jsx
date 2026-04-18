@@ -22,7 +22,7 @@ export default function Usuarios() {
         dataNascimento: '', email: '', idAcesso: '',
         batizado: false, casado: false, conjugeId: '', conjugeExterno: false,
         dataConversao: '', perfilMembro: 'Novo Convertido',
-        fotoUrl: '', biografia: ''
+        fotoUrl: '', biografia: '', funcaoEclesiastica: ''
     });
     const [editandoId, setEditandoId] = useState(null);
     const [filtro, setFiltro] = useState('');
@@ -98,7 +98,7 @@ export default function Usuarios() {
             dataNascimento: '', email: '', idAcesso: proximoId,
             batizado: false, casado: false, conjugeId: '', conjugeExterno: false,
             dataConversao: '', perfilMembro: 'Novo Convertido',
-            fotoUrl: '', biografia: ''
+            fotoUrl: '', biografia: '', funcaoEclesiastica: ''
         });
         setIsModalAberto(true);
     };
@@ -212,67 +212,75 @@ export default function Usuarios() {
                             <button onClick={fecharModal} className="p-2 hover:bg-slate-200 rounded-full text-slate-500"><X size={24} /></button>
                         </div>
 
-                        <form onSubmit={salvar} className="p-8 space-y-8 overflow-y-auto italic">
+                        <form onSubmit={salvar} className="p-6 space-y-4 overflow-y-auto italic custom-scroll">
                             
-                            {/* UPLOAD DE FOTO E BIOGRAFIA */}
-                            <div className="flex flex-col md:flex-row gap-6 items-start p-6 bg-blue-50/50 rounded-[2rem] border border-blue-100 italic">
+                            {/* UPLOAD DE FOTO E BIOGRAFIA (COMPACTO) */}
+                            <div className="flex flex-col md:flex-row gap-4 items-center p-4 bg-blue-50/50 rounded-[2rem] border border-blue-100 italic">
                                 <div className="relative shrink-0">
-                                    <div className="w-28 h-28 rounded-3xl bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center">
+                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.2rem] bg-white border-2 border-white shadow-xl overflow-hidden flex items-center justify-center">
                                         {formData.fotoUrl ? (
                                             <img src={formData.fotoUrl} className="w-full h-full object-cover" alt="Perfil" />
                                         ) : (
-                                            <Camera size={32} className="text-blue-200" />
+                                            <Camera size={24} className="text-blue-200" />
                                         )}
-                                        {subindoImagem && <div className="absolute inset-0 bg-white/60 flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" /></div>}
+                                        {subindoImagem && <div className="absolute inset-0 bg-white/60 flex items-center justify-center"><Loader2 className="animate-spin text-blue-600" size={20} /></div>}
                                     </div>
-                                    <label className="absolute -bottom-2 -right-2 bg-blue-600 text-white p-2 rounded-xl shadow-lg cursor-pointer hover:bg-blue-700 transition-all">
-                                        <Upload size={14} />
+                                    <label className="absolute -bottom-1 -right-1 bg-blue-600 text-white p-1.5 rounded-lg shadow-lg cursor-pointer hover:bg-blue-700 transition-all">
+                                        <Upload size={12} />
                                         <input type="file" className="hidden" accept="image/*" onChange={handleUploadFoto} />
                                     </label>
                                 </div>
                                 <div className="flex-1 w-full italic">
-                                    <label className="block text-[10px] font-black text-blue-600 uppercase mb-2 ml-1">Breve descrição sobre o membro</label>
-                                    <textarea placeholder="Conte um pouco sobre este membro..." className="w-full border-2 border-white rounded-2xl px-4 py-3 font-bold bg-white focus:border-blue-300 outline-none resize-none italic" rows="3" value={formData.biografia || ''} onChange={e => setFormData({...formData, biografia: e.target.value})} />
+                                    <label className="block text-[9px] font-black text-blue-600 uppercase mb-1 ml-1">Breve descrição sobre o membro</label>
+                                    <textarea placeholder="Conte um pouco sobre este membro..." className="w-full border-2 border-white rounded-xl px-3 py-2 text-xs font-bold bg-white focus:border-blue-300 outline-none resize-none italic" rows="2" value={formData.biografia || ''} onChange={e => setFormData({...formData, biografia: e.target.value})} />
                                 </div>
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-                                <div className="md:col-span-2"><label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Nome Completo</label><input className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 uppercase focus:border-blue-500 outline-none italic" value={formData.nome || ''} onChange={e => setFormData({ ...formData, nome: e.target.value })} /></div>
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Nascimento</label><input type="date" className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 focus:border-blue-500 outline-none italic" value={formData.dataNascimento || ''} onChange={e => setFormData({ ...formData, dataNascimento: e.target.value })} /></div>
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Cargo</label><select className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 bg-slate-50 font-bold focus:border-blue-500 outline-none italic" value={formData.cargoId || ''} onChange={e => setFormData({ ...formData, cargoId: e.target.value })}><option value="">Selecionar...</option>{cargos?.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></div>
+                            {/* DADOS CADASTRAIS (COMPACTADO EM 2 LINHAS) */}
+                            <div className="space-y-3">
+                                <div className="grid grid-cols-1 md:grid-cols-6 gap-3">
+                                    <div className="md:col-span-1"><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">MTR</label><input readOnly className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-200 text-slate-500 text-sm italic outline-none text-center" value={formData.idAcesso || ''} /></div>
+                                    <div className="md:col-span-3"><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Nome Completo</label><input className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm uppercase focus:border-blue-500 outline-none italic" value={formData.nome || ''} onChange={e => setFormData({ ...formData, nome: e.target.value })} /></div>
+                                    <div className="md:col-span-2"><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">E-mail</label><input type="email" placeholder="E-MAIL" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
+                                </div>
+
+                                <div className="grid grid-cols-1 md:grid-cols-5 gap-3">
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Nascimento</label><input type="date" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-xs focus:border-blue-500 outline-none italic" value={formData.dataNascimento || ''} onChange={e => setFormData({ ...formData, dataNascimento: e.target.value })} /></div>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">WhatsApp</label><input placeholder="(00) 00000-0000" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.telefone || ''} onChange={e => setFormData({ ...formData, telefone: aplicarMascaraTelefone(e.target.value) })} /></div>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Nível de Acesso</label><select className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 bg-slate-50 font-bold text-xs focus:border-blue-500 outline-none italic" value={formData.cargoId || ''} onChange={e => setFormData({ ...formData, cargoId: e.target.value })}><option value="">Selecionar...</option>{cargos?.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></div>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Função Eclesiástica</label><input placeholder="Ex: Pastor" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-xs uppercase focus:border-blue-500 outline-none italic" value={formData.funcaoEclesiastica || ''} onChange={e => setFormData({ ...formData, funcaoEclesiastica: e.target.value.toUpperCase() })} /></div>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Senha</label><input type="password" placeholder="••••••••" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.senha || ''} onChange={e => setFormData({ ...formData, senha: e.target.value })} /></div>
+                                </div>
                             </div>
 
-                            <div className="p-6 bg-slate-50 rounded-[2rem] border border-slate-100 space-y-6 text-left">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 items-center italic">
-                                    <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-5 h-5 accent-blue-600" checked={formData.batizado || false} onChange={e => setFormData({...formData, batizado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Batizado?</span></label>
-                                    <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-5 h-5 accent-rose-500" checked={formData.casado || false} onChange={e => setFormData({...formData, casado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Casado?</span></label>
-                                    <input type="date" className="w-full border-2 border-white rounded-xl px-3 py-2 font-bold bg-white italic text-xs outline-none focus:border-blue-500" value={formData.dataConversao || ''} onChange={e => setFormData({ ...formData, dataConversao: e.target.value })} />
-                                    <select className="w-full border-2 border-white rounded-xl px-3 py-2 bg-white font-bold text-xs italic outline-none" value={formData.perfilMembro || 'Novo Convertido'} onChange={e => setFormData({ ...formData, perfilMembro: e.target.value })}><option value="Novo Convertido">NOVO CONVERTIDO</option><option value="Retorno">RETORNO</option><option value="Transferência">TRANSFERÊNCIA</option><option value="Afastado">AFASTADO</option></select>
+                            {/* DADOS ESPIRITUAIS E CONJUGAIS */}
+                            <div className="p-4 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 text-left">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end italic">
+                                    <label className="flex items-center gap-2 cursor-pointer pb-2"><input type="checkbox" className="w-4 h-4 accent-blue-600" checked={formData.batizado || false} onChange={e => setFormData({...formData, batizado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Batizado?</span></label>
+                                    <label className="flex items-center gap-2 cursor-pointer pb-2"><input type="checkbox" className="w-4 h-4 accent-rose-500" checked={formData.casado || false} onChange={e => setFormData({...formData, casado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Casado?</span></label>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Data Conversão</label><input type="date" className="w-full border-2 border-white rounded-xl px-3 py-2 font-bold bg-white italic text-xs outline-none focus:border-blue-500" value={formData.dataConversao || ''} onChange={e => setFormData({ ...formData, dataConversao: e.target.value })} /></div>
+                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Perfil / Status</label><select className="w-full border-2 border-white rounded-xl px-3 py-2 bg-white font-bold text-xs italic outline-none focus:border-blue-500" value={formData.perfilMembro || 'Novo Convertido'} onChange={e => setFormData({ ...formData, perfilMembro: e.target.value })}><option value="Novo Convertido">NOVO CONVERTIDO</option><option value="Retorno">RETORNO</option><option value="Transferência">TRANSFERÊNCIA</option><option value="Afastado">AFASTADO</option></select></div>
                                 </div>
                                 {formData.casado && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4 border-t border-slate-200">
-                                        <div className="space-y-3 italic">
-                                            <label className="flex items-center gap-2 text-[10px] font-black text-rose-500 uppercase"><Link2 size={14}/> Vincular Cônjuge da Igreja</label>
-                                            <select disabled={formData.conjugeExterno} className="w-full border-2 border-white rounded-xl px-4 py-3 font-bold bg-white italic outline-none focus:border-rose-300" value={formData.conjugeId || ''} onChange={e => setFormData({...formData, conjugeId: e.target.value})}>
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
+                                        <div className="space-y-2 italic">
+                                            <label className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase"><Link2 size={12}/> Vincular Cônjuge da Igreja</label>
+                                            <select disabled={formData.conjugeExterno} className="w-full border-2 border-white rounded-xl px-3 py-2 font-bold bg-white text-xs italic outline-none focus:border-rose-300" value={formData.conjugeId || ''} onChange={e => setFormData({...formData, conjugeId: e.target.value})}>
                                                 <option value="">Buscar esposo(a)...</option>
                                                 {usuarios.filter(u => u.id !== editandoId).map(u => <option key={u.id} value={u.id}>{u.nome}</option>)}
                                             </select>
                                         </div>
-                                        <div className="flex items-end pb-3 italic">
-                                            <label className="flex items-center gap-3 cursor-pointer"><input type="checkbox" className="w-5 h-5 accent-slate-900" checked={formData.conjugeExterno || false} onChange={e => setFormData({...formData, conjugeExterno: e.target.checked, conjugeId: e.target.checked ? '' : formData.conjugeId})} /><span className="text-[10px] font-black text-slate-500 uppercase italic">Não frequenta a igreja</span></label>
+                                        <div className="flex items-end pb-2 italic">
+                                            <label className="flex items-center gap-2 cursor-pointer"><input type="checkbox" className="w-4 h-4 accent-slate-900" checked={formData.conjugeExterno || false} onChange={e => setFormData({...formData, conjugeExterno: e.target.checked, conjugeId: e.target.checked ? '' : formData.conjugeId})} /><span className="text-[10px] font-black text-slate-500 uppercase italic">Não frequenta a igreja</span></label>
                                         </div>
                                     </div>
                                 )}
                             </div>
 
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 italic">
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2">Matrícula ID</label><input readOnly className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-200 text-slate-500 italic outline-none" value={formData.idAcesso || ''} /></div>
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2">WhatsApp</label><input placeholder="WHATSAPP" className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 focus:border-blue-500 outline-none italic" value={formData.telefone || ''} onChange={e => setFormData({ ...formData, telefone: aplicarMascaraTelefone(e.target.value) })} /></div>
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2">Senha</label><input type="password" placeholder="SENHA" className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 focus:border-blue-500 outline-none italic" value={formData.senha || ''} onChange={e => setFormData({ ...formData, senha: e.target.value })} /></div>
-                                <div><label className="block text-[10px] font-black text-slate-400 uppercase mb-2">E-mail</label><input type="email" placeholder="E-MAIL" className="w-full border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 uppercase focus:border-blue-500 outline-none italic" value={formData.email || ''} onChange={e => setFormData({ ...formData, email: e.target.value })} /></div>
+                            <div className="flex gap-4 pt-2 shrink-0">
+                                <button type="button" onClick={fecharModal} className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest italic">Cancelar</button>
+                                <button type="submit" disabled={subindoImagem} className="flex-2 px-12 py-3 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs shadow-lg hover:bg-blue-600 transition-all italic">{editandoId ? 'Atualizar Membro' : 'Finalizar Cadastro'}</button>
                             </div>
-
-                            <div className="flex gap-4 pt-4 shrink-0"><button type="button" onClick={fecharModal} className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest italic">Cancelar</button><button type="submit" disabled={subindoImagem} className="flex-2 px-12 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs shadow-lg hover:bg-blue-600 transition-all italic">{editandoId ? 'Atualizar Membro' : 'Finalizar Cadastro'}</button></div>
                         </form>
                     </div>
                 </div>
@@ -305,7 +313,8 @@ export default function Usuarios() {
                                     <div className="text-left min-w-0 italic">
                                         <p className={`font-black uppercase text-lg leading-none truncate italic ${isAfastado ? 'text-slate-400 line-through' : 'text-slate-800'}`}>{u.nome}</p>
                                         <div className="flex flex-wrap gap-2 mt-2 italic">
-                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border italic ${isAfastado ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>{u.cargoNome || 'MEMBRO'}</span>
+                                            <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border italic ${isAfastado ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>SISTEMA: {u.cargoNome || 'MEMBRO'}</span>
+                                            {u.funcaoEclesiastica && <span className={`text-[9px] font-black uppercase px-2 py-0.5 rounded-md border italic ${isAfastado ? 'bg-slate-100 text-slate-400 border-slate-200' : 'bg-purple-50 text-purple-600 border-purple-100'}`}>FUNÇÃO: {u.funcaoEclesiastica}</span>}
                                             {u.casado && !isAfastado && <span className="bg-rose-50 text-rose-600 px-2 py-0.5 rounded-md border border-rose-100 flex items-center gap-1 italic"><Heart size={8} fill="currentColor"/> {u.conjugeExterno ? 'Externo' : conjuge?.nome?.split(' ')[0]}</span>}
                                             {isAfastado && <span className="text-[9px] font-black uppercase px-2 py-0.5 rounded-md bg-amber-100 text-amber-700 border border-amber-200 italic">INATIVO</span>}
                                         </div>

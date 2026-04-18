@@ -234,7 +234,7 @@ export default function Layout({ usuario, aoSair }) {
                 <div className="ml-4 pl-2 border-l border-white/10 py-1 space-y-0.5 text-left">
                   {temAcesso('programacao') && <Link to="/cadastro/programacao" className={subLinkClass('/cadastro/programacao')}>Programação</Link>}
                   {temAcesso('usuarios') && <Link to="/cadastro/usuarios" className={subLinkClass('/cadastro/usuarios')}>Membros</Link>}
-                  {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Cargos</Link>}
+                  {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Níveis de Acesso</Link>}
                   {temAcesso('planoContas') && <Link to="/cadastro/plano-contas" className={subLinkClass('/cadastro/plano-contas')}>Plano de Contas</Link>}
                   {temAcesso('contas') && <Link to="/cadastro/contas" className={subLinkClass('/cadastro/contas')}>Contas</Link>}
                   {temAcesso('cantina') && <Link to="/cadastro/cantina" className={subLinkClass('/cadastro/cantina')}>Cantina</Link>}
@@ -332,7 +332,7 @@ export default function Layout({ usuario, aoSair }) {
             <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
               <div className="text-right leading-none text-left">
                 <p className="font-display text-sm font-bold text-white leading-none text-left">{dadosSincronizados?.nome || 'Usuário'}</p>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none text-right">{dadosSincronizados?.cargoNome || 'Membro'}</p>
+                <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none text-right">{dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Membro'}</p>
               </div>
               <div className="relative shrink-0 text-left">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden text-left">

@@ -10,12 +10,12 @@ import {
 } from 'lucide-react';
 import { useModal } from '../../contexts/ModalContext';
 
-export default function Cargos() {
+export default function NiveisAcesso() {
     // Lista de módulos atualizada com as novas telas/sub-rotas
     const modulosDoSistema = [
         { id: 'usuarios', nome: 'Gestão de Membros' },
         { id: 'programacao', nome: 'Programação de Cultos' },
-        { id: 'cargos', nome: 'Cargos / Níveis' },
+        { id: 'cargos', nome: 'Níveis de Acesso' },
         { id: 'planoContas', nome: 'Plano de Contas' },
         { id: 'contas', nome: 'Bancos / Fornecedores' },
         { id: 'produtos', nome: 'Produtos Cantina' },
@@ -126,7 +126,7 @@ export default function Cargos() {
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
                         <input
                             className="pl-10 pr-4 py-3 border-2 border-slate-100 rounded-2xl outline-none focus:border-blue-500 w-full md:w-80 font-bold text-xs uppercase italic bg-white"
-                            placeholder="Buscar cargo..."
+                            placeholder="Buscar nível de acesso..."
                             value={filtro}
                             onChange={e => setFiltro(e.target.value)}
                         />
@@ -145,49 +145,49 @@ export default function Cargos() {
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden animate-in zoom-in-95 duration-300 max-h-[90vh] flex flex-col">
                         
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                        <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                             <div>
                                 <h2 className="text-xl font-black text-slate-800 uppercase italic leading-none">
                                     {editandoId ? 'Editar Nível' : 'Novo Nível de Acesso'}
                                 </h2>
-                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Configure as permissões do cargo</p>
+                                <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1">Configure as permissões de módulo</p>
                             </div>
                             <button onClick={fecharModal} className="p-2 hover:bg-slate-200 rounded-full transition-colors">
                                 <X size={24} className="text-slate-500" />
                             </button>
                         </div>
 
-                        <form onSubmit={salvar} className="p-8 space-y-8 overflow-y-auto">
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Nome da Função / Cargo</label>
+                        <form onSubmit={salvar} className="p-6 space-y-4 overflow-y-auto custom-scroll">
+                            <div className="bg-slate-50 p-4 rounded-3xl border border-slate-100">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase mb-2 ml-1">Nome do Nível Sistêmico / Perfil</label>
                                 <input 
-                                    className="w-full md:w-1/2 border-2 border-slate-100 rounded-xl px-4 py-3 font-bold bg-slate-50 uppercase italic focus:border-blue-500 outline-none" 
+                                    className="w-full border-2 border-white rounded-xl px-4 py-2 font-bold bg-white uppercase italic text-sm focus:border-blue-500 outline-none shadow-sm" 
                                     value={formData.nome} 
                                     onChange={e => setFormData({...formData, nome: e.target.value})} 
-                                    placeholder="EX: TESOUREIRO, DIACONATO..."
+                                    placeholder="EX: ACESSO BASICO, ACESSO COMPLETO..."
                                 />
                             </div>
 
-                            <div>
-                                <label className="block text-[10px] font-black text-slate-400 uppercase mb-4 ml-1 italic">Permissões de Acesso</label>
-                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                            <div className="pt-2">
+                                <label className="block text-[10px] font-black text-slate-400 uppercase mb-3 ml-1 italic">Permissões de Acesso</label>
+                                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2">
                                     {modulosDoSistema.map((m) => (
                                         <button 
                                             key={m.id} 
                                             type="button" 
                                             onClick={() => togglePermissao(m.id)} 
-                                            className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all text-left ${formData.permissoes[m.id] ? 'border-blue-600 bg-blue-600 text-white shadow-md' : 'border-slate-100 bg-white text-slate-400'}`}
+                                            className={`flex items-center gap-2 p-3 rounded-xl border-2 transition-all text-left ${formData.permissoes[m.id] ? 'border-blue-600 bg-blue-600 text-white shadow-md' : 'border-slate-100 bg-white text-slate-400'}`}
                                         >
-                                            {formData.permissoes[m.id] ? <CheckCircle2 size={18} /> : <Circle size={18} />}
-                                            <span className="font-black uppercase text-[10px] italic">{m.nome}</span>
+                                            <div className="shrink-0">{formData.permissoes[m.id] ? <CheckCircle2 size={16} /> : <Circle size={16} />}</div>
+                                            <span className="font-black uppercase text-[9px] tracking-wider italic leading-tight truncate">{m.nome}</span>
                                         </button>
                                     ))}
                                 </div>
                             </div>
 
-                            <div className="flex gap-4 pt-4 shrink-0">
-                                <button type="button" onClick={fecharModal} className="flex-1 py-4 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
-                                <button type="submit" className="flex-2 px-12 py-4 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs tracking-widest shadow-lg hover:bg-blue-600 transition-all">
+                            <div className="flex gap-4 pt-2 shrink-0">
+                                <button type="button" onClick={fecharModal} className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest hover:bg-slate-200 transition-all">Cancelar</button>
+                                <button type="submit" className="flex-2 px-12 py-3 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs tracking-widest shadow-lg hover:bg-blue-600 transition-all">
                                     {editandoId ? 'Salvar Alterações' : 'Criar Nível'}
                                 </button>
                             </div>
