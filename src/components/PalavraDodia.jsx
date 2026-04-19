@@ -81,7 +81,7 @@ function lerUsuarioLogado() {
   }
 }
 
-export default function PalavraDodia() {
+export default function PalavraDodia({ compactTablet = false }) {
   const [carregando, setCarregando] = useState(true);
   const [curtindo, setCurtindo] = useState(false);
   const [totalCurtidas, setTotalCurtidas] = useState(0);
@@ -158,37 +158,37 @@ export default function PalavraDodia() {
 
   if (carregando) {
     return (
-      <div className="bg-gradient-hero rounded-2xl p-6 border border-white/10 shadow-elegant flex items-center justify-center min-h-[120px]">
+      <div className={`bg-gradient-hero rounded-2xl border border-white/10 shadow-elegant flex items-center justify-center ${compactTablet ? 'p-5 md:p-5 xl:p-6 min-h-[120px]' : 'p-6 min-h-[120px]'}`}>
         <Loader2 className="animate-spin text-gold" size={24} />
       </div>
     );
   }
 
   return (
-    <div className="bg-gradient-hero rounded-2xl p-6 border border-white/10 shadow-elegant overflow-hidden relative">
+    <div className={`bg-gradient-hero rounded-2xl border border-white/10 shadow-elegant overflow-hidden relative ${compactTablet ? 'p-5 md:p-5 xl:p-6' : 'p-6'}`}>
       <Cross
-        size={120}
+        size={compactTablet ? 112 : 120}
         className="absolute -right-4 -bottom-6 text-white/5 rotate-[-12deg] pointer-events-none"
       />
       <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-gold/10 blur-3xl"></div>
 
-      <div className="relative z-10 flex flex-col gap-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 bg-gold/20 rounded-lg flex items-center justify-center border border-gold/30">
-            <BookOpen size={18} className="text-gold" />
+      <div className={`relative z-10 flex flex-col ${compactTablet ? 'gap-4' : 'gap-4'}`}>
+        <div className={`flex items-center ${compactTablet ? 'gap-3' : 'gap-3'}`}>
+          <div className={`bg-gold/20 rounded-lg flex items-center justify-center border border-gold/30 ${compactTablet ? 'w-10 h-10' : 'w-10 h-10'}`}>
+            <BookOpen size={compactTablet ? 18 : 18} className="text-gold" />
           </div>
           <div>
-            <p className="text-[9px] font-bold text-gold uppercase tracking-widest">Palavra do Dia</p>
-            <p className="text-[11px] font-bold text-white/80">{palavraDoDia.referencia}</p>
+            <p className={`font-bold text-gold uppercase tracking-widest ${compactTablet ? 'text-[9px]' : 'text-[9px]'}`}>Palavra do Dia</p>
+            <p className={`font-bold text-white/80 ${compactTablet ? 'text-[11px]' : 'text-[11px]'}`}>{palavraDoDia.referencia}</p>
           </div>
         </div>
 
-        <p className="text-sm font-medium text-slate-100 italic leading-relaxed">
+        <p className={`font-medium text-slate-100 italic ${compactTablet ? 'text-sm leading-relaxed' : 'text-sm leading-relaxed'}`}>
           "{palavraDoDia.texto}"
         </p>
 
-        <div className="flex items-center justify-between gap-3 pt-1">
-          <div className="text-[10px] font-bold uppercase tracking-widest text-slate-300">
+        <div className={`flex items-center justify-between gap-3 ${compactTablet ? 'pt-1' : 'pt-1'}`}>
+          <div className={`font-bold uppercase tracking-widest text-slate-300 ${compactTablet ? 'text-[10px]' : 'text-[10px]'}`}>
             {totalCurtidas} {totalCurtidas === 1 ? 'curtida' : 'curtidas'}
           </div>
 
@@ -196,13 +196,13 @@ export default function PalavraDodia() {
             type="button"
             onClick={handleCurtir}
             disabled={!usuarioId || usuarioCurtiu || curtindo}
-            className={`inline-flex items-center gap-2 rounded-xl px-4 py-2 text-[11px] font-bold uppercase tracking-wider transition-all border ${
+            className={`inline-flex items-center gap-2 rounded-xl font-bold uppercase tracking-wider transition-all border ${compactTablet ? 'px-4 py-2 text-[11px]' : 'px-4 py-2 text-[11px]'} ${
               usuarioCurtiu
                 ? 'bg-rose-500/20 text-rose-200 border-rose-300/30'
                 : 'bg-white/10 text-white border-white/15 hover:bg-white/15'
             } disabled:opacity-70 disabled:cursor-not-allowed`}
           >
-            {curtindo ? <Loader2 size={14} className="animate-spin" /> : <Heart size={14} className={usuarioCurtiu ? 'fill-current' : ''} />}
+            {curtindo ? <Loader2 size={compactTablet ? 14 : 14} className="animate-spin" /> : <Heart size={compactTablet ? 14 : 14} className={usuarioCurtiu ? 'fill-current' : ''} />}
             {usuarioCurtiu ? 'Curtido' : 'Curtir'}
           </button>
         </div>

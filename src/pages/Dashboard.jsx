@@ -6,11 +6,11 @@ import MeuConvenio from '../components/MeuConvenio';
 import PalavraDodia from '../components/PalavraDodia';
 import { 
   Users, TrendingUp, UserCheck, PieChart, CalendarDays, 
-  Cake, Loader2, Cross, Heart, X, HeartHandshake, Gamepad2, BookOpen, Church
+  Cake, Loader2, Cross, Heart, X, HeartHandshake, Gamepad2, BookOpen, Church, PlusCircle
 } from 'lucide-react';
 
 export default function Dashboard() {
-  const { usuario: usuarioLogado } = useOutletContext();
+  const { usuario: usuarioLogado, configGeral } = useOutletContext();
   const navigate = useNavigate();
   
   const [usuarios, setUsuarios] = useState([]);
@@ -156,12 +156,18 @@ export default function Dashboard() {
       <div className="block md:hidden space-y-4">
         {/* Ícone da Congregação e Nome */}
         <div className="bg-gradient-hero rounded-2xl p-4 flex items-center gap-4 border border-white/10 shadow-elegant">
-          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
-            <Church size={24} className="text-gold" />
+          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
+            {configGeral?.igrejaLogo ? (
+              <img src={configGeral.igrejaLogo} alt="Logo da igreja" className="w-full h-full object-contain p-1.5" />
+            ) : (
+              <Church size={24} className="text-gold" />
+            )}
           </div>
-          <div className="flex-1">
-            <p className="text-[10px] font-bold text-gold uppercase tracking-widest">Sua Congregação</p>
-            <h2 className="font-display text-lg font-black text-white leading-tight">Igreja Pro</h2>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-widest">Igreja</p>
+            <h2 className="font-display text-lg font-black text-white leading-tight truncate">
+              {configGeral?.igrejaNome || 'Igreja Pro'}
+            </h2>
           </div>
           <button 
             onClick={() => navigate('/cadastro/programacao')}
@@ -169,23 +175,6 @@ export default function Dashboard() {
             title="Ver Programação"
           >
             <CalendarDays size={18} className="text-gold" />
-          </button>
-        </div>
-
-        {/* CARD DO DESAFIO BÍBLICO */}
-        <div className="bg-gradient-to-br from-slate-900 to-slate-950 rounded-2xl p-5 border border-blue-500/30 text-center shadow-xl">
-          <div className="w-14 h-14 bg-blue-500/20 text-blue-400 rounded-full flex items-center justify-center shadow-lg mx-auto mb-3">
-            <BookOpen size={28} />
-          </div>
-          <p className="text-[9px] font-bold text-blue-400 uppercase tracking-[0.3em] mb-2">Desafio Bíblico</p>
-          <h3 className="font-display text-lg font-black text-white leading-tight mb-3 italic uppercase">
-            Quiz do<br/><span className="text-blue-400 text-xl">Reino</span>
-          </h3>
-          <button 
-            onClick={() => navigate('/entretenimento/quiz')}
-            className="w-full bg-white text-slate-900 font-black text-[9px] uppercase tracking-widest px-4 py-2.5 rounded-xl hover:bg-blue-400 transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-          >
-            <Gamepad2 size={14} /> Jogar Agora
           </button>
         </div>
 
@@ -219,9 +208,6 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* PALAVRA DO DIA */}
-        <PalavraDodia />
-
         {/* MEU CONVÊNIO */}
         {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
 
@@ -230,7 +216,7 @@ export default function Dashboard() {
           <h3 className="font-display text-base font-black text-navy mb-3 flex items-center gap-2 shrink-0">
             <Cake size={16} className="text-gold" /> Aniversários
           </h3>
-          <div className="overflow-y-auto space-y-2 pr-1">
+          <div className="max-h-[38vh] overflow-y-auto space-y-2 pr-1 custom-scroll">
             {proximosAniversariantes.length > 0 ? (
               proximosAniversariantes.slice(0, 5).map(u => (
                 <div key={u.id} className={`flex items-center justify-between p-2 rounded-lg border text-[10px] transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent'}`}>
@@ -263,6 +249,40 @@ export default function Dashboard() {
             )}
           </div>
         </div>
+
+        {/* PALAVRA DO DIA */}
+        <PalavraDodia />
+
+        {/* CARD DO DESAFIO BÍBLICO */}
+        <div
+          onClick={() => navigate('/entretenimento/quiz')}
+          className="bg-slate-900 rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl text-left group cursor-pointer hover:border-gold/30 transition-all"
+        >
+          <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+            <BookOpen size={100} strokeWidth={1.2} className="text-white" />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse shrink-0"></div>
+                <p className="text-[10px] font-bold text-gold uppercase tracking-[0.22em] truncate">Quiz do Reino</p>
+              </div>
+              <span className="bg-gold text-navy text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-tight shadow-gold shrink-0">
+                Novo
+              </span>
+            </div>
+
+            <h3 className="font-display text-[1.3rem] font-black text-white leading-tight mb-2 italic uppercase tracking-tight">
+              Desafio
+              <br />
+              <span className="text-gold text-[1.5rem]">Bíblico</span>
+            </h3>
+
+            <div className="mt-2 inline-flex items-center gap-2 bg-white text-navy font-black text-[10px] uppercase tracking-[0.16em] px-4 py-2 rounded-xl group-hover:bg-gold transition-all shadow-xl self-start">
+              <Gamepad2 size={13} /> Jogar Agora
+            </div>
+          </div>
+        </div>
       </div>
 
       {/* DESKTOP VIEW - LAYOUT ORIGINAL */}
@@ -290,26 +310,40 @@ export default function Dashboard() {
         {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
 
         {/* KPI GRID COMPACTO */}
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
           <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
           <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
           <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
           <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
           <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
           <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+          <div className="hidden md:flex md:col-span-2 xl:hidden bg-gradient-hero rounded-2xl p-3 border border-white/10 shadow-elegant relative overflow-hidden min-h-[80px] items-center justify-between gap-3">
+            <div className="relative z-10">
+              <p className="text-[8px] font-bold text-gold uppercase tracking-[0.18em] mb-1">Almas / Ano</p>
+              <p className="font-display text-2xl font-black text-white leading-none">{stats.almasAno}</p>
+            </div>
+            <div className="text-right relative z-10 shrink-0">
+              <div className="text-sm font-bold text-white leading-none">
+                <span className="text-gold">{stats.novosAno}</span>
+                <span className="text-white/20 mx-1">/</span>
+                <span className="text-green-400">{stats.retornoAno}</span>
+              </div>
+              <p className="text-[7px] text-slate-300 font-bold uppercase mt-1">Novo / Retorno</p>
+            </div>
+          </div>
         </div>
 
         {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-          <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col">
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="xl:col-span-2 bg-white rounded-2xl p-4 md:p-5 border border-slate-100 shadow-soft flex flex-col min-w-0 md:h-[min(40dvh,24rem)] xl:h-auto">
             <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
               <Cake size={18} className="text-gold" /> Aniversariantes do Mês
             </h3>
-            <div className="overflow-y-auto space-y-2 pr-1 custom-scroll">
+            <div className="flex-1 min-h-0 max-h-[40dvh] md:max-h-none overflow-y-auto space-y-2 pr-1 custom-scroll min-w-0">
               {proximosAniversariantes.length > 0 ? (
                 proximosAniversariantes.map(u => (
-                  <div key={u.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                    <div className="flex items-center gap-3">
+                  <div key={u.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                    <div className="flex items-center gap-3 min-w-0">
                       <div className="shrink-0">
                         {u.fotoUrl ? (
                           <img src={u.fotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white shadow-sm" />
@@ -319,14 +353,14 @@ export default function Dashboard() {
                           </div>
                         )}
                       </div>
-                      <div>
-                        <p className="text-sm font-bold text-navy leading-tight">{u.nome}</p>
-                        <p className="text-[10px] text-slate-500 font-medium uppercase italic">
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-navy leading-tight truncate">{u.nome}</p>
+                        <p className="text-[10px] text-slate-500 font-medium uppercase italic truncate">
                           {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} • {u.idadeNova} anos
                         </p>
                       </div>
                     </div>
-                    <div className="text-right">
+                    <div className="text-right shrink-0">
                       {u.diasPara === 0 ? (
                         <span className="text-[10px] font-black text-gold-dark bg-gold/20 px-2 py-1 rounded-lg animate-pulse">HOJE! 🎂</span>
                       ) : (
@@ -344,17 +378,17 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-4 min-w-0">
             {/* CARD ALMAS */}
-            <div className="bg-gradient-hero rounded-2xl p-3 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px]">
+            <div className="hidden xl:flex bg-gradient-hero rounded-2xl p-3 md:p-4 items-center justify-between gap-3 border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px] min-w-0">
               <div className="relative z-10">
                 <p className="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
-                <p className="font-display text-4xl font-black text-white leading-none">{stats.almasAno}</p>
+                <p className="font-display text-3xl xl:text-4xl font-black text-white leading-none">{stats.almasAno}</p>
               </div>
               <div className="h-8 w-px bg-white/20 mx-2"></div>
-              <div className="text-right relative z-10">
+              <div className="text-right relative z-10 shrink-0">
                 <p className="text-[8px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
-                <div className="text-lg font-bold text-white leading-none">
+                <div className="text-base xl:text-lg font-bold text-white leading-none">
                   <span className="text-gold">{stats.novosAno}</span>
                   <span className="text-white/20 mx-1">/</span>
                   <span className="text-green-400">{stats.retornoAno}</span>
@@ -363,8 +397,43 @@ export default function Dashboard() {
               </div>
             </div>
 
-            {/* PALAVRA DO DIA */}
-            <PalavraDodia />
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4 min-w-0">
+              <div
+                onClick={() => navigate('/entretenimento/quiz')}
+                className="hidden md:flex xl:hidden min-h-[160px] rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl bg-slate-900 text-left group cursor-pointer hover:border-gold/30 transition-all"
+              >
+                <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <BookOpen size={100} strokeWidth={1.2} className="text-white" />
+                </div>
+
+                <div className="relative z-10 flex h-full flex-col justify-center min-w-0">
+                  <div>
+                    <div className="flex items-center justify-between gap-5 mb-5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-2 h-2 rounded-full bg-gold animate-pulse shrink-0"></div>
+                        <p className="text-[11px] font-bold text-gold uppercase tracking-[0.24em] truncate">Quiz do Reino</p>
+                      </div>
+                      <span className="bg-gold text-navy text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tight shadow-gold shrink-0">
+                        Novo
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-[1.45rem] font-black text-white leading-tight mb-3 italic uppercase tracking-tight">
+                      Desafio
+                      <br />
+                      <span className="text-gold text-[1.85rem]">Bíblico</span>
+                    </h3>
+                  </div>
+
+                  <div className="mt-3 inline-flex items-center gap-2 bg-white text-navy font-black text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 rounded-xl group-hover:bg-gold transition-all shadow-xl self-start">
+                    <Gamepad2 size={14} /> Jogar Agora
+                  </div>
+                </div>
+              </div>
+
+              {/* PALAVRA DO DIA */}
+              <PalavraDodia compactTablet />
+            </div>
           </div>
         </div>
       </div>
