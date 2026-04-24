@@ -3,6 +3,8 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
 import { ModalProvider } from "./contexts/ModalContext";
+import { db } from "./database/firebase";
+import { doc, onSnapshot } from "firebase/firestore";
 
 // --- PÁGINAS DE CADASTRO ---
 import Dashboard from "./pages/Dashboard"; 
@@ -81,6 +83,48 @@ export default function App() {
     return () => mediaQuery.removeListener(syncIsMobile);
   }, []);
 
+  useEffect(() => {
+    if (!usuario?.id) return undefined;
+
+    const unsubUsuario = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
+      if (!docSnap.exists()) return;
+
+      const dadosUsuario = { id: String(docSnap.id), ...docSnap.data() };
+      setUsuario((atual) => {
+        const proximo = { ...atual, ...dadosUsuario };
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(proximo));
+        return proximo;
+      });
+    });
+
+    return () => unsubUsuario();
+  }, [usuario?.id]);
+
+  useEffect(() => {
+    if (!usuario?.cargoId) return undefined;
+
+    const unsubCargo = onSnapshot(doc(db, "cargos", String(usuario.cargoId)), (cargoSnap) => {
+      if (!cargoSnap.exists()) return;
+
+      const cargoData = cargoSnap.data();
+
+      setUsuario((atual) => {
+        if (!atual) return atual;
+
+        const proximo = {
+          ...atual,
+          cargoNome: cargoData.nome || atual.cargoNome || 'Membro',
+          permissoes: cargoData.permissoes || {}
+        };
+
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(proximo));
+        return proximo;
+      });
+    });
+
+    return () => unsubCargo();
+  }, [usuario?.cargoId]);
+
   const logout = () => {
     sessionStorage.removeItem('usuarioLogado');
     setUsuario(null);
@@ -97,7 +141,7 @@ export default function App() {
 
           <Route 
             path="/" 
-            element={usuario ? <Layout usuario={usuario} aoSair={logout} /> : <Navigate to="/login" replace />}
+            element={usuario ? <Layout usuario={usuario} aoSair={logout} onUsuarioAtualizado={setUsuario} /> : <Navigate to="/login" replace />}
           >
             <Route index element={<Dashboard />} />
             

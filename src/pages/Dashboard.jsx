@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { db } from '../database/firebase'; 
 import { collection, query, onSnapshot } from 'firebase/firestore';
@@ -20,6 +21,21 @@ export default function Dashboard() {
   const [isModalMembrosAberto, setIsModalMembrosAberto] = useState(false);
   const [tituloModal, setTituloModal] = useState("");
   const [membrosFiltrados, setMembrosFiltrados] = useState([]);
+
+  useEffect(() => {
+    if (!isModalMembrosAberto) return;
+
+    const overflowAnterior = document.body.style.overflow;
+    const overscrollAnterior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+
+    return () => {
+      document.body.style.overflow = overflowAnterior;
+      document.body.style.overscrollBehavior = overscrollAnterior;
+    };
+  }, [isModalMembrosAberto]);
 
   useEffect(() => {
     const qUsers = query(collection(db, "usuarios"));
@@ -143,6 +159,46 @@ export default function Dashboard() {
       .filter(u => u.diasPara >= 0 && u.diasPara <= 30)
       .sort((a, b) => a.diasPara - b.diasPara);
   }, [usuarios, hojeZerado]);
+
+  const modalMembros = isModalMembrosAberto ? createPortal(
+    <div className="fixed inset-0 z-[100] h-[100svh] max-h-[100svh] flex items-stretch justify-center overflow-hidden overscroll-none bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 xl:h-auto xl:max-h-none xl:items-center xl:p-4">
+      <div className="bg-white w-full h-full max-h-full rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in xl:w-full xl:max-w-2xl xl:h-auto xl:max-h-[calc(100dvh-2rem)] xl:rounded-[2rem]">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
+          <div className="relative z-10">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
+            <h2 className="font-display text-2xl font-black text-white leading-none">{tituloModal}</h2>
+          </div>
+          <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
+        </div>
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
+          {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
+            <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
+              <div className="shrink-0">
+                {u.fotoUrl ? (
+                  <img src={u.fotoUrl} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-soft" />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-gradient-royal flex items-center justify-center text-white font-display text-2xl font-black shadow-royal">{u.nome?.charAt(0)}</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
+                <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
+                  {u.biografia || "Sem biografia disponÃ­vel."}
+                </p>
+              </div>
+            </div>
+          )) : (
+            <div className="py-20 text-center opacity-30">
+              <Users className="mx-auto mb-4" size={40} />
+              <p className="font-bold uppercase text-[10px] tracking-widest">Nenhum membro nesta categoria.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
 
   return (
     <div className="space-y-4 pb-12 px-4 text-left animate-fade-in-up">
@@ -439,17 +495,17 @@ export default function Dashboard() {
       </div>
 
       {/* MODAL — COM FOTO E BIO */}
-      {isModalMembrosAberto && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-navy-deep/80 backdrop-blur-md animate-fade-in">
-            <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-elegant overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
+      {false && (
+        <div className="fixed inset-0 z-[100] h-[100svh] max-h-[100svh] flex items-stretch justify-center overflow-hidden overscroll-none bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:h-auto lg:max-h-none lg:items-center lg:p-4">
+            <div className="bg-white w-full h-full max-h-full rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:w-full lg:max-w-2xl lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:rounded-[2rem]">
+                <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
                     <div className="relative z-10">
                         <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
                         <h2 className="font-display text-2xl font-black text-white leading-none">{tituloModal}</h2>
                     </div>
                     <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
                 </div>
-                <div className="overflow-y-auto p-4 space-y-3 bg-slate-50">
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
                     {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
                         <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
                             <div className="shrink-0">
@@ -477,6 +533,7 @@ export default function Dashboard() {
             </div>
         </div>
       )}
+      {modalMembros}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -12,7 +12,7 @@ import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
 
-export default function Layout({ usuario, aoSair }) {
+export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
   const [menuCadastroAberto, setMenuCadastroAberto] = useState(false);
   const [menuFinanceiroAberto, setMenuFinanceiroAberto] = useState(false);
@@ -30,6 +30,11 @@ export default function Layout({ usuario, aoSair }) {
   const userMenuRef = useRef(null);
   
   const { exibirAniversario, finalizarAniversario, DURACAO_ANIMACAO } = useAniversarioAcesso(dadosSincronizados);
+  const aplicarSessaoUsuario = useCallback((novosDados) => {
+    setDadosSincronizados(novosDados);
+    sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
+    onUsuarioAtualizado?.(novosDados);
+  }, [onUsuarioAtualizado]);
 
   // --- 1. SINCRONIZAÇÃO COM FIREBASE ---
   useEffect(() => {
@@ -37,8 +42,7 @@ export default function Layout({ usuario, aoSair }) {
     const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
       if (docSnap.exists()) {
         const novosDados = { id: docSnap.id, ...docSnap.data() };
-        setDadosSincronizados(novosDados);
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
+        aplicarSessaoUsuario(novosDados);
       }
     });
 
@@ -51,7 +55,7 @@ export default function Layout({ usuario, aoSair }) {
     });
 
     return () => { unsub(); unsubConfig(); };
-  }, [usuario?.id]);
+  }, [usuario?.id, aplicarSessaoUsuario]);
 
   // --- 2. LÓGICA DO MODAL ESPECIAL ---
   useEffect(() => {
@@ -101,6 +105,34 @@ export default function Layout({ usuario, aoSair }) {
     // A dependência foi alterada para reagir apenas a mudanças no ID do usuário ou na lista de avisos já vistos.
     // Isso impede que outras atualizações no perfil do usuário (como pontuação de jogos) reativem o modal desnecessariamente.
   }, [dadosSincronizados?.id, JSON.stringify(dadosSincronizados?.avisosVistos)]);
+
+  useEffect(() => {
+    if (!dadosSincronizados?.cargoId) return;
+
+    const unsubCargo = onSnapshot(doc(db, "cargos", String(dadosSincronizados.cargoId)), (cargoSnap) => {
+      if (!cargoSnap.exists()) return;
+
+      const cargoData = cargoSnap.data();
+      const permissoesAtualizadas = cargoData.permissoes || {};
+      const cargoNomeAtualizado = cargoData.nome || dadosSincronizados?.cargoNome || 'Membro';
+      const permissoesAtuais = dadosSincronizados?.permissoes || {};
+
+      if (
+        JSON.stringify(permissoesAtuais) === JSON.stringify(permissoesAtualizadas) &&
+        (dadosSincronizados?.cargoNome || '') === cargoNomeAtualizado
+      ) {
+        return;
+      }
+
+      aplicarSessaoUsuario({
+        ...dadosSincronizados,
+        cargoNome: cargoNomeAtualizado,
+        permissoes: permissoesAtualizadas
+      });
+    });
+
+    return () => unsubCargo();
+  }, [dadosSincronizados, aplicarSessaoUsuario]);
 
   const silenciarEvento = async (eventoId) => {
     if (dadosSincronizados?.id && eventoId) {
@@ -232,7 +264,7 @@ export default function Layout({ usuario, aoSair }) {
       {/* SIDEBAR ROYAL */}
       <aside className="w-64 flex-shrink-0 hidden xl:flex flex-col h-[100dvh] sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
-        <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
+        <Link to="/" className="p-6 border-b border-white/5 flex items-center gap-4 relative transition-all hover:bg-white/5">
           {configGeral?.igrejaLogo ? (
              <img src={configGeral.igrejaLogo} alt="Logo" className="w-12 h-12 object-contain rounded-2xl bg-white/10 p-1.5 border border-white/10" />
           ) : (
@@ -244,7 +276,7 @@ export default function Layout({ usuario, aoSair }) {
             <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
             <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5 text-left">Gestão Pastoral</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto relative text-left">
 <Link to="/" onClick={fecharMenus} className={navLinkClass('/')}> 
@@ -387,7 +419,7 @@ export default function Layout({ usuario, aoSair }) {
                   <p className="text-[9px] font-bold text-gold uppercase tracking-[0.22em]">Usuário logado</p>
                   <p className="font-display text-lg font-black leading-tight mt-1 break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 mt-2 break-words">
-                    {dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
+                    {dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
                   </p>
                 </div>
 
