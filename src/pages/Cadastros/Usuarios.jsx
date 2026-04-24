@@ -22,7 +22,7 @@ export default function Usuarios() {
         dataNascimento: '', email: '', idAcesso: '',
         batizado: false, casado: false, conjugeId: '', conjugeExterno: false,
         dataConversao: '', perfilMembro: 'Novo Convertido',
-        fotoUrl: '', biografia: '', funcaoEclesiastica: ''
+        fotoUrl: '', biografia: '', funcaoEclesiastica: '', senhaPrecisaReset: false
     });
     const [editandoId, setEditandoId] = useState(null);
     const [filtro, setFiltro] = useState('');
@@ -98,7 +98,7 @@ export default function Usuarios() {
             dataNascimento: '', email: '', idAcesso: proximoId,
             batizado: false, casado: false, conjugeId: '', conjugeExterno: false,
             dataConversao: '', perfilMembro: 'Novo Convertido',
-            fotoUrl: '', biografia: '', funcaoEclesiastica: ''
+            fotoUrl: '', biografia: '', funcaoEclesiastica: '', senhaPrecisaReset: true
         });
         setIsModalAberto(true);
     };
@@ -207,7 +207,7 @@ export default function Usuarios() {
             {isModalAberto && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-300">
                     <div className="bg-white w-full max-w-4xl rounded-[3rem] shadow-2xl overflow-hidden max-h-[90vh] flex flex-col text-left italic">
-                        <div className="p-8 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
+                        <div className="p-5 md:p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50 shrink-0">
                             <div>
                                 <h2 className="text-xl font-black text-slate-800 uppercase italic leading-none">{editandoId ? 'Atualizar Membro' : 'Novo Cadastro'}</h2>
                                 <p className="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-1 italic">Dados, Foto e Biografia</p>
@@ -215,12 +215,12 @@ export default function Usuarios() {
                             <button onClick={fecharModal} className="p-2 hover:bg-slate-200 rounded-full text-slate-500"><X size={24} /></button>
                         </div>
 
-                        <form onSubmit={salvar} className="p-6 space-y-4 overflow-y-auto italic custom-scroll">
+                        <form onSubmit={salvar} className="p-4 md:p-6 space-y-3 overflow-y-auto italic custom-scroll">
                             
                             {/* UPLOAD DE FOTO E BIOGRAFIA (COMPACTO) */}
-                            <div className="flex flex-col md:flex-row gap-4 items-center p-4 bg-blue-50/50 rounded-[2rem] border border-blue-100 italic">
+                            <div className="flex flex-col md:flex-row gap-3 items-center p-3 bg-blue-50/50 rounded-3xl border border-blue-100 italic">
                                 <div className="relative shrink-0">
-                                    <div className="w-16 h-16 md:w-20 md:h-20 rounded-[1.2rem] bg-white border-2 border-white shadow-xl overflow-hidden flex items-center justify-center">
+                                    <div className="w-14 h-14 md:w-16 md:h-16 rounded-[1rem] bg-white border-2 border-white shadow-xl overflow-hidden flex items-center justify-center">
                                         {formData.fotoUrl ? (
                                             <img src={formData.fotoUrl} className="w-full h-full object-cover" alt="Perfil" />
                                         ) : (
@@ -252,20 +252,20 @@ export default function Usuarios() {
                                     <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">WhatsApp</label><input placeholder="(00) 00000-0000" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.telefone || ''} onChange={e => setFormData({ ...formData, telefone: aplicarMascaraTelefone(e.target.value) })} /></div>
                                     <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Nível de Acesso</label><select className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 bg-slate-50 font-bold text-xs focus:border-blue-500 outline-none italic" value={formData.cargoId || ''} onChange={e => setFormData({ ...formData, cargoId: e.target.value })}><option value="">Selecionar...</option>{cargos?.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}</select></div>
                                     <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Função Eclesiástica</label><input placeholder="Ex: Pastor" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-xs uppercase focus:border-blue-500 outline-none italic" value={formData.funcaoEclesiastica || ''} onChange={e => setFormData({ ...formData, funcaoEclesiastica: e.target.value.toUpperCase() })} /></div>
-                                    <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Senha</label><input type="password" placeholder="••••••••" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.senha || ''} onChange={e => setFormData({ ...formData, senha: e.target.value })} /></div>
+                                    <div className="flex flex-col gap-1.5"><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Senha</label><input type="password" placeholder="••••••••" className="w-full border-2 border-slate-100 rounded-xl px-3 py-2 font-bold bg-slate-50 text-sm focus:border-blue-500 outline-none italic" value={formData.senha || ''} onChange={e => setFormData({ ...formData, senha: e.target.value })} /><label className="flex items-center gap-1.5 cursor-pointer mt-0.5 bg-rose-50/50 hover:bg-rose-50 p-2 rounded-xl border border-rose-100/50 transition-colors"><input type="checkbox" className="w-3.5 h-3.5 accent-rose-600 rounded-sm shrink-0" checked={formData.senhaPrecisaReset ?? false} onChange={e => setFormData({...formData, senhaPrecisaReset: e.target.checked})} /><span className="text-[8px] font-black text-rose-600 uppercase italic leading-tight mt-0.5">Refazer no login</span></label></div>
                                 </div>
                             </div>
 
                             {/* DADOS ESPIRITUAIS E CONJUGAIS */}
-                            <div className="p-4 bg-slate-50 rounded-3xl border border-slate-100 space-y-4 text-left">
-                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end italic">
+                            <div className="p-3 bg-slate-50 rounded-2xl border border-slate-100 space-y-2 text-left">
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end italic">
                                     <label className="flex items-center gap-2 cursor-pointer pb-2"><input type="checkbox" className="w-4 h-4 accent-blue-600" checked={formData.batizado || false} onChange={e => setFormData({...formData, batizado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Batizado?</span></label>
                                     <label className="flex items-center gap-2 cursor-pointer pb-2"><input type="checkbox" className="w-4 h-4 accent-rose-500" checked={formData.casado || false} onChange={e => setFormData({...formData, casado: e.target.checked})} /><span className="text-[10px] font-black text-slate-600 uppercase italic">Casado?</span></label>
                                     <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Data Conversão</label><input type="date" className="w-full border-2 border-white rounded-xl px-3 py-2 font-bold bg-white italic text-xs outline-none focus:border-blue-500" value={formData.dataConversao || ''} onChange={e => setFormData({ ...formData, dataConversao: e.target.value })} /></div>
                                     <div><label className="block text-[9px] font-black text-slate-400 uppercase mb-1 ml-1">Perfil / Status</label><select className="w-full border-2 border-white rounded-xl px-3 py-2 bg-white font-bold text-xs italic outline-none focus:border-blue-500" value={formData.perfilMembro || 'Novo Convertido'} onChange={e => setFormData({ ...formData, perfilMembro: e.target.value })}><option value="Novo Convertido">NOVO CONVERTIDO</option><option value="Retorno">RETORNO</option><option value="Transferência">TRANSFERÊNCIA</option><option value="Afastado">AFASTADO</option></select></div>
                                 </div>
                                 {formData.casado && (
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-3 border-t border-slate-200">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2 border-t border-slate-200">
                                         <div className="space-y-2 italic">
                                             <label className="flex items-center gap-1.5 text-[9px] font-black text-rose-500 uppercase"><Link2 size={12}/> Vincular Cônjuge da Igreja</label>
                                             <select disabled={formData.conjugeExterno} className="w-full border-2 border-white rounded-xl px-3 py-2 font-bold bg-white text-xs italic outline-none focus:border-rose-300" value={formData.conjugeId || ''} onChange={e => setFormData({...formData, conjugeId: e.target.value})}>
@@ -280,9 +280,9 @@ export default function Usuarios() {
                                 )}
                             </div>
 
-                            <div className="flex gap-4 pt-2 shrink-0">
-                                <button type="button" onClick={fecharModal} className="flex-1 py-3 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest italic">Cancelar</button>
-                                <button type="submit" disabled={subindoImagem} className="flex-2 px-12 py-3 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs shadow-lg hover:bg-blue-600 transition-all italic">{editandoId ? 'Atualizar Membro' : 'Finalizar Cadastro'}</button>
+                            <div className="flex gap-4 pt-1 shrink-0">
+                                <button type="button" onClick={fecharModal} className="flex-1 py-2.5 rounded-2xl bg-slate-100 text-slate-500 font-black uppercase text-xs tracking-widest italic">Cancelar</button>
+                                <button type="submit" disabled={subindoImagem} className="flex-2 px-10 py-2.5 rounded-2xl bg-slate-900 text-white font-black uppercase text-xs shadow-lg hover:bg-blue-600 transition-all italic">{editandoId ? 'Atualizar Membro' : 'Finalizar Cadastro'}</button>
                             </div>
                         </form>
                     </div>

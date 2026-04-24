@@ -127,7 +127,7 @@ export default function App() {
   }, [usuario?.cargoId]);
 
   const logout = () => {
-    sessionStorage.removeItem('usuarioLogado');
+    sessionStorage.clear();
     setUsuario(null);
   };
 

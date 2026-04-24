@@ -76,9 +76,12 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
              ? dadosSincronizados.avisosVistos 
              : (dadosSincronizados?.avisoVistoId ? [dadosSincronizados.avisoVistoId] : []);
              
+          const vistosSessao = JSON.parse(sessionStorage.getItem('avisosTemporariosSessao') || '[]');
+
           const eventosParaExibir = listaCompleta
               .filter(eve => {
                 if (silenciados.includes(eve.id)) return false;
+                if (vistosSessao.includes(eve.id)) return false;
                 const [ano, mes, dia] = eve.dataEspecífica.split('-');
                 const [hora, minuto] = (eve.horario || "00:00").split(':');
                 const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
@@ -88,10 +91,11 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               .sort((a, b) => new Date(a.dataEspecífica) - new Date(b.dataEspecífica));
 
           if (eventosParaExibir.length > 0) {
+            const novosVistos = [...vistosSessao, ...eventosParaExibir.map(e => e.id)];
+            sessionStorage.setItem('avisosTemporariosSessao', JSON.stringify(novosVistos));
+            
             setEventosEspeciais(eventosParaExibir);
             setExibirModalEspecial(true);
-          } else {
-            setExibirModalEspecial(false);
           }
         }
       } catch (error) {
