@@ -409,7 +409,12 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               <div className="absolute right-0 mt-4 w-[min(22rem,calc(100vw-1rem))] bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
                 <div className="rounded-[1.75rem] bg-gradient-hero p-4 text-white shadow-elegant">
                   <p className="text-[9px] font-bold text-gold uppercase tracking-[0.22em]">Usuário logado</p>
-                  <p className="font-display text-lg font-black leading-tight mt-1 break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
+                  <div className="flex flex-col items-start gap-1.5 mt-1">
+                    <p className="font-display text-lg font-black leading-tight break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[9px] font-bold tracking-widest text-gold uppercase">
+                      Matrícula: {dadosSincronizados?.idAcesso || dadosSincronizados?.id || usuario?.id || 'N/A'}
+                    </span>
+                  </div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 mt-2 break-words">
                     {dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
                   </p>
