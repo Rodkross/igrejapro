@@ -353,15 +353,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
         <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          {/* BOTÃO VOLTAR - ESQUERDA */}
-          {location.pathname !== '/' && (
-            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
-              location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
-            }`}>
-              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
-              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
-            </Link>
-          )}
+          {/* START DO LADO ESQUERDO DA HEADER - REMOVIDO BOTÃO VOLTAR GLOBAL A PEDIDO DO USUÁRIO */}
 
           {/* EVENTO AO VIVO - ESQUERDA */}
           <div className={`flex items-center gap-1 relative z-10 text-left ${

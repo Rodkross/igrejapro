@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, runTransaction, serverTimestamp } from 'firebase/firestore';
 import { BookOpen, Cross, Heart, Loader2 } from 'lucide-react';
+import { Link } from 'react-router-dom';
 
 const PALAVRAS_DISPONIVEIS = [
   {
@@ -212,6 +213,15 @@ export default function PalavraDodia({ compactTablet = false }) {
             {erroCurtida}
           </p>
         )}
+
+        <div className="pt-3 mt-1 border-t border-white/10">
+          <Link
+            to={`/estudo-palavra?ref=${encodeURIComponent(palavraDoDia.referencia)}&text=${encodeURIComponent(palavraDoDia.texto)}`}
+            className="block text-center text-gold/80 hover:text-gold transition-colors font-semibold text-xs py-1"
+          >
+            Se aprofunde nesse versículo →
+          </Link>
+        </div>
       </div>
     </div>
   );
