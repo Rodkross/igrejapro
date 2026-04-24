@@ -11,6 +11,7 @@ import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
+import ModalMeuPerfil from './ModalMeuPerfil';
 
 export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
@@ -24,6 +25,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [verificandoDestaques, setVerificandoDestaques] = useState(true);
 
   const [configModalAberto, setConfigModalAberto] = useState(false);
+  const [perfilModalAberto, setPerfilModalAberto] = useState(false);
   const [configGeral, setConfigGeral] = useState(null);
 
   const location = useLocation();
@@ -439,6 +441,11 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
                       </Link>
                     );
                   })}
+
+                  <button onClick={() => { setPerfilModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
+                    <UserIcon size={16} /> Meu Perfil
+                  </button>
+
                   {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
                     <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
                       <Settings size={16} /> Configurações
@@ -462,6 +469,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
       </main>
 
       {configModalAberto && <ModalConfiguracoes aoFechar={() => setConfigModalAberto(false)} />}
+      {perfilModalAberto && <ModalMeuPerfil usuario={dadosSincronizados} aoFechar={() => setPerfilModalAberto(false)} />}
     </div>
   );
 }
