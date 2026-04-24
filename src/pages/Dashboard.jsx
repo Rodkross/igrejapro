@@ -26,12 +26,6 @@ export default function Dashboard() {
     if (!isModalMembrosAberto) return;
 
     const overflowAnterior = document.body.style.overflow;
-<<<<<<< HEAD
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.body.style.overflow = overflowAnterior;
-=======
     const overscrollAnterior = document.body.style.overscrollBehavior;
 
     document.body.style.overflow = 'hidden';
@@ -40,7 +34,6 @@ export default function Dashboard() {
     return () => {
       document.body.style.overflow = overflowAnterior;
       document.body.style.overscrollBehavior = overscrollAnterior;
->>>>>>> main
     };
   }, [isModalMembrosAberto]);
 
@@ -502,15 +495,9 @@ export default function Dashboard() {
       </div>
 
       {/* MODAL — COM FOTO E BIO */}
-<<<<<<< HEAD
-      {isModalMembrosAberto && (
-        <div className="fixed inset-0 z-[100] flex items-stretch justify-center overflow-hidden bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:items-center lg:p-4">
-            <div className="bg-white w-full h-[100dvh] max-h-[100dvh] rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:max-w-2xl lg:rounded-[2rem]">
-=======
       {false && (
         <div className="fixed inset-0 z-[100] h-[100svh] max-h-[100svh] flex items-stretch justify-center overflow-hidden overscroll-none bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:h-auto lg:max-h-none lg:items-center lg:p-4">
             <div className="bg-white w-full h-full max-h-full rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:w-full lg:max-w-2xl lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:rounded-[2rem]">
->>>>>>> main
                 <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
                     <div className="relative z-10">
                         <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
@@ -518,11 +505,7 @@ export default function Dashboard() {
                     </div>
                     <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
                 </div>
-<<<<<<< HEAD
-                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50">
-=======
                 <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
->>>>>>> main
                     {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
                         <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
                             <div className="shrink-0">

@@ -20,24 +20,37 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
   useEffect(() => {
     if (!nomeReal) return;
-    
-    // O sistema de gestão do convênio (admin) salva o nome sempre em MAIÚSCULO.
-    // É obrigatório fazer a query com a string em .toUpperCase() para haver MATCH perfeito.
+
     const nomeNormalizado = nomeReal.toUpperCase();
 
-    const qConv = query(collection(db, "convenio"), where("usuarioNome", "==", nomeNormalizado), where("status", "==", "pendente"));
-    const qFin = query(collection(db, "financeiro"), where("origem", "==", nomeNormalizado), where("status", "==", "aberto"), where("categoria", "in", ["Convenio", "Fiado"]));
-    const qCred = collection(db, "saldosCredito"); // Busca tolerante
+    const qConv = query(
+      collection(db, "convenio"),
+      where("usuarioNome", "==", nomeNormalizado),
+      where("status", "==", "pendente")
+    );
+    const qFin = query(
+      collection(db, "financeiro"),
+      where("origem", "==", nomeNormalizado),
+      where("status", "==", "aberto"),
+      where("categoria", "in", ["Convenio", "Fiado"])
+    );
+    const qCred = collection(db, "saldosCredito");
 
-    const unsubConv = onSnapshot(qConv, (snap) => setItensConvenio(snap.docs.map(d => ({ id: d.id, ...d.data() }))));
+    const unsubConv = onSnapshot(qConv, (snap) => {
+      setItensConvenio(snap.docs.map((d) => ({ id: d.id, ...d.data() })));
+    });
+
     const unsubFin = onSnapshot(qFin, (snap) => {
-      setRestosFinanceiro(snap.docs.map(d => ({ id: d.id, ...d.data() })).filter(f => !f.convenioUuid));
+      setRestosFinanceiro(
+        snap.docs
+          .map((d) => ({ id: d.id, ...d.data() }))
+          .filter((f) => !f.convenioUuid)
+      );
       setCarregando(false);
     });
-    
-    // Filtro manual + Captura e exibição de falhas silenciosas do Firebase
+
     const unsubCred = onSnapshot(qCred, (snap) => {
-      const docsDoUsuario = snap.docs.filter(d => {
+      const docsDoUsuario = snap.docs.filter((d) => {
         const origemDb = d.data().origem || "";
         return origemDb.trim().toUpperCase() === nomeNormalizado;
       });
@@ -48,37 +61,45 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
       console.error("ERRO AO LER SALDOS: ", error);
     });
 
-    return () => { unsubConv(); unsubFin(); unsubCred(); };
+    return () => {
+      unsubConv();
+      unsubFin();
+      unsubCred();
+    };
   }, [nomeReal]);
 
   const resumo = useMemo(() => {
     const lista = [];
     let totalDividas = 0;
 
-    itensConvenio.forEach(i => {
+    itensConvenio.forEach((i) => {
       const v = Number(i.valorTotal);
       lista.push({ id: i.id, desc: i.produtoNome, valor: v, data: i.data, isCredito: false });
       totalDividas += v;
     });
 
-    restosFinanceiro.forEach(r => {
+    restosFinanceiro.forEach((r) => {
       const v = Number(r.valor);
       lista.push({ id: r.id, desc: r.descricao || "Restante Pendente", valor: v, data: r.vencimento, isCredito: false });
       totalDividas += v;
     });
 
     if (valorCredito > 0) {
-      lista.push({ 
-        id: 'credito-abater', 
-        desc: "Saldo de Crédito a Abater", 
-        valor: -Math.abs(valorCredito), 
-        data: new Date().toISOString().split('T')[0], 
-        isCredito: true 
+      lista.push({
+        id: 'credito-abater',
+        desc: "Saldo de Crédito a Abater",
+        valor: -Math.abs(valorCredito),
+        data: new Date().toISOString().split('T')[0],
+        isCredito: true
       });
     }
 
     const saldoLiquido = Number((totalDividas - valorCredito).toFixed(2));
-    return { total: saldoLiquido, itens: lista.sort((a, b) => new Date(b.data) - new Date(a.data)), temCredito: saldoLiquido < 0 };
+    return {
+      total: saldoLiquido,
+      itens: lista.sort((a, b) => new Date(b.data) - new Date(a.data)),
+      temCredito: saldoLiquido < 0
+    };
   }, [itensConvenio, restosFinanceiro, valorCredito]);
 
   const getMensagemStatus = () => {
@@ -89,7 +110,6 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
   if (!nomeReal) return null;
 
-  // Estilos premium por status
   const status = resumo.total > 0 ? 'devedor' : resumo.total < 0 ? 'credito' : 'zerado';
   const estilo = {
     devedor: {
@@ -115,23 +135,19 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
 
   return (
     <div className={`group rounded-3xl border transition-all duration-500 overflow-hidden ${expandido ? 'border-slate-200 shadow-elegant' : 'border-slate-100 shadow-soft'}`}>
-
-      <div onClick={() => setExpandido(!expandido)} className={`p-4 md:p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between cursor-pointer transition-colors ${config.bg}`}>
+      <div
+        onClick={() => setExpandido(!expandido)}
+        className={`p-4 md:p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between cursor-pointer transition-colors ${config.bg}`}
+      >
         <div className="flex items-center gap-3 md:gap-4 min-w-0 w-full md:w-auto">
           <div className={`hidden md:flex w-11 h-11 md:w-14 md:h-14 rounded-2xl items-center justify-center shrink-0 ${config.iconBg}`}>
             {resumo.total === 0 ? <HeartHandshake size={20} className="md:w-6 md:h-6" /> : <Wallet2 size={20} className="md:w-6 md:h-6" />}
           </div>
-<<<<<<< HEAD
-          <div className="text-left flex flex-col items-start gap-1">
-            <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] leading-none mt-1">Cantina</p>
-            <div className="flex items-center gap-2">
-              <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
-=======
+
           <div className="text-left flex flex-col items-start gap-0.5 md:gap-1 min-w-0">
             <p className="text-[9px] md:text-[10px] font-bold text-gold uppercase tracking-[0.22em] md:tracking-[0.25em] leading-none mt-1">Cantina</p>
             <div className="flex items-center gap-2 min-w-0">
               <h3 className="font-display text-lg md:text-xl font-bold text-navy leading-none truncate">Meu Convênio</h3>
->>>>>>> main
             </div>
             <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wide md:tracking-wider inline-block leading-tight mt-0.5 break-words ${config.text}`}>
               {getMensagemStatus()}
@@ -192,7 +208,7 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
                   <CreditCard size={18} />
                 </div>
                 <p className="text-[9px] md:text-[10px] font-bold text-slate-300 uppercase leading-snug tracking-wide md:tracking-wider relative z-10">
-                  Valor total em aberto.<br/>
+                  Valor total em aberto.<br />
                   <span className="text-gold">Fale com a tesouraria para pagar.</span>
                 </p>
               </div>
