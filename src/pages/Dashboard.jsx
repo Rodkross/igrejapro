@@ -22,6 +22,17 @@ export default function Dashboard() {
   const [membrosFiltrados, setMembrosFiltrados] = useState([]);
 
   useEffect(() => {
+    if (!isModalMembrosAberto) return;
+
+    const overflowAnterior = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+
+    return () => {
+      document.body.style.overflow = overflowAnterior;
+    };
+  }, [isModalMembrosAberto]);
+
+  useEffect(() => {
     const qUsers = query(collection(db, "usuarios"));
     const unsubUsers = onSnapshot(qUsers, (snapshot) => {
       const lista = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
@@ -281,16 +292,16 @@ export default function Dashboard() {
 
       {/* MODAL — COM FOTO E BIO */}
       {isModalMembrosAberto && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-navy-deep/80 backdrop-blur-md animate-fade-in">
-            <div className="bg-white w-full max-w-2xl rounded-[2rem] shadow-elegant overflow-hidden flex flex-col max-h-[85vh] animate-scale-in">
-                <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
+        <div className="fixed inset-0 z-[100] flex items-stretch justify-center overflow-hidden bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:items-center lg:p-4">
+            <div className="bg-white w-full h-[100dvh] max-h-[100dvh] rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:max-w-2xl lg:rounded-[2rem]">
+                <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
                     <div className="relative z-10">
                         <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
                         <h2 className="font-display text-2xl font-black text-white leading-none">{tituloModal}</h2>
                     </div>
                     <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
                 </div>
-                <div className="overflow-y-auto p-4 space-y-3 bg-slate-50">
+                <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50">
                     {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
                         <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
                             <div className="shrink-0">
