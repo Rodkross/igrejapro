@@ -139,6 +139,8 @@ export default function Dashboard() {
             return idade >= 25 && idade < 60;
       }); titulo = "Corpo de Adultos"; break;
       case 'idosos': lista = ativos.filter(u => u.dataNascimento && (anoAtual - parseInt(u.dataNascimento.split('-')[0])) >= 60); titulo = "Melhor Idade"; break;
+      case 'batizados': lista = ativos.filter(u => u.batizado); titulo = "Membros Batizados"; break;
+      case 'casados': lista = ativos.filter(u => u.casado); titulo = "Membros Casados"; break;
       default: lista = ativos; titulo = "Membros";
     }
     setMembrosFiltrados(lista);
@@ -171,24 +173,50 @@ export default function Dashboard() {
           <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
         </div>
         <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
-          {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
-            <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
-              <div className="shrink-0">
-                {u.fotoUrl ? (
-                  <img src={u.fotoUrl} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-soft" />
-                ) : (
-                  <div className="w-16 h-16 rounded-xl bg-gradient-royal flex items-center justify-center text-white font-display text-2xl font-black shadow-royal">{u.nome?.charAt(0)}</div>
-                )}
-              </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
-                <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
-                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
-                  {u.biografia || "Sem biografia disponÃ­vel."}
-                </p>
-              </div>
-            </div>
-          )) : (
+          {membrosFiltrados.length > 0 ? (() => {
+             if (tituloModal === "Membros Casados") {
+                 const processados = new Set();
+                 const elementos = [];
+                 membrosFiltrados.forEach(u => {
+                     if (processados.has(u.id)) return;
+                     processados.add(u.id);
+
+                     let conjuge = null;
+                     if (u.conjugeId && !u.conjugeExterno) {
+                         conjuge = membrosFiltrados.find(c => c.id === u.conjugeId);
+                     }
+                     
+                     if (conjuge) {
+                         processados.add(conjuge.id);
+                         elementos.push(
+                             <div key={`${u.id}-${conjuge.id}`} className="relative p-1 bg-gradient-to-br from-gold/10 to-amber-100/50 rounded-[1.5rem] border border-gold/30 shadow-soft mb-5 mt-4">
+                                <div className="absolute -top-3 left-1/2 -translate-x-1/2 flex items-center justify-center bg-white rounded-full px-2.5 py-1 shadow-sm border border-gold/20 z-10 transition-transform hover:scale-105 cursor-default">
+                                   <div className="relative w-7 h-4 flex items-center justify-center">
+                                      <div className="absolute w-4 h-4 rounded-full border-[1.5px] border-gold transform -translate-x-[5px]"></div>
+                                      <div className="absolute w-4 h-4 rounded-full border-[1.5px] border-gold transform translate-x-[5px]"></div>
+                                   </div>
+                                   <span className="text-[8px] font-black tracking-[0.2em] uppercase text-gold ml-1.5">Enlace</span>
+                                </div>
+                                <div className="space-y-1 relative">
+                                    <MembroCard u={u} isCasal />
+                                    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                                        <div className="bg-white p-1.5 rounded-full border border-gold/20 shadow-sm">
+                                            <Heart size={14} className="text-gold fill-gold/20" />
+                                        </div>
+                                    </div>
+                                    <MembroCard u={conjuge} isCasal />
+                                </div>
+                             </div>
+                         );
+                     } else {
+                         elementos.push(<MembroCard key={u.id} u={u} />);
+                     }
+                 });
+                 return elementos;
+             }
+
+             return membrosFiltrados.map(u => <MembroCard key={u.id} u={u} />);
+          })() : (
             <div className="py-20 text-center opacity-30">
               <Users className="mx-auto mb-4" size={40} />
               <p className="font-bold uppercase text-[10px] tracking-widest">Nenhum membro nesta categoria.</p>
@@ -243,8 +271,8 @@ export default function Dashboard() {
 
         <div className="grid grid-cols-3 gap-2">
           <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
-          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
-          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+          <KpiCard onClick={() => abrirListagem('batizados')} icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('casados')} icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
         </div>
 
         {/* CARD ALMAS */}
@@ -371,8 +399,8 @@ export default function Dashboard() {
           <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
           <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
           <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
-          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
-          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+          <KpiCard onClick={() => abrirListagem('batizados')} icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('casados')} icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
           <div className="hidden md:flex md:col-span-2 xl:hidden bg-gradient-hero rounded-2xl p-3 border border-white/10 shadow-elegant relative overflow-hidden min-h-[80px] items-center justify-between gap-3">
             <div className="relative z-10">
               <p className="text-[8px] font-bold text-gold uppercase tracking-[0.18em] mb-1">Almas / Ano</p>
@@ -570,6 +598,27 @@ function KpiCard({ icon, label, value, accent, compact, inline, onClick }) {
       <div>
         {!inline && <p className={`font-display font-black text-navy leading-none ${compact ? 'text-2xl' : 'text-3xl'}`}>{value}</p>}
         <p className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{label}</p>
+      </div>
+    </div>
+  );
+}
+
+function MembroCard({ u, isCasal }) {
+  return (
+    <div className={`flex items-center gap-4 p-4 bg-white ${isCasal ? 'rounded-[1.3rem]' : 'rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20'} transition-all`}>
+      <div className="shrink-0">
+        {u.fotoUrl ? (
+          <img src={u.fotoUrl} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-soft" />
+        ) : (
+          <div className="w-16 h-16 rounded-xl bg-gradient-royal flex items-center justify-center text-white font-display text-2xl font-black shadow-royal">{u.nome?.charAt(0)}</div>
+        )}
+      </div>
+      <div className="min-w-0 flex-1">
+        <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
+        <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
+        <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
+          {u.biografia || "Sem biografia disponível."}
+        </p>
       </div>
     </div>
   );
