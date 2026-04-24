@@ -1,18 +1,18 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
 import {
   LayoutDashboard, Users, CreditCard, ChevronDown, ChevronUp,
-  Settings, LogOut, User as UserIcon, CalendarDays, PlusCircle,
-  ArrowRightLeft, BarChart3, Trophy, Gamepad2
+  Settings, LogOut, User as UserIcon, CalendarDays, BookOpen,
+  ArrowRightLeft, BarChart3, Trophy, Gamepad2, ArrowLeft
 } from 'lucide-react';
 import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
 
-export default function Layout({ usuario, aoSair }) {
+export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
   const [menuCadastroAberto, setMenuCadastroAberto] = useState(false);
   const [menuFinanceiroAberto, setMenuFinanceiroAberto] = useState(false);
@@ -30,6 +30,11 @@ export default function Layout({ usuario, aoSair }) {
   const userMenuRef = useRef(null);
   
   const { exibirAniversario, finalizarAniversario, DURACAO_ANIMACAO } = useAniversarioAcesso(dadosSincronizados);
+  const aplicarSessaoUsuario = useCallback((novosDados) => {
+    setDadosSincronizados(novosDados);
+    sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
+    onUsuarioAtualizado?.(novosDados);
+  }, [onUsuarioAtualizado]);
 
   // --- 1. SINCRONIZAÇÃO COM FIREBASE ---
   useEffect(() => {
@@ -37,8 +42,7 @@ export default function Layout({ usuario, aoSair }) {
     const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
       if (docSnap.exists()) {
         const novosDados = { id: docSnap.id, ...docSnap.data() };
-        setDadosSincronizados(novosDados);
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
+        aplicarSessaoUsuario(novosDados);
       }
     });
 
@@ -51,7 +55,7 @@ export default function Layout({ usuario, aoSair }) {
     });
 
     return () => { unsub(); unsubConfig(); };
-  }, [usuario?.id]);
+  }, [usuario?.id, aplicarSessaoUsuario]);
 
   // --- 2. LÓGICA DO MODAL ESPECIAL ---
   useEffect(() => {
@@ -101,6 +105,34 @@ export default function Layout({ usuario, aoSair }) {
     // A dependência foi alterada para reagir apenas a mudanças no ID do usuário ou na lista de avisos já vistos.
     // Isso impede que outras atualizações no perfil do usuário (como pontuação de jogos) reativem o modal desnecessariamente.
   }, [dadosSincronizados?.id, JSON.stringify(dadosSincronizados?.avisosVistos)]);
+
+  useEffect(() => {
+    if (!dadosSincronizados?.cargoId) return;
+
+    const unsubCargo = onSnapshot(doc(db, "cargos", String(dadosSincronizados.cargoId)), (cargoSnap) => {
+      if (!cargoSnap.exists()) return;
+
+      const cargoData = cargoSnap.data();
+      const permissoesAtualizadas = cargoData.permissoes || {};
+      const cargoNomeAtualizado = cargoData.nome || dadosSincronizados?.cargoNome || 'Membro';
+      const permissoesAtuais = dadosSincronizados?.permissoes || {};
+
+      if (
+        JSON.stringify(permissoesAtuais) === JSON.stringify(permissoesAtualizadas) &&
+        (dadosSincronizados?.cargoNome || '') === cargoNomeAtualizado
+      ) {
+        return;
+      }
+
+      aplicarSessaoUsuario({
+        ...dadosSincronizados,
+        cargoNome: cargoNomeAtualizado,
+        permissoes: permissoesAtualizadas
+      });
+    });
+
+    return () => unsubCargo();
+  }, [dadosSincronizados, aplicarSessaoUsuario]);
 
   const silenciarEvento = async (eventoId) => {
     if (dadosSincronizados?.id && eventoId) {
@@ -187,9 +219,38 @@ export default function Layout({ usuario, aoSair }) {
   const subLinkClass = (p) => `flex items-center gap-2 px-4 py-2 text-[10px] font-bold uppercase tracking-wider transition-all rounded-xl ${
     location.pathname === p ? 'text-gold bg-gold/10 border border-gold/20' : 'text-slate-500 hover:text-white hover:bg-white/5'
   }`;
+  const userMenuLinkClass = (p) => `w-full flex items-center gap-3 px-4 py-3 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left ${
+    isActive(p) ? 'bg-royal/10 text-royal border border-royal/10' : 'text-slate-600 hover:bg-slate-50 hover:text-navy'
+  }`;
+
+  const cadastroRoutes = [
+    temAcesso('programacao') && { to: '/cadastro/programacao', label: 'Programação', icon: Settings, mobileVisible: true },
+    temAcesso('usuarios') && { to: '/cadastro/usuarios', label: 'Membros', icon: Users, mobileVisible: false },
+    temAcesso('cargos') && { to: '/cadastro/cargos', label: 'Níveis de Acesso', icon: Settings, mobileVisible: false },
+    temAcesso('planoContas') && { to: '/cadastro/plano-contas', label: 'Plano de Contas', icon: Settings, mobileVisible: false },
+    temAcesso('contas') && { to: '/cadastro/contas', label: 'Contas', icon: Settings, mobileVisible: false },
+    temAcesso('cantina') && { to: '/cadastro/cantina', label: 'Cantina', icon: Settings, mobileVisible: false },
+  ].filter(Boolean);
+
+  const financeiroRoutes = [
+    temAcesso('fluxo') && { to: '/financeiro/fluxo', label: 'Fluxo de Caixa', icon: BarChart3, mobileVisible: false },
+    temAcesso('lancamentos') && { to: '/financeiro/lancamentos', label: 'Lançamentos', icon: CreditCard, mobileVisible: false },
+    temAcesso('lancamentos') && { to: '/financeiro/transferencias', label: 'Transferências', icon: ArrowRightLeft, mobileVisible: false },
+    temAcesso('pagar') && { to: '/financeiro/pagar', label: 'Contas a Pagar', icon: CreditCard, mobileVisible: false },
+    temAcesso('receber') && { to: '/financeiro/receber', label: 'Contas a Receber', icon: CreditCard, mobileVisible: false },
+    temAcesso('convenio') && { to: '/financeiro/convenio', label: 'Convênio', icon: CreditCard, mobileVisible: false },
+    temAcesso('relatorios') && { to: '/financeiro/relatorios', label: 'Relatórios', icon: BarChart3, mobileVisible: false },
+  ].filter(Boolean);
+
+  const menuUsuarioRoutes = [
+    { to: '/', label: 'Dashboard', icon: LayoutDashboard, mobileVisible: true },
+    ...cadastroRoutes,
+    ...financeiroRoutes,
+    { to: '/entretenimento/quiz', label: 'Quiz do Reino', icon: Trophy, mobileVisible: true },
+  ];
 
   return (
-    <div className="flex min-h-screen bg-background font-sans overflow-x-hidden">
+    <div className="flex min-h-[100dvh] bg-background font-sans overflow-x-hidden">
       
       {/* MODAIS GLOBAIS */}
       {exibirModalEspecial && !verificandoDestaques && (
@@ -201,9 +262,9 @@ export default function Layout({ usuario, aoSair }) {
       )}
 
       {/* SIDEBAR ROYAL */}
-      <aside className="w-64 flex-shrink-0 hidden md:flex flex-col h-screen sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
+      <aside className="w-64 flex-shrink-0 hidden xl:flex flex-col h-[100dvh] sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
-        <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
+        <Link to="/" className="p-6 border-b border-white/5 flex items-center gap-4 relative transition-all hover:bg-white/5">
           {configGeral?.igrejaLogo ? (
              <img src={configGeral.igrejaLogo} alt="Logo" className="w-12 h-12 object-contain rounded-2xl bg-white/10 p-1.5 border border-white/10" />
           ) : (
@@ -215,7 +276,7 @@ export default function Layout({ usuario, aoSair }) {
             <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
             <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5 text-left">Gestão Pastoral</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto relative text-left">
 <Link to="/" onClick={fecharMenus} className={navLinkClass('/')}> 
@@ -232,12 +293,9 @@ export default function Layout({ usuario, aoSair }) {
               </button>
               {menuCadastroAberto && (
                 <div className="ml-4 pl-2 border-l border-white/10 py-1 space-y-0.5 text-left">
-                  {temAcesso('programacao') && <Link to="/cadastro/programacao" className={subLinkClass('/cadastro/programacao')}>Programação</Link>}
-                  {temAcesso('usuarios') && <Link to="/cadastro/usuarios" className={subLinkClass('/cadastro/usuarios')}>Membros</Link>}
-                  {temAcesso('cargos') && <Link to="/cadastro/cargos" className={subLinkClass('/cadastro/cargos')}>Níveis de Acesso</Link>}
-                  {temAcesso('planoContas') && <Link to="/cadastro/plano-contas" className={subLinkClass('/cadastro/plano-contas')}>Plano de Contas</Link>}
-                  {temAcesso('contas') && <Link to="/cadastro/contas" className={subLinkClass('/cadastro/contas')}>Contas</Link>}
-                  {temAcesso('cantina') && <Link to="/cadastro/cantina" className={subLinkClass('/cadastro/cantina')}>Cantina</Link>}
+                  {cadastroRoutes.map((route) => (
+                    <Link key={route.to} to={route.to} className={subLinkClass(route.to)}>{route.label}</Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -251,13 +309,9 @@ export default function Layout({ usuario, aoSair }) {
               </button>
               {menuFinanceiroAberto && (
                 <div className="ml-4 pl-2 border-l border-white/10 py-1 space-y-0.5 text-left">
-                  {temAcesso('fluxo') && <Link to="/financeiro/fluxo" className={subLinkClass('/financeiro/fluxo')}>Fluxo de Caixa</Link>}
-                  {temAcesso('lancamentos') && <Link to="/financeiro/lancamentos" className={subLinkClass('/financeiro/lancamentos')}>Lançamentos</Link>}
-                  {temAcesso('lancamentos') && <Link to="/financeiro/transferencias" className={subLinkClass('/financeiro/transferencias')}>Transferências</Link>}
-                  {temAcesso('pagar') && <Link to="/financeiro/pagar" className={subLinkClass('/financeiro/pagar')}>Contas a Pagar</Link>}
-                  {temAcesso('receber') && <Link to="/financeiro/receber" className={subLinkClass('/financeiro/receber')}>Contas a Receber</Link>}
-                  {temAcesso('convenio') && <Link to="/financeiro/convenio" className={subLinkClass('/financeiro/convenio')}>Convênio</Link>}
-                  {temAcesso('relatorios') && <Link to="/financeiro/relatorios" className={subLinkClass('/financeiro/relatorios')}>Relatórios</Link>}
+                  {financeiroRoutes.map((route) => (
+                    <Link key={route.to} to={route.to} className={subLinkClass(route.to)}>{route.label}</Link>
+                  ))}
                 </div>
               )}
             </div>
@@ -268,7 +322,7 @@ export default function Layout({ usuario, aoSair }) {
         <div className="p-4 border-t border-white/5 relative">
           <div className="bg-slate-900 rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl min-h-[160px] flex flex-col justify-center text-left group cursor-pointer hover:border-gold/30 transition-all">
             <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
-              <PlusCircle size={100} strokeWidth={1} className="text-white" />
+              <BookOpen size={100} strokeWidth={1.2} className="text-white" />
             </div>
             <div className="relative z-10">
               <div className="flex items-center justify-between mb-3">
@@ -295,26 +349,38 @@ export default function Layout({ usuario, aoSair }) {
       </aside>
 
       {/* CONTEÚDO PRINCIPAL */}
-      <main className="flex-1 flex flex-col h-screen overflow-hidden text-left bg-background">
-        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center justify-between px-10 shrink-0 z-40 shadow-elegant relative">
+      <main className="flex-1 min-w-0 flex flex-col min-h-[100dvh] md:h-[100dvh] overflow-hidden text-left bg-background">
+        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          <div className="flex items-center gap-3 relative z-10 text-left">
+          {/* BOTÃO VOLTAR - ESQUERDA */}
+          {location.pathname !== '/' && (
+            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
+              location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
+            }`}>
+              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
+              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
+            </Link>
+          )}
+
+          {/* EVENTO AO VIVO - ESQUERDA */}
+          <div className={`flex items-center gap-1 relative z-10 text-left ${
+            location.pathname.startsWith('/cadastro') || location.pathname.startsWith('/entretenimento/quiz')
+              ? 'hidden md:flex'
+              : 'flex'
+          }`}>
             {eventoAoVivo ? (
               <>
-                <div className="relative w-12 h-12 rounded-2xl overflow-hidden border-2 border-gold shadow-gold flex items-center justify-center bg-gold/10 backdrop-blur-sm text-left">
-                  {eventoAoVivo.bannerUrl ? <img src={eventoAoVivo.bannerUrl} alt="Ao Vivo" className="w-full h-full object-cover" /> : <div className="w-3 h-3 bg-gold rounded-full animate-pulse"></div>}
-                </div>
                 <div className="text-left flex flex-col justify-center">
-                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left"><span className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse mr-1"></span>Acontecendo agora</p>
-                  <p className="font-display text-base font-bold text-white leading-none truncate max-w-[260px] text-left">{eventoAoVivo.titulo}</p>
+                  <p className="text-[8px] font-bold text-gold uppercase tracking-[0.2em] leading-none mb-0.5 text-left"><span className="w-2 h-2 rounded-full bg-gold animate-pulse mr-0.5 inline-block"></span>Ao vivo</p>
+                  <p className="font-display text-xs font-bold text-white leading-tight text-left">{eventoAoVivo.titulo}</p>
                 </div>
               </>
             ) : (
               <>
-                <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/10 text-left"><CalendarDays size={18} className="text-gold" /></div>
+                <div className="p-1.5 bg-white/10 backdrop-blur-md rounded-lg border border-white/10 text-left"><CalendarDays size={14} className="text-gold" /></div>
                 <div className="text-left">
-                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] leading-none mb-1.5 text-left">
+                  <p className="text-[7px] font-bold text-gold uppercase tracking-[0.15em] leading-none mb-0.5 text-left">
                     {(() => {
                       const h = new Date().getHours();
                       if (h < 12) return 'Bom dia';
@@ -322,17 +388,20 @@ export default function Layout({ usuario, aoSair }) {
                       return 'Boa noite';
                     })()}
                   </p>
-                  <p className="font-display text-base font-bold text-white capitalize leading-none text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
+                  <p className="text-xs font-bold text-white capitalize leading-tight text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
                 </div>
               </>
             )}
           </div>
 
-          <div className="relative text-left" ref={userMenuRef}>
-            <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-4 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
-              <div className="text-right leading-none text-left">
-                <p className="font-display text-sm font-bold text-white leading-none text-left">{dadosSincronizados?.nome || 'Usuário'}</p>
-                <p className="text-[9px] text-gold font-bold uppercase tracking-[0.25em] mt-1.5 leading-none text-right">{dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Membro'}</p>
+          {/* AVATAR DO USUÁRIO - DIREITA */}
+          <div className="relative text-left ml-auto -mr-2" ref={userMenuRef}>
+            <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
+              <div className="hidden md:flex xl:hidden min-w-0 flex-col items-end text-right mr-1">
+                <p className="text-[7px] font-bold text-gold uppercase tracking-[0.15em] leading-none">Igreja</p>
+                <p className="font-display text-xs font-black text-white leading-tight truncate max-w-[180px]">
+                  {configGeral?.igrejaNome || 'Igreja Pro'}
+                </p>
               </div>
               <div className="relative shrink-0 text-left">
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden text-left">
@@ -345,18 +414,49 @@ export default function Layout({ usuario, aoSair }) {
             </button>
             
             {userMenuAberto && (
-              <div className="absolute right-0 mt-4 w-64 bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
-                {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
-                  <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left mb-1"><Settings size={16} /> Configurações</button>
-                )}
-                <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-danger hover:bg-danger/5 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left"><LogOut size={16} /> Sair do Sistema</button>
+              <div className="absolute right-0 mt-4 w-[min(22rem,calc(100vw-1rem))] bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
+                <div className="rounded-[1.75rem] bg-gradient-hero p-4 text-white shadow-elegant">
+                  <p className="text-[9px] font-bold text-gold uppercase tracking-[0.22em]">Usuário logado</p>
+                  <p className="font-display text-lg font-black leading-tight mt-1 break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
+                  <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 mt-2 break-words">
+                    {dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
+                  </p>
+                </div>
+
+                <div className="mt-3 space-y-1 max-h-[55vh] overflow-y-auto pr-1">
+                  {menuUsuarioRoutes.map((route) => {
+                    const Icone = route.icon;
+                    return (
+                      <Link
+                        key={route.to}
+                        to={route.to}
+                        onClick={() => setUserMenuAberto(false)}
+                        className={`${userMenuLinkClass(route.to)} ${route.mobileVisible ? '' : 'hidden md:flex'}`}
+                      >
+                        <Icone size={16} />
+                        <span>{route.label}</span>
+                      </Link>
+                    );
+                  })}
+                  {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
+                    <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
+                      <Settings size={16} /> Configurações
+                    </button>
+                  )}
+                </div>
+
+                <div className="mt-3 pt-3 border-t border-slate-100">
+                  <button onClick={aoSair} className="w-full flex items-center gap-3 px-4 py-3 text-danger hover:bg-danger/5 rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
+                    <LogOut size={16} /> Sair do Sistema
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </header>
 
-        <div className="flex-1 overflow-y-auto p-8 text-left bg-background">
-          <Outlet context={{ usuario: dadosSincronizados }} />
+        <div className="flex-1 min-w-0 overflow-y-auto px-4 md:px-5 xl:px-8 pt-2 pb-4 text-left bg-background">
+          <Outlet context={{ usuario: dadosSincronizados, configGeral }} />
         </div>
       </main>
 

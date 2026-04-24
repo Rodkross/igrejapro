@@ -1,18 +1,19 @@
 import React, { useState, useEffect, useMemo } from 'react';
+import { createPortal } from 'react-dom';
 import { useOutletContext, useNavigate } from 'react-router-dom';
 import { db } from '../database/firebase'; 
 import { collection, query, onSnapshot } from 'firebase/firestore';
 import MeuConvenio from '../components/MeuConvenio';
+import PalavraDodia from '../components/PalavraDodia';
 import { 
   Users, TrendingUp, UserCheck, PieChart, CalendarDays, 
-  Cake, Loader2, Cross, Heart, X, HeartHandshake 
+  Cake, Loader2, Cross, Heart, X, HeartHandshake, Gamepad2, BookOpen, Church, PlusCircle
 } from 'lucide-react';
 
 export default function Dashboard() {
-  const { usuario: usuarioLogado } = useOutletContext();
+  const { usuario: usuarioLogado, configGeral } = useOutletContext();
   const navigate = useNavigate();
   
-  const [versiculo, setVersiculo] = useState({ texto: "Carregando palavra...", referencia: "" });
   const [usuarios, setUsuarios] = useState([]);
   const [programacao, setProgramacao] = useState([]);
   const [carregandoMembros, setCarregandoMembros] = useState(true);
@@ -25,10 +26,21 @@ export default function Dashboard() {
     if (!isModalMembrosAberto) return;
 
     const overflowAnterior = document.body.style.overflow;
+<<<<<<< HEAD
     document.body.style.overflow = 'hidden';
 
     return () => {
       document.body.style.overflow = overflowAnterior;
+=======
+    const overscrollAnterior = document.body.style.overscrollBehavior;
+
+    document.body.style.overflow = 'hidden';
+    document.body.style.overscrollBehavior = 'none';
+
+    return () => {
+      document.body.style.overflow = overflowAnterior;
+      document.body.style.overscrollBehavior = overscrollAnterior;
+>>>>>>> main
     };
   }, [isModalMembrosAberto]);
 
@@ -44,8 +56,6 @@ export default function Dashboard() {
     const unsubProg = onSnapshot(qProg, (snapshot) => {
       const dias = { 'DOMINGO': 1, 'SEGUNDA': 2, 'TERÇA': 3, 'QUARTA': 4, 'QUINTA': 5, 'SEXTA': 6, 'SÁBADO': 7 };
       const agora = new Date();
-      const diaAtual = agora.getDay() + 1; // 1=domingo, 7=sábado
-      const horaAtual = agora.getHours() * 100 + agora.getMinutes(); // formato HHMM
       let listaProg = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       listaProg = listaProg.filter(p => {
         if (p.isEspecial) {
@@ -58,7 +68,7 @@ export default function Dashboard() {
 
             // Mantém o evento apenas se a data/hora atual for anterior à data de início.
             return agora < dataInicio;
-          } catch (e) {
+          } catch {
             return false; // Se houver erro no parsing da data, não exibe.
           }
         } else {
@@ -87,28 +97,6 @@ export default function Dashboard() {
       setProgramacao(listaProg);
     });
     return () => { unsubUsers(); unsubProg(); };
-  }, []);
-
-  useEffect(() => {
-    const obterVersiculo = async () => {
-      const HOJE = new Date().toLocaleDateString('pt-BR');
-      const cacheVersiculo = localStorage.getItem('versiculo_dia');
-      const cacheData = localStorage.getItem('versiculo_data');
-      if (cacheVersiculo && cacheData === HOJE) {
-        try { setVersiculo(JSON.parse(cacheVersiculo)); return; } catch { }
-      }
-      try {
-        const res = await fetch('https://bible-api.com/?random=verse&translation=almeida');
-        const data = await res.json();
-        const novaPalavra = { texto: data.text.replace(/\n/g, ' '), referencia: data.reference };
-        setVersiculo(novaPalavra);
-        localStorage.setItem('versiculo_dia', JSON.stringify(novaPalavra));
-        localStorage.setItem('versiculo_data', HOJE);
-      } catch (err) {
-        setVersiculo({ texto: "O SENHOR é o meu pastor; nada me faltará.", referencia: "Salmo 23:1" });
-      }
-    };
-    obterVersiculo();
   }, []);
 
   const hojeZerado = useMemo(() => {
@@ -179,121 +167,350 @@ export default function Dashboard() {
       .sort((a, b) => a.diasPara - b.diasPara);
   }, [usuarios, hojeZerado]);
 
-  return (
-    <div className="max-w-7xl mx-auto space-y-2 pb-12 px-4 text-left animate-fade-in-up">
-      
-      {/* TICKER — AGENDA */}
-      {programacao.length > 0 && (
-        <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-2 mb-0">
-           <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
-              <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
-           </div>
-           <div className="relative w-full overflow-hidden whitespace-nowrap">
-             <div className="animate-ticker inline-flex items-center gap-8 h-full text-white">
-               {[...programacao, ...programacao].map((p, i) => (
-                 <div key={`${p.id}-${i}`} className="flex items-center gap-2 shrink-0">
-                    <span className="font-bold text-xs text-white">{p.titulo}</span>
-                    <span className="text-[8px] font-bold bg-white/10 px-1.5 py-0.5 rounded text-slate-200">{p.horario}h</span>
-                    <span className="text-gold/30 text-[10px]">✦</span>
-                 </div>
-               ))}
-             </div>
-           </div>
+  const modalMembros = isModalMembrosAberto ? createPortal(
+    <div className="fixed inset-0 z-[100] h-[100svh] max-h-[100svh] flex items-stretch justify-center overflow-hidden overscroll-none bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 xl:h-auto xl:max-h-none xl:items-center xl:p-4">
+      <div className="bg-white w-full h-full max-h-full rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in xl:w-full xl:max-w-2xl xl:h-auto xl:max-h-[calc(100dvh-2rem)] xl:rounded-[2rem]">
+        <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
+          <div className="relative z-10">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
+            <h2 className="font-display text-2xl font-black text-white leading-none">{tituloModal}</h2>
+          </div>
+          <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
         </div>
-      )}
+        <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
+          {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
+            <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
+              <div className="shrink-0">
+                {u.fotoUrl ? (
+                  <img src={u.fotoUrl} alt="" className="w-16 h-16 rounded-xl object-cover border-2 border-white shadow-soft" />
+                ) : (
+                  <div className="w-16 h-16 rounded-xl bg-gradient-royal flex items-center justify-center text-white font-display text-2xl font-black shadow-royal">{u.nome?.charAt(0)}</div>
+                )}
+              </div>
+              <div className="min-w-0 flex-1">
+                <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
+                <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
+                <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
+                  {u.biografia || "Sem biografia disponÃ­vel."}
+                </p>
+              </div>
+            </div>
+          )) : (
+            <div className="py-20 text-center opacity-30">
+              <Users className="mx-auto mb-4" size={40} />
+              <p className="font-bold uppercase text-[10px] tracking-widest">Nenhum membro nesta categoria.</p>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>,
+    document.body
+  ) : null;
 
-      {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
-
-      {/* KPI GRID COMPACTO */}
-      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-        <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
-        <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
-        <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
-        <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
-        <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
-        <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+  return (
+    <div className="space-y-4 pb-12 px-4 text-left animate-fade-in-up">
+      
+      {/* HEADER MOBILE - ÍCONE DA CONGREGAÇÃO E NOME */}
+      <div className="hidden md:flex flex-col gap-4">
+        {/* Desktop view mantém layout original */}
       </div>
 
-      {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-        <div className="lg:col-span-2 bg-white rounded-2xl p-5 border border-slate-100 shadow-soft flex flex-col">
-          <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
-            <Cake size={18} className="text-gold" /> Aniversariantes do Mês
+      {/* MOBILE VIEW - OPTIMIZADO */}
+      <div className="block md:hidden space-y-4">
+        {/* Ícone da Congregação e Nome */}
+        <div className="bg-gradient-hero rounded-2xl p-4 flex items-center gap-4 border border-white/10 shadow-elegant">
+          <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center overflow-hidden border border-white/10 shrink-0">
+            {configGeral?.igrejaLogo ? (
+              <img src={configGeral.igrejaLogo} alt="Logo da igreja" className="w-full h-full object-contain p-1.5" />
+            ) : (
+              <Church size={24} className="text-gold" />
+            )}
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-[10px] font-bold text-gold uppercase tracking-widest">Igreja</p>
+            <h2 className="font-display text-lg font-black text-white leading-tight truncate">
+              {configGeral?.igrejaNome || 'Igreja Pro'}
+            </h2>
+          </div>
+          <button 
+            onClick={() => navigate('/cadastro/programacao')}
+            className="p-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
+            title="Ver Programação"
+          >
+            <CalendarDays size={18} className="text-gold" />
+          </button>
+        </div>
+
+        {/* KPI GRID MOBILE */}
+        <div className="grid grid-cols-3 gap-2">
+          <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
+          <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
+        </div>
+
+        <div className="grid grid-cols-3 gap-2">
+          <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
+          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+        </div>
+
+        {/* CARD ALMAS */}
+        <div className="bg-gradient-hero rounded-2xl p-4 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden">
+          <div className="relative z-10">
+            <p className="text-[8px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
+            <p className="font-display text-3xl font-black text-white leading-none">{stats.almasAno}</p>
+          </div>
+          <div className="h-8 w-px bg-white/20 mx-2"></div>
+          <div className="text-right relative z-10">
+            <p className="text-[7px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
+            <div className="text-base font-bold text-white leading-none">
+              <span className="text-gold">{stats.novosAno}</span>
+              <span className="text-white/20 mx-1">/</span>
+              <span className="text-green-400">{stats.retornoAno}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* MEU CONVÊNIO */}
+        {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
+
+        {/* ANIVERSARIANTES */}
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-soft flex flex-col">
+          <h3 className="font-display text-base font-black text-navy mb-3 flex items-center gap-2 shrink-0">
+            <Cake size={16} className="text-gold" /> Aniversários
           </h3>
-          <div className="overflow-y-auto space-y-2 pr-1 custom-scroll">
+          <div className="max-h-[38vh] overflow-y-auto space-y-2 pr-1 custom-scroll">
             {proximosAniversariantes.length > 0 ? (
-              proximosAniversariantes.map(u => (
-                <div key={u.id} className={`flex items-center justify-between p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
-                  <div className="flex items-center gap-3">
+              proximosAniversariantes.slice(0, 5).map(u => (
+                <div key={u.id} className={`flex items-center justify-between p-2 rounded-lg border text-[10px] transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent'}`}>
+                  <div className="flex items-center gap-2">
                     <div className="shrink-0">
-                        {u.fotoUrl ? (
-                            <img src={u.fotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white shadow-sm" />
-                        ) : (
-                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
-                              {u.nome?.charAt(0)}
-                            </div>
-                        )}
+                      {u.fotoUrl ? (
+                        <img src={u.fotoUrl} alt="" className="w-8 h-8 rounded-lg object-cover border border-white shadow-sm" />
+                      ) : (
+                        <div className={`w-8 h-8 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
+                          {u.nome?.charAt(0)}
+                        </div>
+                      )}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-navy leading-tight">{u.nome}</p>
-                      <p className="text-[10px] text-slate-500 font-medium uppercase italic">
-                        {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} • {u.idadeNova} anos
-                      </p>
+                      <p className="font-bold text-navy leading-tight truncate">{u.nome}</p>
+                      <p className="text-[8px] text-slate-400 uppercase">{u.idadeNova} anos</p>
                     </div>
                   </div>
                   <div className="text-right">
                     {u.diasPara === 0 ? (
-                      <span className="text-[10px] font-black text-gold-dark bg-gold/20 px-2 py-1 rounded-lg animate-pulse">HOJE! 🎂</span>
+                      <span className="text-[8px] font-black text-gold bg-gold/20 px-1.5 py-0.5 rounded">HOJE 🎂</span>
                     ) : (
-                      <div className="flex flex-col items-end leading-none">
-                        <span className="text-xs font-black text-royal">{u.diasPara}</span>
-                        <span className="text-[8px] text-slate-400 font-bold uppercase">dias</span>
-                      </div>
+                      <span className="font-black text-royal">{u.diasPara}d</span>
                     )}
                   </div>
                 </div>
               ))
             ) : (
-              <p className="text-center py-10 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Nenhum aniversário próximo</p>
+              <p className="text-center py-4 text-slate-400 text-[9px] font-bold uppercase">Nenhum aniversário próximo</p>
             )}
           </div>
         </div>
 
-        <div className="flex flex-col gap-4">
-          {/* CARD ALMAS */}
-          <div className="bg-gradient-hero rounded-2xl p-3 flex items-center justify-between border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px]">
-             <div className="relative z-10">
+        {/* PALAVRA DO DIA */}
+        <PalavraDodia />
+
+        {/* CARD DO DESAFIO BÍBLICO */}
+        <div
+          onClick={() => navigate('/entretenimento/quiz')}
+          className="bg-slate-900 rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl text-left group cursor-pointer hover:border-gold/30 transition-all"
+        >
+          <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+            <BookOpen size={100} strokeWidth={1.2} className="text-white" />
+          </div>
+          <div className="relative z-10">
+            <div className="flex items-center justify-between gap-3 mb-4">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-1.5 h-1.5 rounded-full bg-gold animate-pulse shrink-0"></div>
+                <p className="text-[10px] font-bold text-gold uppercase tracking-[0.22em] truncate">Quiz do Reino</p>
+              </div>
+              <span className="bg-gold text-navy text-[9px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-tight shadow-gold shrink-0">
+                Novo
+              </span>
+            </div>
+
+            <h3 className="font-display text-[1.3rem] font-black text-white leading-tight mb-2 italic uppercase tracking-tight">
+              Desafio
+              <br />
+              <span className="text-gold text-[1.5rem]">Bíblico</span>
+            </h3>
+
+            <div className="mt-2 inline-flex items-center gap-2 bg-white text-navy font-black text-[10px] uppercase tracking-[0.16em] px-4 py-2 rounded-xl group-hover:bg-gold transition-all shadow-xl self-start">
+              <Gamepad2 size={13} /> Jogar Agora
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* DESKTOP VIEW - LAYOUT ORIGINAL */}
+      <div className="hidden md:block space-y-4">
+        {/* TICKER — AGENDA */}
+        {programacao.length > 0 && (
+          <div onClick={() => navigate('/cadastro/programacao')} className="w-full bg-gradient-hero border border-white/10 rounded-xl overflow-hidden shadow-elegant flex items-center h-10 group cursor-pointer -mt-1 mb-0">
+            <div className="z-10 bg-navy-deep px-2 h-full flex items-center border-r border-gold/20">
+              <span className="text-[9px] font-bold text-gold tracking-widest uppercase">AGENDA</span>
+            </div>
+            <div className="relative w-full overflow-hidden whitespace-nowrap">
+              <div className="animate-ticker inline-flex items-center gap-8 h-full text-white">
+                {[...programacao, ...programacao].map((p, i) => (
+                  <div key={`${p.id}-${i}`} className="flex items-center gap-2 shrink-0">
+                    <span className="font-bold text-xs text-white">{p.titulo}</span>
+                    <span className="text-[8px] font-bold bg-white/10 px-1.5 py-0.5 rounded text-slate-200">{p.horario}h</span>
+                    <span className="text-gold/30 text-[10px]">✦</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {String(usuarioLogado?.id) !== "1" && <MeuConvenio usuarioNome={usuarioLogado?.nome} usuarioLogado={usuarioLogado} />}
+
+        {/* KPI GRID COMPACTO */}
+        <div className="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-6 gap-3">
+          <KpiCard onClick={() => abrirListagem('todos')} icon={<Users/>} label="Membros" value={carregandoMembros ? "..." : stats.totalAtivos} accent="royal" compact inline />
+          <KpiCard onClick={() => abrirListagem('jovens')} icon={<TrendingUp/>} label="Jovens" value={carregandoMembros ? "..." : stats.jovens} accent="success" compact inline />
+          <KpiCard onClick={() => abrirListagem('adultos')} icon={<UserCheck/>} label="Adultos" value={carregandoMembros ? "..." : stats.adultos} accent="navy" compact inline />
+          <KpiCard onClick={() => abrirListagem('idosos')} icon={<PieChart/>} label="Melhor Idade" value={carregandoMembros ? "..." : stats.idosos} accent="gold" compact inline />
+          <KpiCard icon={<Cross/>} label="Batizados" value={carregandoMembros ? "..." : stats.batizados} accent="royal" compact inline />
+          <KpiCard icon={<Heart/>} label="Casados" value={carregandoMembros ? "..." : stats.casados} accent="danger" compact inline />
+          <div className="hidden md:flex md:col-span-2 xl:hidden bg-gradient-hero rounded-2xl p-3 border border-white/10 shadow-elegant relative overflow-hidden min-h-[80px] items-center justify-between gap-3">
+            <div className="relative z-10">
+              <p className="text-[8px] font-bold text-gold uppercase tracking-[0.18em] mb-1">Almas / Ano</p>
+              <p className="font-display text-2xl font-black text-white leading-none">{stats.almasAno}</p>
+            </div>
+            <div className="text-right relative z-10 shrink-0">
+              <div className="text-sm font-bold text-white leading-none">
+                <span className="text-gold">{stats.novosAno}</span>
+                <span className="text-white/20 mx-1">/</span>
+                <span className="text-green-400">{stats.retornoAno}</span>
+              </div>
+              <p className="text-[7px] text-slate-300 font-bold uppercase mt-1">Novo / Retorno</p>
+            </div>
+          </div>
+        </div>
+
+        {/* ANIVERSÁRIOS E PALAVRA DO DIA */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-4">
+          <div className="xl:col-span-2 bg-white rounded-2xl p-4 md:p-5 border border-slate-100 shadow-soft flex flex-col min-w-0 md:h-[min(40dvh,24rem)] xl:h-auto">
+            <h3 className="font-display text-lg font-black text-navy mb-4 flex items-center gap-2 shrink-0">
+              <Cake size={18} className="text-gold" /> Aniversariantes do Mês
+            </h3>
+            <div className="flex-1 min-h-0 max-h-[40dvh] md:max-h-none overflow-y-auto space-y-2 pr-1 custom-scroll min-w-0">
+              {proximosAniversariantes.length > 0 ? (
+                proximosAniversariantes.map(u => (
+                  <div key={u.id} className={`flex items-center justify-between gap-3 p-3 rounded-xl border transition-all ${u.diasPara === 0 ? 'bg-gold/5 border-gold/20' : 'bg-slate-50 border-transparent hover:border-slate-200'}`}>
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="shrink-0">
+                        {u.fotoUrl ? (
+                          <img src={u.fotoUrl} alt="" className="w-10 h-10 rounded-lg object-cover border border-white shadow-sm" />
+                        ) : (
+                          <div className={`w-10 h-10 rounded-lg flex items-center justify-center font-bold text-xs ${u.diasPara === 0 ? 'bg-gold text-navy' : 'bg-navy text-white'}`}>
+                            {u.nome?.charAt(0)}
+                          </div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-bold text-navy leading-tight truncate">{u.nome}</p>
+                        <p className="text-[10px] text-slate-500 font-medium uppercase italic truncate">
+                          {u.dataAlvo.toLocaleDateString('pt-BR', { day: '2-digit', month: 'long' })} • {u.idadeNova} anos
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-right shrink-0">
+                      {u.diasPara === 0 ? (
+                        <span className="text-[10px] font-black text-gold-dark bg-gold/20 px-2 py-1 rounded-lg animate-pulse">HOJE! 🎂</span>
+                      ) : (
+                        <div className="flex flex-col items-end leading-none">
+                          <span className="text-xs font-black text-royal">{u.diasPara}</span>
+                          <span className="text-[8px] text-slate-400 font-bold uppercase">dias</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center py-10 text-slate-400 text-[10px] font-bold uppercase tracking-widest">Nenhum aniversário próximo</p>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4 min-w-0">
+            {/* CARD ALMAS */}
+            <div className="hidden xl:flex bg-gradient-hero rounded-2xl p-3 md:p-4 items-center justify-between gap-3 border border-white/10 shadow-elegant relative overflow-hidden min-h-[90px] min-w-0">
+              <div className="relative z-10">
                 <p className="text-[9px] font-bold text-gold uppercase tracking-widest mb-1">Almas / Ano</p>
-                <p className="font-display text-4xl font-black text-white leading-none">{stats.almasAno}</p>
-             </div>
-             <div className="h-8 w-px bg-white/20 mx-2"></div>
-             <div className="text-right relative z-10">
+                <p className="font-display text-3xl xl:text-4xl font-black text-white leading-none">{stats.almasAno}</p>
+              </div>
+              <div className="h-8 w-px bg-white/20 mx-2"></div>
+              <div className="text-right relative z-10 shrink-0">
                 <p className="text-[8px] font-bold text-slate-300 uppercase mb-1">Ganhos</p>
-                <div className="text-lg font-bold text-white leading-none">
+                <div className="text-base xl:text-lg font-bold text-white leading-none">
                   <span className="text-gold">{stats.novosAno}</span>
                   <span className="text-white/20 mx-1">/</span>
                   <span className="text-green-400">{stats.retornoAno}</span>
                 </div>
                 <p className="text-[7px] text-slate-400 font-bold uppercase mt-1">Novo / Retorno</p>
-             </div>
-          </div>
-
-          {/* PALAVRA DO DIA */}
-          <div className="bg-navy-deep rounded-2xl p-6 text-white relative overflow-hidden flex flex-col justify-between flex-1 shadow-elegant">
-            <div className="relative z-10">
-              <span className="text-gold font-bold text-[9px] uppercase tracking-widest border-b border-gold/30 pb-1">✦ Palavra do Dia</span>
-              <p className="font-display italic text-base mt-4 text-slate-100 leading-relaxed">"{versiculo.texto}"</p>
+              </div>
             </div>
-            <div className="relative z-10 pt-4"><p className="text-gold font-bold text-[10px] tracking-widest">— {versiculo.referencia}</p></div>
-            <Cross className="absolute -bottom-6 -right-6 text-white opacity-[0.03]" size={150} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4 min-w-0">
+              <div
+                onClick={() => navigate('/entretenimento/quiz')}
+                className="hidden md:flex xl:hidden min-h-[160px] rounded-[2rem] p-5 relative overflow-hidden border border-white/5 shadow-2xl bg-slate-900 text-left group cursor-pointer hover:border-gold/30 transition-all"
+              >
+                <div className="absolute -right-4 -bottom-4 opacity-10 pointer-events-none group-hover:scale-110 transition-transform duration-700">
+                  <BookOpen size={100} strokeWidth={1.2} className="text-white" />
+                </div>
+
+                <div className="relative z-10 flex h-full flex-col justify-center min-w-0">
+                  <div>
+                    <div className="flex items-center justify-between gap-5 mb-5">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <div className="w-2 h-2 rounded-full bg-gold animate-pulse shrink-0"></div>
+                        <p className="text-[11px] font-bold text-gold uppercase tracking-[0.24em] truncate">Quiz do Reino</p>
+                      </div>
+                      <span className="bg-gold text-navy text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-tight shadow-gold shrink-0">
+                        Novo
+                      </span>
+                    </div>
+
+                    <h3 className="font-display text-[1.45rem] font-black text-white leading-tight mb-3 italic uppercase tracking-tight">
+                      Desafio
+                      <br />
+                      <span className="text-gold text-[1.85rem]">Bíblico</span>
+                    </h3>
+                  </div>
+
+                  <div className="mt-3 inline-flex items-center gap-2 bg-white text-navy font-black text-[11px] uppercase tracking-[0.18em] px-4 py-2.5 rounded-xl group-hover:bg-gold transition-all shadow-xl self-start">
+                    <Gamepad2 size={14} /> Jogar Agora
+                  </div>
+                </div>
+              </div>
+
+              {/* PALAVRA DO DIA */}
+              <PalavraDodia compactTablet />
+            </div>
           </div>
         </div>
       </div>
 
       {/* MODAL — COM FOTO E BIO */}
+<<<<<<< HEAD
       {isModalMembrosAberto && (
         <div className="fixed inset-0 z-[100] flex items-stretch justify-center overflow-hidden bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:items-center lg:p-4">
             <div className="bg-white w-full h-[100dvh] max-h-[100dvh] rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:max-w-2xl lg:rounded-[2rem]">
+=======
+      {false && (
+        <div className="fixed inset-0 z-[100] h-[100svh] max-h-[100svh] flex items-stretch justify-center overflow-hidden overscroll-none bg-navy-deep/80 backdrop-blur-md animate-fade-in p-0 lg:h-auto lg:max-h-none lg:items-center lg:p-4">
+            <div className="bg-white w-full h-full max-h-full rounded-none shadow-elegant overflow-hidden flex flex-col animate-scale-in lg:w-full lg:max-w-2xl lg:h-auto lg:max-h-[calc(100dvh-2rem)] lg:rounded-[2rem]">
+>>>>>>> main
                 <div className="p-5 sm:p-6 border-b border-slate-100 flex justify-between items-center bg-gradient-hero shrink-0">
                     <div className="relative z-10">
                         <p className="text-[10px] font-bold text-gold uppercase tracking-widest mb-1">Comunidade</p>
@@ -301,7 +518,11 @@ export default function Dashboard() {
                     </div>
                     <button onClick={() => setIsModalMembrosAberto(false)} className="p-2 hover:bg-white/10 rounded-full text-white transition-colors relative z-10"><X size={24} /></button>
                 </div>
+<<<<<<< HEAD
                 <div className="flex-1 min-h-0 overflow-y-auto p-4 space-y-3 bg-slate-50">
+=======
+                <div className="flex-1 min-h-0 overflow-y-auto overscroll-contain scroll-pb-8 px-4 pt-4 pb-[max(2rem,calc(1rem+env(safe-area-inset-bottom)))] space-y-3 bg-slate-50">
+>>>>>>> main
                     {membrosFiltrados.length > 0 ? membrosFiltrados.map(u => (
                         <div key={u.id} className="flex items-center gap-4 p-4 bg-white rounded-2xl border border-slate-100 hover:shadow-soft hover:border-royal/20 transition-all">
                             <div className="shrink-0">
@@ -329,6 +550,7 @@ export default function Dashboard() {
             </div>
         </div>
       )}
+      {modalMembros}
     </div>
   );
 }

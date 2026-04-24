@@ -116,66 +116,73 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
   return (
     <div className={`group rounded-3xl border transition-all duration-500 overflow-hidden ${expandido ? 'border-slate-200 shadow-elegant' : 'border-slate-100 shadow-soft'}`}>
 
-      <div onClick={() => setExpandido(!expandido)} className={`p-6 flex items-center justify-between cursor-pointer transition-colors ${config.bg}`}>
-        <div className="flex items-center gap-4">
-          <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${config.iconBg}`}>
-            {resumo.total === 0 ? <HeartHandshake size={24} /> : <Wallet2 size={24} />}
+      <div onClick={() => setExpandido(!expandido)} className={`p-4 md:p-6 flex flex-col gap-3 md:flex-row md:items-center md:justify-between cursor-pointer transition-colors ${config.bg}`}>
+        <div className="flex items-center gap-3 md:gap-4 min-w-0 w-full md:w-auto">
+          <div className={`hidden md:flex w-11 h-11 md:w-14 md:h-14 rounded-2xl items-center justify-center shrink-0 ${config.iconBg}`}>
+            {resumo.total === 0 ? <HeartHandshake size={20} className="md:w-6 md:h-6" /> : <Wallet2 size={20} className="md:w-6 md:h-6" />}
           </div>
+<<<<<<< HEAD
           <div className="text-left flex flex-col items-start gap-1">
             <p className="text-[10px] font-bold text-gold uppercase tracking-[0.25em] leading-none mt-1">Cantina</p>
             <div className="flex items-center gap-2">
               <h3 className="font-display text-xl font-bold text-navy leading-none">Meu Convênio</h3>
+=======
+          <div className="text-left flex flex-col items-start gap-0.5 md:gap-1 min-w-0">
+            <p className="text-[9px] md:text-[10px] font-bold text-gold uppercase tracking-[0.22em] md:tracking-[0.25em] leading-none mt-1">Cantina</p>
+            <div className="flex items-center gap-2 min-w-0">
+              <h3 className="font-display text-lg md:text-xl font-bold text-navy leading-none truncate">Meu Convênio</h3>
+>>>>>>> main
             </div>
-            <span className={`text-[10px] font-bold uppercase tracking-wider inline-block leading-none mt-0.5 ${config.text}`}>
+            <span className={`text-[9px] md:text-[10px] font-bold uppercase tracking-wide md:tracking-wider inline-block leading-tight mt-0.5 break-words ${config.text}`}>
               {getMensagemStatus()}
             </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-5">
-          <div className="text-right">
-            <p className="text-[9px] font-bold text-muted-foreground uppercase tracking-widest leading-none mb-1.5">
+        <div className="flex items-center justify-between gap-3 md:gap-5 w-full md:w-auto shrink-0">
+          <div className="text-left md:text-right min-w-0">
+            <p className="text-[8px] md:text-[9px] font-bold text-muted-foreground uppercase tracking-[0.18em] md:tracking-widest leading-none mb-1">
               {config.label}
             </p>
-            <p className={`font-display text-3xl font-black tracking-tighter leading-none ${config.text}`}>
+            <p className={`font-display text-xl md:text-3xl font-black tracking-tight md:tracking-tighter leading-none break-words ${config.text}`}>
               R$ {Math.abs(resumo.total).toFixed(2)}
             </p>
           </div>
-          <div className={`p-2 rounded-full bg-white/70 border border-slate-200 transition-transform duration-500 ${expandido ? 'rotate-180' : ''}`}>
-            <ChevronDown size={16} className="text-muted-foreground" />
+          <div className={`p-1.5 md:p-2 rounded-full bg-white/70 border border-slate-200 transition-transform duration-500 ${expandido ? 'rotate-180' : ''}`}>
+            <ChevronDown size={14} className="text-muted-foreground md:w-4 md:h-4" />
           </div>
         </div>
       </div>
 
       {expandido && (
-        <div className="px-6 pb-6 pt-2 bg-white animate-fade-in">
+        <div className="px-4 md:px-6 pb-4 md:pb-6 pt-2 bg-white animate-fade-in">
           <div className="space-y-2 mt-4">
             <div className="flex items-center gap-2 mb-3">
               <ReceiptText size={14} className="text-gold" />
-              <span className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em]">Extrato</span>
+              <span className="text-[9px] md:text-[10px] font-bold text-muted-foreground uppercase tracking-[0.18em] md:tracking-[0.2em]">Extrato</span>
             </div>
 
             {carregando ? (
               <div className="py-4 flex justify-center"><Loader2 className="animate-spin text-royal" /></div>
             ) : resumo.itens.length > 0 ? (
               resumo.itens.map((item) => (
-                <div key={item.id} className={`flex items-center justify-between p-3.5 bg-background rounded-2xl border ${item.isCredito ? 'border-success/20 bg-success/5 shadow-sm' : 'border-slate-100'}`}>
-                  <div className="flex items-center gap-3">
+                <div key={item.id} className={`flex items-center justify-between gap-3 p-3 md:p-3.5 bg-background rounded-2xl border ${item.isCredito ? 'border-success/20 bg-success/5 shadow-sm' : 'border-slate-100'}`}>
+                  <div className="flex items-center gap-3 min-w-0 flex-1">
                     <div className={`w-9 h-9 bg-white rounded-xl flex items-center justify-center border border-slate-100 ${item.isCredito ? 'text-success' : 'text-royal'}`}>
                       {item.isCredito ? <Wallet2 size={14} /> : <Package size={14} />}
                     </div>
-                    <div className="text-left leading-tight">
-                      <p className={`font-display text-sm font-bold ${item.isCredito ? 'text-success' : 'text-navy'}`}>{item.desc}</p>
-                      <p className="text-[9px] text-muted-foreground font-bold uppercase tracking-wider mt-0.5">{item.data || 'Registrado'}</p>
+                    <div className="text-left leading-tight min-w-0 flex-1">
+                      <p className={`font-display text-[13px] md:text-sm font-bold truncate ${item.isCredito ? 'text-success' : 'text-navy'}`}>{item.desc}</p>
+                      <p className="text-[8px] md:text-[9px] text-muted-foreground font-bold uppercase tracking-wide md:tracking-wider mt-0.5">{item.data || 'Registrado'}</p>
                     </div>
                   </div>
-                  <p className={`font-display font-black tracking-tight ${item.isCredito ? 'text-success' : 'text-navy'}`}>
+                  <p className={`font-display text-sm md:text-base font-black tracking-tight shrink-0 whitespace-nowrap ${item.isCredito ? 'text-success' : 'text-navy'}`}>
                     {item.isCredito ? '-' : ''}R$ {Math.abs(item.valor).toFixed(2)}
                   </p>
                 </div>
               ))
             ) : (
-              <p className="text-center py-6 text-muted-foreground font-bold uppercase text-[10px] tracking-widest">Nenhum lançamento pendente</p>
+              <p className="text-center py-6 text-muted-foreground font-bold uppercase text-[9px] md:text-[10px] tracking-[0.18em] md:tracking-widest">Nenhum lançamento pendente</p>
             )}
 
             {resumo.total > 0 && (
@@ -184,7 +191,7 @@ export default function MeuConvenio({ usuarioNome, usuarioLogado }) {
                 <div className="w-10 h-10 bg-gold/20 text-gold rounded-xl flex items-center justify-center shrink-0 border border-gold/30 relative z-10">
                   <CreditCard size={18} />
                 </div>
-                <p className="text-[10px] font-bold text-slate-300 uppercase leading-snug tracking-wider relative z-10">
+                <p className="text-[9px] md:text-[10px] font-bold text-slate-300 uppercase leading-snug tracking-wide md:tracking-wider relative z-10">
                   Valor total em aberto.<br/>
                   <span className="text-gold">Fale com a tesouraria para pagar.</span>
                 </p>
