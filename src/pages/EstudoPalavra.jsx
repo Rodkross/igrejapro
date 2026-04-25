@@ -267,7 +267,7 @@ export default function EstudoPalavra() {
           {/* Fundo radiante */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] md:w-[800px] h-[300px] bg-gold/15 blur-[100px] rounded-full pointer-events-none -z-10" />
           
-          <span className="inline-block px-5 py-1.5 md:py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-widest text-[10px] md:text-xs uppercase mb-6 md:mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+          <span className="inline-block whitespace-nowrap px-5 py-1.5 md:py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-widest text-[10px] md:text-xs uppercase mb-6 md:mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
             Palavra do Dia • {refUrl}
           </span>
           
