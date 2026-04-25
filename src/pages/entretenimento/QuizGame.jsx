@@ -17,7 +17,7 @@ export default function QuizGame() {
   const [gameOver, setGameOver] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [cooldown, setCooldown] = useState(null);
-  const [tempoRestante, setTempoRestante] = useState(10);
+  const [tempoRestante, setTempoRestante] = useState(15);
   const [mostraControles, setMostraControles] = useState(false);
 
   const carregarRanking = useCallback(async () => {
@@ -64,8 +64,8 @@ export default function QuizGame() {
       setIndiceAtual(0);
       setGameOver(false);
       setRespondido(false);
-      setCooldown(null);
-      setTempoRestante(10);
+      setCooldown(null); // Reseta o cooldown
+      setTempoRestante(15); // Define o tempo da questão para 15 segundos
       setMostraControles(false);
       await carregarRanking();
     } catch (err) { console.error(err); }
@@ -131,7 +131,7 @@ export default function QuizGame() {
       setIndiceAtual(v => v + 1);
       setRespondido(false);
       setOpcaoSelecionada(null);
-      setTempoRestante(10);
+      setTempoRestante(15);
       setMostraControles(false);
     } else {
       setGameOver(true);
