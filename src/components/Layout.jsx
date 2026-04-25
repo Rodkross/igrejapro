@@ -11,6 +11,7 @@ import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
+import ModalMeuPerfil from './ModalMeuPerfil';
 
 export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
@@ -24,6 +25,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [verificandoDestaques, setVerificandoDestaques] = useState(true);
 
   const [configModalAberto, setConfigModalAberto] = useState(false);
+  const [perfilModalAberto, setPerfilModalAberto] = useState(false);
   const [configGeral, setConfigGeral] = useState(null);
 
   const location = useLocation();
@@ -76,9 +78,12 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
              ? dadosSincronizados.avisosVistos 
              : (dadosSincronizados?.avisoVistoId ? [dadosSincronizados.avisoVistoId] : []);
              
+          const vistosSessao = JSON.parse(sessionStorage.getItem('avisosTemporariosSessao') || '[]');
+
           const eventosParaExibir = listaCompleta
               .filter(eve => {
                 if (silenciados.includes(eve.id)) return false;
+                if (vistosSessao.includes(eve.id)) return false;
                 const [ano, mes, dia] = eve.dataEspecífica.split('-');
                 const [hora, minuto] = (eve.horario || "00:00").split(':');
                 const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
@@ -88,10 +93,11 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               .sort((a, b) => new Date(a.dataEspecífica) - new Date(b.dataEspecífica));
 
           if (eventosParaExibir.length > 0) {
+            const novosVistos = [...vistosSessao, ...eventosParaExibir.map(e => e.id)];
+            sessionStorage.setItem('avisosTemporariosSessao', JSON.stringify(novosVistos));
+            
             setEventosEspeciais(eventosParaExibir);
             setExibirModalEspecial(true);
-          } else {
-            setExibirModalEspecial(false);
           }
         }
       } catch (error) {
@@ -353,15 +359,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
         <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          {/* BOTÃO VOLTAR - ESQUERDA */}
-          {location.pathname !== '/' && (
-            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
-              location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
-            }`}>
-              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
-              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
-            </Link>
-          )}
+          {/* START DO LADO ESQUERDO DA HEADER - REMOVIDO BOTÃO VOLTAR GLOBAL A PEDIDO DO USUÁRIO */}
 
           {/* EVENTO AO VIVO - ESQUERDA */}
           <div className={`flex items-center gap-1 relative z-10 text-left ${
@@ -417,7 +415,12 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               <div className="absolute right-0 mt-4 w-[min(22rem,calc(100vw-1rem))] bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
                 <div className="rounded-[1.75rem] bg-gradient-hero p-4 text-white shadow-elegant">
                   <p className="text-[9px] font-bold text-gold uppercase tracking-[0.22em]">Usuário logado</p>
-                  <p className="font-display text-lg font-black leading-tight mt-1 break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
+                  <div className="flex flex-col items-start gap-1.5 mt-1">
+                    <p className="font-display text-lg font-black leading-tight break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
+                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[9px] font-bold tracking-widest text-gold uppercase">
+                      Matrícula: {dadosSincronizados?.idAcesso || dadosSincronizados?.id || usuario?.id || 'N/A'}
+                    </span>
+                  </div>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 mt-2 break-words">
                     {dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
                   </p>
@@ -438,6 +441,11 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
                       </Link>
                     );
                   })}
+
+                  <button onClick={() => { setPerfilModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
+                    <UserIcon size={16} /> Meu Perfil
+                  </button>
+
                   {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
                     <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
                       <Settings size={16} /> Configurações
@@ -461,6 +469,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
       </main>
 
       {configModalAberto && <ModalConfiguracoes aoFechar={() => setConfigModalAberto(false)} />}
+      {perfilModalAberto && <ModalMeuPerfil usuario={dadosSincronizados} aoFechar={() => setPerfilModalAberto(false)} />}
     </div>
   );
 }

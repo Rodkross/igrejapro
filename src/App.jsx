@@ -27,6 +27,7 @@ import RelatoriosFinanceiros from "./pages/Relatorios/RelatoriosFinanceiros";
 // --- ÁREA DE ENTRETENIMENTO E UTILITÁRIOS ---
 import QuizGame from './pages/entretenimento/QuizGame';
 import ImportadorQuiz from './pages/entretenimento/ImportadorQuiz'; // Importação do Importador
+import EstudoPalavra from './pages/EstudoPalavra'; // Estudo Palavra (Sefaria)
 
 // --- DEFINIÇÃO DA ROTA PRIVADA ---
 const RotaPrivada = ({ usuario, modulo, children }) => {
@@ -126,7 +127,7 @@ export default function App() {
   }, [usuario?.cargoId]);
 
   const logout = () => {
-    sessionStorage.removeItem('usuarioLogado');
+    sessionStorage.clear();
     setUsuario(null);
   };
 
@@ -140,11 +141,17 @@ export default function App() {
           />
 
           <Route 
+            path="/estudo-palavra" 
+            element={usuario ? <EstudoPalavra /> : <Navigate to="/login" replace />} 
+          />
+
+          <Route 
             path="/" 
             element={usuario ? <Layout usuario={usuario} aoSair={logout} onUsuarioAtualizado={setUsuario} /> : <Navigate to="/login" replace />}
           >
             <Route index element={<Dashboard />} />
-            
+
+
             {/* Bloco de Entretenimento */}
             <Route path="entretenimento/quiz" element={
               <RotaMobilePermitida isMobile={isMobile} allowMobile>
