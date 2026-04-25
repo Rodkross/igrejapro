@@ -271,7 +271,7 @@ export default function PalavraDodia({ compactTablet = false }) {
       </div>
 
       {showLikesModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[999] flex items-start md:items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
           <div className="bg-[#0f172a] w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/10 transform transition-all animate-in zoom-in-95 duration-200">
             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5">
               <h3 className="font-bold text-white tracking-wide text-sm uppercase">Quem Curtiu</h3>
