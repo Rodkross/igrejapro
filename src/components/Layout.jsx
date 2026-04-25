@@ -76,6 +76,13 @@ export default function Layout({ usuario, aoSair }) {
         return;
       }
 
+      // MODIFICAÇÃO: Checa se o modal já foi exibido nesta sessão.
+      // Isso garante que ele apareça apenas uma vez após o login, e não em cada refresh.
+      if (sessionStorage.getItem('avisoEspecialVistoNestaSessao')) {
+        setVerificandoDestaques(false);
+        return;
+      }
+
       try {
         const q = query(collection(db, "programacaoSemanal"), where("isEspecial", "==", true));
         const querySnapshot = await getDocs(q);
@@ -101,6 +108,8 @@ export default function Layout({ usuario, aoSair }) {
           if (eventosParaExibir.length > 0) {
             setEventosEspeciais(eventosParaExibir);
             setExibirModalEspecial(true);
+            // Marca que o modal foi exibido nesta sessão para não mostrar novamente.
+            sessionStorage.setItem('avisoEspecialVistoNestaSessao', 'true');
           } else {
             setExibirModalEspecial(false);
           }
