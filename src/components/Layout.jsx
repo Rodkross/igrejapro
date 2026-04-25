@@ -34,11 +34,26 @@ export default function Layout({ usuario, aoSair }) {
   // --- 1. SINCRONIZAÇÃO COM FIREBASE ---
   useEffect(() => {
     if (!usuario?.id) return;
-    const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
+    const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), async (docSnap) => {
       if (docSnap.exists()) {
-        const novosDados = { id: docSnap.id, ...docSnap.data() };
-        setDadosSincronizados(novosDados);
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
+        const userData = { id: docSnap.id, ...docSnap.data() };
+        let finalUserData = { ...userData };
+
+        // Sincroniza as permissões do cargo em tempo real
+        if (userData.cargoNome) {
+          try {
+            const qCargo = query(collection(db, "cargos"), where("nome", "==", userData.cargoNome));
+            const cargoSnap = await getDocs(qCargo);
+            if (!cargoSnap.empty) {
+              const permissoesCargo = cargoSnap.docs[0].data().permissoes || {};
+              finalUserData.permissoes = { ...userData.permissoes, ...permissoesCargo };
+            }
+          } catch (err) {
+            console.error("Erro ao sincronizar permissões do cargo:", err);
+          }
+        }
+        setDadosSincronizados(finalUserData);
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(finalUserData));
       }
     });
 
@@ -145,9 +160,16 @@ export default function Layout({ usuario, aoSair }) {
 
   const temAcesso = (modulo) => {
     const userAtual = dadosSincronizados;
-    const nome = userAtual?.nome?.toLowerCase() || '';
-    const cargo = userAtual?.cargoNome?.toLowerCase() || '';
-    if (String(userAtual?.id) === "1" || nome === 'rodrigo' || cargo.includes('pastor') || cargo.includes('admin')) return true;
+    if (!userAtual) return false;
+
+    const cargo = (userAtual.cargoNome || '').toLowerCase();
+
+    // Super-admin roles que bypassam permissões específicas
+    if (cargo === "sistema" || cargo === "administrador" || cargo.includes('pastor')) {
+        return true;
+    }
+
+    // Checa a permissão específica do módulo vinda do objeto 'permissoes'
     return userAtual?.permissoes && userAtual?.permissoes[modulo] === true;
   };
 
