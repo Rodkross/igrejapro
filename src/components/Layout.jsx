@@ -263,7 +263,7 @@ export default function Layout({ usuario, aoSair }) {
       {/* SIDEBAR ROYAL */}
       <aside className="w-64 flex-shrink-0 hidden xl:flex flex-col h-[100dvh] sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
-        <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
+        <Link to="/" className="p-6 border-b border-white/5 flex items-center gap-4 relative hover:bg-white/5 transition-colors cursor-pointer">
           {configGeral?.igrejaLogo ? (
              <img src={configGeral.igrejaLogo} alt="Logo" className="w-12 h-12 object-contain rounded-2xl bg-white/10 p-1.5 border border-white/10" />
           ) : (
@@ -275,7 +275,7 @@ export default function Layout({ usuario, aoSair }) {
             <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
             <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5 text-left">Gestão Pastoral</p>
           </div>
-        </div>
+        </Link>
 
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto relative text-left">
 <Link to="/" onClick={fecharMenus} className={navLinkClass('/')}> 

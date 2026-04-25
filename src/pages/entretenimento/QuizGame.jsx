@@ -3,7 +3,7 @@ import { db } from '../../database/firebase';
 import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit, deleteField, writeBatch } from 'firebase/firestore';
 import { useOutletContext } from 'react-router-dom';
 
-import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2 } from 'lucide-react';
+import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2, BookOpen } from 'lucide-react';
 
 const getSeasonKey = () => {
   const agora = new Date();
@@ -108,22 +108,65 @@ export default function QuizGame() {
     setLoading(true);
     try {
       await sincronizarTemporadaQuiz();
+      await carregarRanking(); // Garante o carregamento mesmo se cair no Cooldown depois
 
-      // 1. Verificar Cooldown
+      // 1. Verificar Vidas e Cooldown
       const userRef = doc(db, "usuarios", String(usuario.id));
       const userSnap = await getDoc(userRef);
-      const timestampBloqueio = userSnap.data()?.bloqueioQuiz?.seconds * 1000;
+      const userData = userSnap.data() || {};
+      
+      let vidasCalc = userData.vidasQuiz !== undefined ? Number(userData.vidasQuiz) : 3;
+      if (isNaN(vidasCalc)) vidasCalc = 3;
+      vidasCalc = Math.max(0, vidasCalc); // Bloqueia bug de vidas negativas
+      let tsUltimaVida = null;
+      if (userData.ultimaVidaPerdidaQuiz) {
+          if (typeof userData.ultimaVidaPerdidaQuiz.toMillis === 'function') {
+              tsUltimaVida = userData.ultimaVidaPerdidaQuiz.toMillis();
+          } else if (userData.ultimaVidaPerdidaQuiz.seconds) {
+              tsUltimaVida = userData.ultimaVidaPerdidaQuiz.seconds * 1000;
+          } else if (typeof userData.ultimaVidaPerdidaQuiz.getTime === 'function') {
+              tsUltimaVida = userData.ultimaVidaPerdidaQuiz.getTime();
+          } else {
+              tsUltimaVida = new Date(userData.ultimaVidaPerdidaQuiz).getTime();
+          }
+      }
 
-      if (timestampBloqueio) {
-        const agora = new Date().getTime();
-        const tempoDecorrido = agora - timestampBloqueio;
-        const tempoTotalCooldown = 30 * 60 * 1000;
-        if (tempoDecorrido < tempoTotalCooldown) {
-          setCooldown(Math.ceil((tempoTotalCooldown - tempoDecorrido) / 1000));
-          setVidas(0); // Garante que o estado de "sem vidas" seja mantido durante o cooldown
-          setLoading(false);
-          return;
-        }
+      // Migração de legacy bloqueioQuiz
+      if (userData.bloqueioQuiz?.seconds && !tsUltimaVida && vidasCalc === 3) {
+          tsUltimaVida = userData.bloqueioQuiz.seconds * 1000;
+          vidasCalc = 0;
+      }
+
+      const agora = new Date().getTime();
+      const tempoVida = 10 * 60 * 1000; // 10 minutos por vida
+
+      if (vidasCalc < 3 && tsUltimaVida) {
+          const dec = agora - tsUltimaVida;
+          if (dec >= tempoVida) {
+              const recup = Math.floor(dec / tempoVida);
+              vidasCalc = Math.min(3, vidasCalc + recup);
+              if (vidasCalc === 3) {
+                  tsUltimaVida = null;
+              } else {
+                  tsUltimaVida += recup * tempoVida;
+              }
+              
+              await updateDoc(userRef, {
+                  vidasQuiz: vidasCalc,
+                  ultimaVidaPerdidaQuiz: tsUltimaVida ? new Date(tsUltimaVida) : deleteField(),
+                  bloqueioQuiz: deleteField()
+              });
+          }
+      }
+
+      if (vidasCalc === 0) {
+          const dec = agora - (tsUltimaVida || agora);
+          if (dec < tempoVida) {
+              setCooldown(Math.ceil((tempoVida - dec) / 1000));
+              setVidas(0);
+              setLoading(false);
+              return;
+          }
       }
 
       // 2. Filtrar perguntas já acertadas
@@ -133,17 +176,25 @@ export default function QuizGame() {
 
       const snapPerguntas = await getDocs(collection(db, "quiz_biblico"));
       const todas = snapPerguntas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const disponiveis = todas.filter(p => !acertadasIds.includes(String(p.id)));
+      
+      let perguntasRodada = todas.filter(p => !acertadasIds.includes(String(p.id))).sort(() => Math.random() - 0.5).slice(0, 10);
+      
+      // Sempre garante 10 perguntas na rodada puxando das já respondidas se necessário
+      if (perguntasRodada.length < 10 && todas.length > 0) {
+          const faltam = 10 - perguntasRodada.length;
+          const respondidas = todas.filter(p => acertadasIds.includes(String(p.id))).sort(() => Math.random() - 0.5).slice(0, faltam);
+          perguntasRodada = [...perguntasRodada, ...respondidas];
+      }
 
-      if (disponiveis.length > 0) {
-        setPerguntas(disponiveis.sort(() => Math.random() - 0.5).slice(0, 10));
+      if (perguntasRodada.length > 0) {
+        setPerguntas(perguntasRodada);
         setQuizConcluido(false);
       } else {
         setPerguntas([]);
         setQuizConcluido(true);
       }
       
-      setVidas(3);
+      setVidas(vidasCalc);
       setScore(0); // Reseta score da rodada
       setIndiceAtual(0);
       setGameOver(false);
@@ -151,7 +202,6 @@ export default function QuizGame() {
       setCooldown(null); // Reseta o cooldown
       setTempoRestante(15); // Define o tempo da questão para 15 segundos
       setMostraControles(false);
-      await carregarRanking();
     } catch (err) { console.error(err); }
     setLoading(false);
   }, [usuario.id, carregarRanking, sincronizarTemporadaQuiz]);
@@ -163,7 +213,11 @@ export default function QuizGame() {
       await setDoc(progressoRef, { acertos: [] }, { merge: true });
 
       const userRef = doc(db, "usuarios", String(usuario.id));
-      await updateDoc(userRef, { bloqueioQuiz: deleteField() });
+      await updateDoc(userRef, { 
+          bloqueioQuiz: deleteField(),
+          vidasQuiz: 3,
+          ultimaVidaPerdidaQuiz: deleteField()
+      });
 
       await carregarJogo();
     } catch (err) {
@@ -178,7 +232,7 @@ export default function QuizGame() {
     const questao = perguntas[indiceAtual];
     const acertou = opcao !== null && opcao === questao.resposta_correta;
     const pontosVariacao = acertou ? 10 : -5;
-    const vidasAposResposta = acertou ? vidas : vidas - 1;
+    const vidasAposResposta = Math.max(0, acertou ? vidas : vidas - 1);
 
     // ATUALIZAÇÃO IMEDIATA DO ESTADO VISUAL
     setOpcaoSelecionada(opcao);
@@ -190,14 +244,8 @@ export default function QuizGame() {
     // Lógica de fim de jogo ou próxima questão
     if (vidasAposResposta < 1) {
       setTimeout(() => setGameOver(true), 1500);
-      try {
-        const userRef = doc(db, "usuarios", String(usuario.id));
-        await updateDoc(userRef, { bloqueioQuiz: new Date() });
-      } catch (err) {
-        console.error("Erro ao salvar bloqueio do quiz:", err);
-      }
     } else {
-      const delay = acertou ? 1500 : 10000;
+      const delay = acertou ? 1500 : 2000;
       setTimeout(() => setMostraControles(true), delay);
     }
 
@@ -205,10 +253,23 @@ export default function QuizGame() {
     try {
       const userRef = doc(db, "usuarios", String(usuario.id));
       const uSnap = await getDoc(userRef);
-      const totalBanco = uSnap.data()?.recordeQuiz || 0;
+      const data = uSnap.data() || {};
+      const totalBanco = data.recordeQuiz || 0;
       const novoTotal = Math.max(0, totalBanco + pontosVariacao);
 
-      await updateDoc(userRef, { recordeQuiz: novoTotal });
+      const updates = { recordeQuiz: novoTotal };
+      
+      if (!acertou) {
+          updates.vidasQuiz = vidasAposResposta;
+          if (vidas === 3 || (!data.ultimaVidaPerdidaQuiz && !data.bloqueioQuiz)) {
+              updates.ultimaVidaPerdidaQuiz = new Date();
+          }
+          if (vidasAposResposta === 0) {
+              updates.bloqueioQuiz = deleteField();
+          }
+      }
+
+      await updateDoc(userRef, updates);
 
       setRanking(prev =>
         prev.map(p => p.id === String(usuario.id) ? { ...p, recordeQuiz: novoTotal } : p)
@@ -314,12 +375,39 @@ export default function QuizGame() {
     const minutos = String(Math.floor(cooldown / 60)).padStart(2, '0');
     const segundos = String(cooldown % 60).padStart(2, '0');
     return (
-      <div className="max-w-xl mx-auto bg-slate-900 p-10 rounded-[3rem] border border-rose-500/30 text-center italic shadow-2xl">
-        <Clock size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
-        <h2 className="text-2xl font-black text-white uppercase mb-2">Acesso Temporário Bloqueado</h2>
-        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6">Suas vidas acabaram. Tente em:</p>
-        <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{minutos}:{segundos}</div>
-        <button onClick={carregarJogo} className="bg-white/10 text-white px-8 py-3 rounded-xl font-black uppercase text-xs">Verificar</button>
+      <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in zoom-in duration-500 italic">
+        <div className="bg-slate-900 rounded-[3rem] p-10 border border-rose-500/30 text-center flex flex-col justify-center shadow-2xl">
+          <BookOpen size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
+          <h2 className="text-3xl font-black text-white uppercase mb-2">Vá ler a Bíblia!</h2>
+          <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6 leading-relaxed">Suas vidas acabaram. Estude a Palavra e tente novamente em:</p>
+          <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{minutos}:{segundos}</div>
+          <button onClick={carregarJogo} className="w-full bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white py-4 rounded-xl font-black uppercase text-xs transition-all flex items-center justify-center gap-2 shadow-xl">
+            <RotateCcw size={18} /> Verificar
+          </button>
+        </div>
+
+        <div className="bg-slate-900 rounded-[3rem] p-8 border border-white/5 shadow-2xl text-left">
+          <h3 className="text-xl font-black text-white uppercase mb-6 flex items-center gap-2 text-left"><Medal className="text-gold" size={24} /> Ranking Global</h3>
+          {renderUltimoCampeao()}
+          <div className="space-y-3">
+            {ranking.map((p, i) => (
+              <div key={p.id} className={`flex justify-between items-center p-4 rounded-2xl border ${p.id === String(usuario.id) ? 'bg-gold/10 border-gold/50 shadow-gold/5 shadow-lg' : 'bg-white/5 border-white/10'}`}>
+                <div className="flex items-center gap-3 text-left">
+                  <span className="font-black text-gold text-lg shrink-0">#{i+1}</span>
+                  <div className="shrink-0">
+                    {p.fotoUrl ? (
+                      <img src={p.fotoUrl} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10 shadow-sm" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-white uppercase">{p.nome?.charAt(0) || '?'}</div>
+                    )}
+                  </div>
+                  <span className="font-bold text-white uppercase text-[10px] tracking-widest leading-none truncate">{p.nome}</span>
+                </div>
+                <span className="font-black text-white bg-white/10 px-3 py-1 rounded-lg text-sm">{p.recordeQuiz || 0}</span>
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
