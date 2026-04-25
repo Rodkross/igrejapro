@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../database/firebase';
 import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit } from 'firebase/firestore';
 import { useOutletContext } from 'react-router-dom';
@@ -20,18 +20,27 @@ export default function QuizGame() {
   const [tempoRestante, setTempoRestante] = useState(10);
   const [mostraControles, setMostraControles] = useState(false);
 
-  const carregarJogo = async () => {
+  const carregarRanking = useCallback(async () => {
+    const q = query(collection(db, "usuarios"), orderBy("recordeQuiz", "desc"), limit(5));
+    const snap = await getDocs(q);
+    setRanking(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+  }, []);
+
+  const carregarJogo = useCallback(async () => {
     setLoading(true);
     try {
       // 1. Verificar Cooldown
       const userRef = doc(db, "usuarios", String(usuario.id));
       const userSnap = await getDoc(userRef);
       const timestampBloqueio = userSnap.data()?.bloqueioQuiz?.seconds * 1000;
-      
+
       if (timestampBloqueio) {
         const agora = new Date().getTime();
-        if (agora - timestampBloqueio < 30 * 60 * 1000) {
-          setCooldown(Math.ceil((30 * 60 * 1000 - (agora - timestampBloqueio)) / 60000));
+        const tempoDecorrido = agora - timestampBloqueio;
+        const tempoTotalCooldown = 30 * 60 * 1000;
+        if (tempoDecorrido < tempoTotalCooldown) {
+          setCooldown(Math.ceil((tempoTotalCooldown - tempoDecorrido) / 1000));
+          setVidas(0); // Garante que o estado de "sem vidas" seja mantido durante o cooldown
           setLoading(false);
           return;
         }
@@ -61,65 +70,61 @@ export default function QuizGame() {
       await carregarRanking();
     } catch (err) { console.error(err); }
     setLoading(false);
-  };
+  }, [usuario.id, carregarRanking]);
 
-  const carregarRanking = async () => {
-    const q = query(collection(db, "usuarios"), orderBy("recordeQuiz", "desc"), limit(5));
-    const snap = await getDocs(q);
-    setRanking(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
-  };
-
-  const validarResposta = async (opcao) => {
+  const validarResposta = useCallback(async (opcao) => {
     if (respondido || gameOver) return;
-    
+
     const questao = perguntas[indiceAtual];
     const acertou = opcao !== null && opcao === questao.resposta_correta;
     const pontosVariacao = acertou ? 10 : -5;
+    const vidasAposResposta = acertou ? vidas : vidas - 1;
 
     // ATUALIZAÇÃO IMEDIATA DO ESTADO VISUAL
     setOpcaoSelecionada(opcao);
     setRespondido(true);
-    setMostraControles(false); // Esconde os botões de ação temporariamente
     setScore(prev => prev + pontosVariacao);
-    if (!acertou) setVidas(v => v - 1);
+    setVidas(vidasAposResposta);
+    setMostraControles(false);
 
+    // Lógica de fim de jogo ou próxima questão
+    if (vidasAposResposta < 1) {
+      setTimeout(() => setGameOver(true), 1500);
+      try {
+        const userRef = doc(db, "usuarios", String(usuario.id));
+        await updateDoc(userRef, { bloqueioQuiz: new Date() });
+      } catch (err) {
+        console.error("Erro ao salvar bloqueio do quiz:", err);
+      }
+    } else {
+      const delay = acertou ? 1500 : 10000;
+      setTimeout(() => setMostraControles(true), delay);
+    }
+
+    // Atualiza dados no backend em segundo plano
     try {
       const userRef = doc(db, "usuarios", String(usuario.id));
       const uSnap = await getDoc(userRef);
       const totalBanco = uSnap.data()?.recordeQuiz || 0;
       const novoTotal = Math.max(0, totalBanco + pontosVariacao);
 
-      // 1. Grava novo total no Firebase
       await updateDoc(userRef, { recordeQuiz: novoTotal });
 
-      // 2. Atualiza Ranking local para refletir na hora
-      setRanking(prev => 
+      setRanking(prev =>
         prev.map(p => p.id === String(usuario.id) ? { ...p, recordeQuiz: novoTotal } : p)
-            .sort((a, b) => (b.recordeQuiz || 0) - (a.recordeQuiz || 0))
+          .sort((a, b) => (b.recordeQuiz || 0) - (a.recordeQuiz || 0))
       );
 
-      // 3. Se acertou, salva nos acertos
       if (acertou) {
         const progRef = doc(db, "progresso_quiz", String(usuario.id));
         const pSnap = await getDoc(progRef);
         const acertosAtuais = pSnap.exists() ? pSnap.data().acertos || [] : [];
         await setDoc(progRef, { acertos: [...new Set([...acertosAtuais, String(questao.id)])] }, { merge: true });
       }
-
-      // 4. Se perdeu a última vida, encerra o jogo. Senão, agenda a exibição dos controles.
-      if (!acertou && vidas <= 1) {
-        await updateDoc(userRef, { bloqueioQuiz: new Date() });
-        setTimeout(() => setGameOver(true), 1500);
-      } else {
-        const delay = acertou ? 1500 : 10000; // 1.5s para acerto, 10s de penalidade para erro
-        setTimeout(() => setMostraControles(true), delay);
-      }
     } catch (err) {
-      console.error("Erro ao processar resposta:", err);
-      // Em caso de erro, mostra os controles após um delay padrão para não travar o usuário
-      setTimeout(() => setMostraControles(true), 1500);
+      console.error("Erro ao processar pontuação/acertos:", err);
     }
-  };
+  }, [respondido, gameOver, perguntas, indiceAtual, vidas, usuario.id]);
 
   const proximaQuestao = () => {
     if (indiceAtual < perguntas.length - 1) {
@@ -153,19 +158,39 @@ export default function QuizGame() {
     return () => clearInterval(timerId);
   }, [respondido, gameOver, loading, indiceAtual]);
 
-  useEffect(() => { carregarJogo(); }, [usuario.id]);
+  useEffect(() => {
+    if (cooldown === null) return;
+
+    if (cooldown <= 0) {
+      setCooldown(null); // Para o timer
+      carregarJogo(); // Tenta carregar o jogo novamente
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setCooldown(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [cooldown, carregarJogo]);
+
+  useEffect(() => { carregarJogo(); }, [carregarJogo]);
 
   if (loading) return <div className="p-20 text-center font-black text-gold animate-pulse italic">CARREGANDO...</div>;
 
-  if (cooldown) return (
-    <div className="max-w-xl mx-auto bg-slate-900 p-10 rounded-[3rem] border border-rose-500/30 text-center italic shadow-2xl">
-      <Clock size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
-      <h2 className="text-2xl font-black text-white uppercase mb-2">Acesso Temporário Bloqueado</h2>
-      <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6">Suas vidas acabaram. Tente em:</p>
-      <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{cooldown} MIN</div>
-      <button onClick={carregarJogo} className="bg-white/10 text-white px-8 py-3 rounded-xl font-black uppercase text-xs">Verificar</button>
-    </div>
-  );
+  if (cooldown) {
+    const minutos = String(Math.floor(cooldown / 60)).padStart(2, '0');
+    const segundos = String(cooldown % 60).padStart(2, '0');
+    return (
+      <div className="max-w-xl mx-auto bg-slate-900 p-10 rounded-[3rem] border border-rose-500/30 text-center italic shadow-2xl">
+        <Clock size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
+        <h2 className="text-2xl font-black text-white uppercase mb-2">Acesso Temporário Bloqueado</h2>
+        <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6">Suas vidas acabaram. Tente em:</p>
+        <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{minutos}:{segundos}</div>
+        <button onClick={carregarJogo} className="bg-white/10 text-white px-8 py-3 rounded-xl font-black uppercase text-xs">Verificar</button>
+      </div>
+    );
+  }
 
   if (gameOver || (perguntas.length === 0 && !loading)) return (
     <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in zoom-in duration-500 italic">
