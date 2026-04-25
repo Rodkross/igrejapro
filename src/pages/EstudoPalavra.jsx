@@ -1,4 +1,5 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useRef } from 'react';
+import * as htmlToImage from 'html-to-image';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2 } from 'lucide-react';
 
@@ -130,6 +131,8 @@ export default function EstudoPalavra() {
   const [errorMsg, setErrorMsg] = useState('');
   const [targetVerseArr, setTargetVerseArr] = useState([]);
   const [copiado, setCopiado] = useState(false);
+  const [isCapturing, setIsCapturing] = useState(false);
+  const printRef = useRef(null);
 
   // Extração do Nome do Livro e Dicionários
   const lastSpaceIdx = refUrl.lastIndexOf(' ');
@@ -187,22 +190,50 @@ export default function EstudoPalavra() {
   const textoCompartilhamento = `Palavra do Dia: "${txtUrl}" - ${refUrl}\n\nAprofunde-se nesse versículo: ${linkCompartilhamento}`;
 
   const handleCompartilhar = async () => {
+    if (!printRef.current) return;
     try {
-      if (navigator.share) {
+      setIsCapturing(true);
+      
+      // Aguardar render pra garantir font-serif carregada
+      await new Promise(r => setTimeout(r, 100));
+
+      const blob = await htmlToImage.toBlob(printRef.current, {
+        quality: 1,
+        pixelRatio: 2,
+        backgroundColor: '#0A0F1C',
+      });
+      
+      setIsCapturing(false);
+      if (!blob) throw new Error('Falha ao gerar imagem');
+
+      const file = new File([blob], `palavra-${Date.now()}.png`, { type: 'image/png' });
+
+      // API Nativa para mobile (WhatsApp, Instagram, etc)
+      if (navigator.canShare && navigator.canShare({ files: [file] })) {
         await navigator.share({
-          title: `Palavra do Dia • ${refUrl}`,
-          text: `Palavra do Dia: "${txtUrl}"`,
-          url: linkCompartilhamento,
+          files: [file],
+          title: `Palavra do Dia`,
         });
         return;
       }
 
-      await navigator.clipboard.writeText(textoCompartilhamento);
+      // Desktop / Navegadores não compatíveis baixam direto
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = file.name;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      
       setCopiado(true);
-      setTimeout(() => setCopiado(false), 2200);
+      setTimeout(() => setCopiado(false), 3000);
+
     } catch (error) {
+      setIsCapturing(false);
       if (error?.name !== 'AbortError') {
-        console.error('Erro ao compartilhar palavra:', error);
+        console.error('Erro ao compartilhar imagem:', error);
+        await navigator.clipboard.writeText(textoCompartilhamento).catch(e => null);
+        setCopiado(true);
+        setTimeout(() => setCopiado(false), 2200);
       }
     }
   };
@@ -229,33 +260,37 @@ export default function EstudoPalavra() {
       </div>
 
       {/* HERO SECTION: O Versículo Destacado */}
-      <header className="relative pt-16 pb-20 md:pt-24 md:pb-32 px-4 text-center max-w-5xl mx-auto">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] md:w-[600px] h-[300px] bg-gold/15 blur-[120px] rounded-full pointer-events-none -z-10" />
+      <header className="relative pt-6 pb-12 md:pt-10 md:pb-16 px-4 text-center max-w-4xl mx-auto flex flex-col items-center">
         
-        <span className="inline-block px-5 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-widest text-xs md:text-sm uppercase mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-          Palavra do Dia • {refUrl}
-        </span>
-        
-        <div className="relative inline-block w-full">
-          <Quote className="absolute -top-6 md:-top-10 -left-4 md:-left-12 text-white/5 w-16 h-16 md:w-24 md:h-24 -z-10 rotate-180" />
-          <h1 className="text-3xl md:text-5xl lg:text-6xl font-medium text-white leading-tight md:leading-snug italic relative z-10 px-4 md:px-12">
-            "{txtUrl}"
-          </h1>
-          <Quote className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-12 text-white/5 w-16 h-16 md:w-24 md:h-24 -z-10" />
+        {/* A área a ser capturada e transformada em imagem */}
+        <div ref={printRef} className="relative w-full py-10 md:py-14 px-6 md:px-12 flex flex-col items-center justify-center bg-[#0A0F1C] overflow-hidden rounded-3xl">
+          {/* Fundo radiante */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] md:w-[800px] h-[300px] bg-gold/15 blur-[100px] rounded-full pointer-events-none -z-10" />
+          
+          <span className="inline-block px-5 py-1.5 md:py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-widest text-[10px] md:text-xs uppercase mb-6 md:mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
+            Palavra do Dia • {refUrl}
+          </span>
+          
+          <div className="relative inline-block w-full max-w-3xl">
+            <h1 className="text-2xl md:text-4xl lg:text-[2.75rem] font-medium text-white leading-snug md:leading-[1.3] italic relative z-10 px-2 md:px-6 font-serif text-center tracking-tight drop-shadow-md">
+              "{txtUrl}"
+            </h1>
+          </div>
         </div>
 
-        <div className="mt-10 flex justify-center">
+        <div className="mt-8 flex justify-center">
           <button
             type="button"
             onClick={handleCompartilhar}
-            className={`inline-flex items-center gap-2.5 rounded-2xl border px-5 py-3 text-sm font-bold tracking-wide transition-all ${
+            disabled={isCapturing}
+            className={`inline-flex items-center gap-2.5 rounded-2xl border px-6 py-3.5 text-sm font-bold tracking-wide transition-all shadow-xl hover:scale-105 ${
               copiado
                 ? 'border-emerald-400/30 bg-emerald-500/15 text-emerald-200'
-                : 'border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-gold/20 hover:text-gold'
-            }`}
+                : 'border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-gold/30 hover:text-gold'
+            } ${isCapturing ? 'opacity-50 cursor-not-allowed scale-100 shadow-none' : ''}`}
           >
-            {copiado ? <CheckCircle2 size={18} /> : <Share2 size={18} />}
-            <span>{copiado ? 'Texto copiado' : 'Compartilhar esta palavra'}</span>
+            {isCapturing ? <Loader2 size={18} className="animate-spin" /> : (copiado ? <CheckCircle2 size={18} /> : <Share2 size={18} />)}
+            <span>{isCapturing ? 'Gerando imagem de alta qualidade...' : (copiado ? (navigator.canShare ? 'Compartilhado' : 'Imagem salva no dispositivo') : 'Compartilhar como Imagem')}</span>
           </button>
         </div>
       </header>
