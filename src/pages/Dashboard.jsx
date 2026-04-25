@@ -58,11 +58,13 @@ export default function Dashboard() {
             const [ano, mes, dia] = p.dataEspecífica.split('-');
             const [hora, minuto] = (p.horario || "00:00").split(':');
             const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
-
-            // Mantém o evento apenas se a data/hora atual for anterior à data de início.
-            return agora < dataInicio;
+            
+            // CORREÇÃO: Considerar a duração do evento.
+            const duracaoHoras = parseInt(p.duracao) || 2; // Duração padrão de 2h se não especificado
+            const dataFim = new Date(dataInicio.getTime() + duracaoHoras * 60 * 60 * 1000);
+            return agora < dataFim;
           } catch {
-            return false; // Se houver erro no parsing da data, não exibe.
+            return true; // Mantém o evento se houver erro no parsing, para não sumir da lista.
           }
         } else {
           // CORREÇÃO: Eventos semanais (recorrentes) devem sempre ser exibidos na agenda,

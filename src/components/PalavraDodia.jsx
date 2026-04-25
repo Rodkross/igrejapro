@@ -170,27 +170,25 @@ export default function PalavraDodia({ compactTablet = false }) {
       const usuariosRef = collection(db, 'palavraDodiaCurtidas', palavraDoDia.id, 'usuarios');
       const q = query(usuariosRef, orderBy('curtidoEm', 'desc'));
       const snap = await getDocs(q);
-      
-      const usersData = [];
-      for (const docSnap of snap.docs) {
+
+      const userPromises = snap.docs.map(async (docSnap) => {
         const likeData = docSnap.data();
         let fotoUrl = null;
-
         try {
-          const userDocRef = doc(db, 'usuarios', String(likeData.usuarioId));
-          const userDocSnap = await getDoc(userDocRef);
-          if (userDocSnap.exists()) {
-            fotoUrl = userDocSnap.data().fotoUrl;
+          if (likeData.usuarioId) {
+            const userDocRef = doc(db, 'usuarios', String(likeData.usuarioId));
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              fotoUrl = userDocSnap.data().fotoUrl;
+            }
           }
         } catch (err) {
           console.error('Erro ao buscar foto do usuario:', err);
         }
+        return { ...likeData, fotoUrl };
+      });
 
-        usersData.push({
-          ...likeData,
-          fotoUrl: fotoUrl
-        });
-      }
+      const usersData = await Promise.all(userPromises);
       setUsuariosQueCurtiram(usersData);
     } catch (error) {
       console.error('Erro ao buscar usuarios que curtiram:', error);

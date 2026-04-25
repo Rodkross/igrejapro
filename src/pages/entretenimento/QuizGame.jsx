@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../database/firebase';
 import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit } from 'firebase/firestore';
-import { Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, PlusCircle, Gamepad2, Medal, Ban, Cross, Clock, Loader2 } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
+
+import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2 } from 'lucide-react';
 
 export default function QuizGame() {
   const { usuario } = useOutletContext();
@@ -249,7 +250,7 @@ export default function QuizGame() {
                 {respondido && (
                   <div className="flex-shrink-0">
                     {isCorrect && <CheckCircle2 size={isUnessential ? 14 : 18} className="text-emerald-500 animate-in zoom-in" />}
-                    {isSelected && !isCorrect && <XCircle size={18} className="text-rose-500 animate-in zoom-in" />}
+                    {isSelected && !isCorrect && <CircleX size={18} className="text-rose-500 animate-in zoom-in" />}
                   </div>
                 )}
               </button>
@@ -267,7 +268,7 @@ export default function QuizGame() {
             {mostraControles ? (
               <div className="flex flex-col sm:flex-row gap-2 mt-1.5 animate-in fade-in">
                 <button onClick={proximaQuestao} className="w-full sm:flex-1 bg-gold text-navy font-black py-2 md:py-3 rounded-lg uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl text-[11px] md:text-sm">
-                  Próxima <ArrowRight size={14}/>
+                  Próxima <ArrowRight size={14} />
                 </button>
                 <button onClick={() => setGameOver(true)} className="w-full sm:w-auto bg-white/5 text-white/40 font-black py-2 md:py-3 px-4 rounded-lg uppercase text-[9px] tracking-wider hover:bg-rose-500/20 hover:text-rose-500 transition-all shadow-none">
                   Parar
