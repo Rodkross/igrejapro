@@ -47,13 +47,23 @@ export default function Login({ onLoginSucesso }) {
           cargoFinal = "SISTEMA";
         }
 
+        // Busca as permissões do cargo correspondente na coleção 'cargos'
+        let permissoesCargo = {};
+        if (cargoFinal) {
+          const qCargo = query(collection(db, "cargos"), where("nome", "==", cargoFinal));
+          const cargoSnap = await getDocs(qCargo);
+          if (!cargoSnap.empty) {
+            permissoesCargo = cargoSnap.docs[0].data().permissoes || {};
+          }
+        }
+
         // Criamos o objeto de sessão. 
         // Agora o 'cargoNome' é a chave principal para as permissões no restante do app.
         const sessaoUsuario = { 
           ...usuarioData, 
           cargoNome: cargoFinal,
-          // Você pode manter o objeto permissões se o resto do app esperar ele,
-          // injetando true baseado no nome do cargo:
+          // Unimos as permissões do cargo com quaisquer permissões individuais do usuário
+          permissoes: { ...usuarioData.permissoes, ...permissoesCargo },
           isAdmin: cargoFinal === "SISTEMA" || cargoFinal === "Administrador"
         };
 

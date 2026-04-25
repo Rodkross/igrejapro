@@ -58,11 +58,13 @@ export default function Dashboard() {
             const [ano, mes, dia] = p.dataEspecífica.split('-');
             const [hora, minuto] = (p.horario || "00:00").split(':');
             const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
-
-            // Mantém o evento apenas se a data/hora atual for anterior à data de início.
-            return agora < dataInicio;
+            
+            // CORREÇÃO: Considerar a duração do evento.
+            const duracaoHoras = parseInt(p.duracao) || 2; // Duração padrão de 2h se não especificado
+            const dataFim = new Date(dataInicio.getTime() + duracaoHoras * 60 * 60 * 1000);
+            return agora < dataFim;
           } catch {
-            return false; // Se houver erro no parsing da data, não exibe.
+            return true; // Mantém o evento se houver erro no parsing, para não sumir da lista.
           }
         } else {
           // CORREÇÃO: Eventos semanais (recorrentes) devem sempre ser exibidos na agenda,
@@ -83,6 +85,13 @@ export default function Dashboard() {
         const pesoA = a.isEspecial ? 1 : (a.tipoFrequencia === 'toda_semana' ? 2 : 3);
         const pesoB = b.isEspecial ? 1 : (b.tipoFrequencia === 'toda_semana' ? 2 : 3);
         if (pesoA !== pesoB) return pesoA - pesoB;
+
+        if (a.isEspecial && b.isEspecial) {
+          const dataA = new Date(`${a.dataEspecífica}T${a.horario || '00:00'}`);
+          const dataB = new Date(`${b.dataEspecífica}T${b.horario || '00:00'}`);
+          return dataA - dataB;
+        }
+
         const diaA = dias[a.diaSemana] || 8;
         const diaB = dias[b.diaSemana] || 8;
         return diaA !== diaB ? diaA - diaB : (a.horario || '').localeCompare(b.horario || '');
@@ -381,8 +390,14 @@ export default function Dashboard() {
               <div className="animate-ticker inline-flex items-center gap-8 h-full text-white">
                 {[...programacao, ...programacao].map((p, i) => (
                   <div key={`${p.id}-${i}`} className="flex items-center gap-2 shrink-0">
-                    <span className="font-bold text-xs text-white">{p.titulo}</span>
-                    <span className="text-[8px] font-bold bg-white/10 px-1.5 py-0.5 rounded text-slate-200">{p.horario}h</span>
+                    <span className="font-bold text-xs text-white uppercase tracking-tighter">{p.titulo}</span>
+                    {p.isEspecial && p.dataEspecífica ? (
+                      <span className="text-[8px] font-bold bg-gold/20 px-2 py-1 rounded text-gold">
+                        {new Date(p.dataEspecífica + 'T12:00:00').toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} às {p.horario}h
+                      </span>
+                    ) : (
+                      <span className="text-[8px] font-bold bg-white/10 px-2 py-1 rounded text-slate-200">{p.diaSemana?.substring(0,3)} - {p.horario}h</span>
+                    )}
                     <span className="text-gold/30 text-[10px]">✦</span>
                   </div>
                 ))}

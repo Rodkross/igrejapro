@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, runTransaction, serverTimestamp, collection, getDocs, query, orderBy, getDoc } from 'firebase/firestore';
-import { BookOpen, Cross, Heart, Loader2, X, Share2, Facebook, Instagram, Copy, CheckCircle2 } from 'lucide-react';
+import { BookOpen, Cross, Heart, Loader2, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const PALAVRAS_DISPONIVEIS = [
@@ -93,9 +93,6 @@ export default function PalavraDodia({ compactTablet = false }) {
   const [usuariosQueCurtiram, setUsuariosQueCurtiram] = useState([]);
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
 
-  const [showShareMenu, setShowShareMenu] = useState(false);
-  const [copiado, setCopiado] = useState(false);
-
   const palavraDoDia = useMemo(() => obterPalavraDoDia(), []);
   const usuarioLogado = useMemo(() => lerUsuarioLogado(), []);
   const usuarioId = String(usuarioLogado?.id || '');
@@ -173,59 +170,30 @@ export default function PalavraDodia({ compactTablet = false }) {
       const usuariosRef = collection(db, 'palavraDodiaCurtidas', palavraDoDia.id, 'usuarios');
       const q = query(usuariosRef, orderBy('curtidoEm', 'desc'));
       const snap = await getDocs(q);
-      
-      const usersData = [];
-      for (const docSnap of snap.docs) {
+
+      const userPromises = snap.docs.map(async (docSnap) => {
         const likeData = docSnap.data();
         let fotoUrl = null;
-
         try {
-          const userDocRef = doc(db, 'usuarios', String(likeData.usuarioId));
-          const userDocSnap = await getDoc(userDocRef);
-          if (userDocSnap.exists()) {
-            fotoUrl = userDocSnap.data().fotoUrl;
+          if (likeData.usuarioId) {
+            const userDocRef = doc(db, 'usuarios', String(likeData.usuarioId));
+            const userDocSnap = await getDoc(userDocRef);
+            if (userDocSnap.exists()) {
+              fotoUrl = userDocSnap.data().fotoUrl;
+            }
           }
         } catch (err) {
           console.error('Erro ao buscar foto do usuario:', err);
         }
+        return { ...likeData, fotoUrl };
+      });
 
-        usersData.push({
-          ...likeData,
-          fotoUrl: fotoUrl
-        });
-      }
+      const usersData = await Promise.all(userPromises);
       setUsuariosQueCurtiram(usersData);
     } catch (error) {
       console.error('Erro ao buscar usuarios que curtiram:', error);
     } finally {
       setCarregandoUsuarios(false);
-    }
-  };
-
-  const handleShareWhatsApp = () => {
-    const texto = `*Palavra do Dia*\n_"${palavraDoDia.texto}"_\n- ${palavraDoDia.referencia}\n\nConfira no nosso app!`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(texto)}`, '_blank');
-    setShowShareMenu(false);
-  };
-
-  const handleShareFacebook = () => {
-    const url = window.location.origin;
-    const texto = `Palavra do Dia: "${palavraDoDia.texto}" - ${palavraDoDia.referencia}`;
-    window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}&quote=${encodeURIComponent(texto)}`, '_blank');
-    setShowShareMenu(false);
-  };
-
-  const handleCopiarTexto = async () => {
-    const texto = `Palavra do Dia: "${palavraDoDia.texto}" - ${palavraDoDia.referencia}\n\nConfira no nosso app!`;
-    try {
-      await navigator.clipboard.writeText(texto);
-      setCopiado(true);
-      setTimeout(() => {
-        setCopiado(false);
-        setShowShareMenu(false);
-      }, 2000);
-    } catch (err) {
-      console.error('Erro ao copiar', err);
     }
   };
 
@@ -260,7 +228,7 @@ export default function PalavraDodia({ compactTablet = false }) {
           "{palavraDoDia.texto}"
         </p>
 
-        <div className={`flex items-center justify-between gap-3 ${compactTablet ? 'pt-1' : 'pt-1'}`}>
+        <div className={`flex flex-wrap items-center justify-between gap-3 ${compactTablet ? 'pt-1' : 'pt-1'}`}>
           <button 
             type="button"
             onClick={handleOpenLikesModal}
@@ -269,42 +237,7 @@ export default function PalavraDodia({ compactTablet = false }) {
             {totalCurtidas} {totalCurtidas === 1 ? 'curtida' : 'curtidas'}
           </button>
 
-          <div className="flex items-center gap-1.5 sm:gap-2">
-            <button
-              type="button"
-              onClick={handleShareWhatsApp}
-              className={`inline-flex items-center justify-center rounded-full transition-all bg-[#25D366]/15 hover:bg-[#25D366]/25 text-[#25D366] border border-[#25D366]/20 ${compactTablet ? 'w-8 h-8' : 'w-[34px] h-[34px]'}`}
-              title="Compartilhar no WhatsApp"
-            >
-              <svg width={compactTablet ? "14" : "15"} height={compactTablet ? "14" : "15"} viewBox="0 0 24 24" fill="currentColor">
-                <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413z"/>
-              </svg>
-            </button>
-
-            <button
-              type="button"
-              onClick={handleShareFacebook}
-              className={`inline-flex items-center justify-center rounded-full transition-all bg-[#1877F2]/15 hover:bg-[#1877F2]/25 text-[#1877F2] border border-[#1877F2]/20 ${compactTablet ? 'w-8 h-8' : 'w-[34px] h-[34px]'}`}
-              title="Compartilhar no Facebook"
-            >
-              <Facebook size={compactTablet ? 14 : 15} />
-            </button>
-
-            <button
-              type="button"
-              onClick={handleCopiarTexto}
-              className={`inline-flex items-center justify-center rounded-full transition-all ${
-                copiado 
-                  ? 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-400 border border-emerald-500/20' 
-                  : 'bg-[#E1306C]/15 hover:bg-[#E1306C]/25 text-[#E1306C] border border-[#E1306C]/20'
-              } ${compactTablet ? 'w-8 h-8' : 'w-[34px] h-[34px]'}`}
-              title="Copiar para o Instagram"
-            >
-              {copiado ? <CheckCircle2 size={compactTablet ? 14 : 15} /> : <Instagram size={compactTablet ? 14 : 15} />}
-            </button>
-
-            <div className="w-px h-6 bg-white/10 mx-1"></div>
-
+          <div className="flex items-center">
             <button
               type="button"
               onClick={handleCurtir}
@@ -338,15 +271,15 @@ export default function PalavraDodia({ compactTablet = false }) {
       </div>
 
       {showLikesModal && (
-        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-[#0f172a] w-full max-w-sm rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/10 transform transition-all animate-in zoom-in-95 duration-200">
-            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-slate-900/80 backdrop-blur-lg w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-white/10 transform transition-all animate-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)]">
+            <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
               <h3 className="font-bold text-white tracking-wide text-sm uppercase">Quem Curtiu</h3>
               <button onClick={() => setShowLikesModal(false)} className="text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5">
                 <X size={18} />
               </button>
             </div>
-            <div className="p-5 max-h-[60vh] overflow-y-auto">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5">
               {carregandoUsuarios ? (
                 <div className="flex justify-center items-center py-8">
                    <Loader2 className="animate-spin text-gold" size={24} />

@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Link, Outlet, useLocation } from 'react-router-dom';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUnion } from 'firebase/firestore';
@@ -11,9 +11,8 @@ import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
-import ModalMeuPerfil from './ModalMeuPerfil';
 
-export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
+export default function Layout({ usuario, aoSair }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
   const [menuCadastroAberto, setMenuCadastroAberto] = useState(false);
   const [menuFinanceiroAberto, setMenuFinanceiroAberto] = useState(false);
@@ -25,26 +24,36 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
   const [verificandoDestaques, setVerificandoDestaques] = useState(true);
 
   const [configModalAberto, setConfigModalAberto] = useState(false);
-  const [perfilModalAberto, setPerfilModalAberto] = useState(false);
   const [configGeral, setConfigGeral] = useState(null);
 
   const location = useLocation();
   const userMenuRef = useRef(null);
   
   const { exibirAniversario, finalizarAniversario, DURACAO_ANIMACAO } = useAniversarioAcesso(dadosSincronizados);
-  const aplicarSessaoUsuario = useCallback((novosDados) => {
-    setDadosSincronizados(novosDados);
-    sessionStorage.setItem('usuarioLogado', JSON.stringify(novosDados));
-    onUsuarioAtualizado?.(novosDados);
-  }, [onUsuarioAtualizado]);
 
   // --- 1. SINCRONIZAÇÃO COM FIREBASE ---
   useEffect(() => {
     if (!usuario?.id) return;
-    const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
+    const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), async (docSnap) => {
       if (docSnap.exists()) {
-        const novosDados = { id: docSnap.id, ...docSnap.data() };
-        aplicarSessaoUsuario(novosDados);
+        const userData = { id: docSnap.id, ...docSnap.data() };
+        let finalUserData = { ...userData };
+
+        // Sincroniza as permissões do cargo em tempo real
+        if (userData.cargoNome) {
+          try {
+            const qCargo = query(collection(db, "cargos"), where("nome", "==", userData.cargoNome));
+            const cargoSnap = await getDocs(qCargo);
+            if (!cargoSnap.empty) {
+              const permissoesCargo = cargoSnap.docs[0].data().permissoes || {};
+              finalUserData.permissoes = { ...userData.permissoes, ...permissoesCargo };
+            }
+          } catch (err) {
+            console.error("Erro ao sincronizar permissões do cargo:", err);
+          }
+        }
+        setDadosSincronizados(finalUserData);
+        sessionStorage.setItem('usuarioLogado', JSON.stringify(finalUserData));
       }
     });
 
@@ -57,12 +66,19 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
     });
 
     return () => { unsub(); unsubConfig(); };
-  }, [usuario?.id, aplicarSessaoUsuario]);
+  }, [usuario?.id]);
 
   // --- 2. LÓGICA DO MODAL ESPECIAL ---
   useEffect(() => {
     const buscarDestaques = async () => {
       if (!dadosSincronizados?.id) {
+        setVerificandoDestaques(false);
+        return;
+      }
+
+      // MODIFICAÇÃO: Checa se o modal já foi exibido nesta sessão.
+      // Isso garante que ele apareça apenas uma vez após o login, e não em cada refresh.
+      if (sessionStorage.getItem('avisoEspecialVistoNestaSessao')) {
         setVerificandoDestaques(false);
         return;
       }
@@ -78,12 +94,9 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
              ? dadosSincronizados.avisosVistos 
              : (dadosSincronizados?.avisoVistoId ? [dadosSincronizados.avisoVistoId] : []);
              
-          const vistosSessao = JSON.parse(sessionStorage.getItem('avisosTemporariosSessao') || '[]');
-
           const eventosParaExibir = listaCompleta
               .filter(eve => {
                 if (silenciados.includes(eve.id)) return false;
-                if (vistosSessao.includes(eve.id)) return false;
                 const [ano, mes, dia] = eve.dataEspecífica.split('-');
                 const [hora, minuto] = (eve.horario || "00:00").split(':');
                 const dataInicio = new Date(ano, mes - 1, dia, hora, minuto);
@@ -93,11 +106,12 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               .sort((a, b) => new Date(a.dataEspecífica) - new Date(b.dataEspecífica));
 
           if (eventosParaExibir.length > 0) {
-            const novosVistos = [...vistosSessao, ...eventosParaExibir.map(e => e.id)];
-            sessionStorage.setItem('avisosTemporariosSessao', JSON.stringify(novosVistos));
-            
             setEventosEspeciais(eventosParaExibir);
             setExibirModalEspecial(true);
+            // Marca que o modal foi exibido nesta sessão para não mostrar novamente.
+            sessionStorage.setItem('avisoEspecialVistoNestaSessao', 'true');
+          } else {
+            setExibirModalEspecial(false);
           }
         }
       } catch (error) {
@@ -111,34 +125,6 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
     // A dependência foi alterada para reagir apenas a mudanças no ID do usuário ou na lista de avisos já vistos.
     // Isso impede que outras atualizações no perfil do usuário (como pontuação de jogos) reativem o modal desnecessariamente.
   }, [dadosSincronizados?.id, JSON.stringify(dadosSincronizados?.avisosVistos)]);
-
-  useEffect(() => {
-    if (!dadosSincronizados?.cargoId) return;
-
-    const unsubCargo = onSnapshot(doc(db, "cargos", String(dadosSincronizados.cargoId)), (cargoSnap) => {
-      if (!cargoSnap.exists()) return;
-
-      const cargoData = cargoSnap.data();
-      const permissoesAtualizadas = cargoData.permissoes || {};
-      const cargoNomeAtualizado = cargoData.nome || dadosSincronizados?.cargoNome || 'Membro';
-      const permissoesAtuais = dadosSincronizados?.permissoes || {};
-
-      if (
-        JSON.stringify(permissoesAtuais) === JSON.stringify(permissoesAtualizadas) &&
-        (dadosSincronizados?.cargoNome || '') === cargoNomeAtualizado
-      ) {
-        return;
-      }
-
-      aplicarSessaoUsuario({
-        ...dadosSincronizados,
-        cargoNome: cargoNomeAtualizado,
-        permissoes: permissoesAtualizadas
-      });
-    });
-
-    return () => unsubCargo();
-  }, [dadosSincronizados, aplicarSessaoUsuario]);
 
   const silenciarEvento = async (eventoId) => {
     if (dadosSincronizados?.id && eventoId) {
@@ -183,9 +169,16 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
 
   const temAcesso = (modulo) => {
     const userAtual = dadosSincronizados;
-    const nome = userAtual?.nome?.toLowerCase() || '';
-    const cargo = userAtual?.cargoNome?.toLowerCase() || '';
-    if (String(userAtual?.id) === "1" || nome === 'rodrigo' || cargo.includes('pastor') || cargo.includes('admin')) return true;
+    if (!userAtual) return false;
+
+    const cargo = (userAtual.cargoNome || '').toLowerCase();
+
+    // Super-admin roles que bypassam permissões específicas
+    if (cargo === "sistema" || cargo === "administrador" || cargo.includes('pastor')) {
+        return true;
+    }
+
+    // Checa a permissão específica do módulo vinda do objeto 'permissoes'
     return userAtual?.permissoes && userAtual?.permissoes[modulo] === true;
   };
 
@@ -270,7 +263,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
       {/* SIDEBAR ROYAL */}
       <aside className="w-64 flex-shrink-0 hidden xl:flex flex-col h-[100dvh] sticky top-0 shadow-2xl z-50 text-left bg-gradient-sidebar relative overflow-hidden">
         <div className="absolute top-0 left-0 right-0 h-1 bg-gradient-gold"></div>
-        <Link to="/" className="p-6 border-b border-white/5 flex items-center gap-4 relative transition-all hover:bg-white/5">
+        <div className="p-6 border-b border-white/5 flex items-center gap-4 relative">
           {configGeral?.igrejaLogo ? (
              <img src={configGeral.igrejaLogo} alt="Logo" className="w-12 h-12 object-contain rounded-2xl bg-white/10 p-1.5 border border-white/10" />
           ) : (
@@ -282,7 +275,7 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
             <h1 className="font-display text-xl font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
             <p className="text-[9px] font-bold text-gold uppercase tracking-[0.25em] mt-0.5 text-left">Gestão Pastoral</p>
           </div>
-        </Link>
+        </div>
 
         <nav className="flex-1 p-2 space-y-1 overflow-y-auto relative text-left">
 <Link to="/" onClick={fecharMenus} className={navLinkClass('/')}> 
@@ -359,7 +352,15 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
         <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          {/* START DO LADO ESQUERDO DA HEADER - REMOVIDO BOTÃO VOLTAR GLOBAL A PEDIDO DO USUÁRIO */}
+          {/* BOTÃO VOLTAR - ESQUERDA */}
+          {location.pathname !== '/' && (
+            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
+              location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
+            }`}>
+              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
+              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
+            </Link>
+          )}
 
           {/* EVENTO AO VIVO - ESQUERDA */}
           <div className={`flex items-center gap-1 relative z-10 text-left ${
@@ -415,14 +416,9 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
               <div className="absolute right-0 mt-4 w-[min(22rem,calc(100vw-1rem))] bg-white rounded-3xl shadow-2xl border border-slate-100 p-3 text-left z-[100] animate-scale-in origin-top-right">
                 <div className="rounded-[1.75rem] bg-gradient-hero p-4 text-white shadow-elegant">
                   <p className="text-[9px] font-bold text-gold uppercase tracking-[0.22em]">Usuário logado</p>
-                  <div className="flex flex-col items-start gap-1.5 mt-1">
-                    <p className="font-display text-lg font-black leading-tight break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
-                    <span className="inline-block px-2.5 py-0.5 rounded-full bg-white/10 border border-white/20 text-[9px] font-bold tracking-widest text-gold uppercase">
-                      Matrícula: {dadosSincronizados?.idAcesso || dadosSincronizados?.id || usuario?.id || 'N/A'}
-                    </span>
-                  </div>
+                  <p className="font-display text-lg font-black leading-tight mt-1 break-words">{dadosSincronizados?.nome || 'Usuário'}</p>
                   <p className="text-[10px] font-bold uppercase tracking-[0.18em] text-slate-200 mt-2 break-words">
-                    {dadosSincronizados?.funcaoEclesiastica || dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
+                    {dadosSincronizados?.cargoNome || 'Sem cargo eclesiástico'}
                   </p>
                 </div>
 
@@ -441,11 +437,6 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
                       </Link>
                     );
                   })}
-
-                  <button onClick={() => { setPerfilModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
-                    <UserIcon size={16} /> Meu Perfil
-                  </button>
-
                   {(String(dadosSincronizados?.id) === "1" || dadosSincronizados?.nome?.toLowerCase() === 'suporte' || dadosSincronizados?.cargoNome === "SISTEMA") && (
                     <button onClick={() => { setConfigModalAberto(true); setUserMenuAberto(false); }} className="w-full flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-royal/5 hover:text-royal rounded-2xl transition-all font-bold text-[11px] uppercase tracking-wider text-left">
                       <Settings size={16} /> Configurações
@@ -469,7 +460,6 @@ export default function Layout({ usuario, aoSair, onUsuarioAtualizado }) {
       </main>
 
       {configModalAberto && <ModalConfiguracoes aoFechar={() => setConfigModalAberto(false)} />}
-      {perfilModalAberto && <ModalMeuPerfil usuario={dadosSincronizados} aoFechar={() => setPerfilModalAberto(false)} />}
     </div>
   );
 }

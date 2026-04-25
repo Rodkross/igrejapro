@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake } from 'lucide-react';
+import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2 } from 'lucide-react';
 
 const livrosMetadata = {
   'João': {
@@ -129,6 +129,7 @@ export default function EstudoPalavra() {
   const [capituloData, setCapituloData] = useState(null);
   const [errorMsg, setErrorMsg] = useState('');
   const [targetVerseArr, setTargetVerseArr] = useState([]);
+  const [copiado, setCopiado] = useState(false);
 
   // Extração do Nome do Livro e Dicionários
   const lastSpaceIdx = refUrl.lastIndexOf(' ');
@@ -179,6 +180,33 @@ export default function EstudoPalavra() {
     if (refUrl !== 'Desconhecido') fetchCapitulo();
   }, [refUrl, lastSpaceIdx, livroPT]);
 
+  const linkCompartilhamento = typeof window !== 'undefined'
+    ? `${window.location.origin}/estudo-palavra?ref=${encodeURIComponent(refUrl)}&text=${encodeURIComponent(txtUrl)}`
+    : '';
+
+  const textoCompartilhamento = `Palavra do Dia: "${txtUrl}" - ${refUrl}\n\nAprofunde-se nesse versículo: ${linkCompartilhamento}`;
+
+  const handleCompartilhar = async () => {
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `Palavra do Dia • ${refUrl}`,
+          text: `Palavra do Dia: "${txtUrl}"`,
+          url: linkCompartilhamento,
+        });
+        return;
+      }
+
+      await navigator.clipboard.writeText(textoCompartilhamento);
+      setCopiado(true);
+      setTimeout(() => setCopiado(false), 2200);
+    } catch (error) {
+      if (error?.name !== 'AbortError') {
+        console.error('Erro ao compartilhar palavra:', error);
+      }
+    }
+  };
+
   return (
     <div className="w-full min-h-screen bg-[#0A0F1C] text-slate-200 font-sans pb-32 selection:bg-gold/30 selection:text-white">
       
@@ -214,6 +242,21 @@ export default function EstudoPalavra() {
             "{txtUrl}"
           </h1>
           <Quote className="absolute -bottom-6 md:-bottom-10 -right-4 md:-right-12 text-white/5 w-16 h-16 md:w-24 md:h-24 -z-10" />
+        </div>
+
+        <div className="mt-10 flex justify-center">
+          <button
+            type="button"
+            onClick={handleCompartilhar}
+            className={`inline-flex items-center gap-2.5 rounded-2xl border px-5 py-3 text-sm font-bold tracking-wide transition-all ${
+              copiado
+                ? 'border-emerald-400/30 bg-emerald-500/15 text-emerald-200'
+                : 'border-white/10 bg-white/5 text-white hover:bg-white/10 hover:border-gold/20 hover:text-gold'
+            }`}
+          >
+            {copiado ? <CheckCircle2 size={18} /> : <Share2 size={18} />}
+            <span>{copiado ? 'Texto copiado' : 'Compartilhar esta palavra'}</span>
+          </button>
         </div>
       </header>
 
