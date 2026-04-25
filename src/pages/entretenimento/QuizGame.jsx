@@ -1,58 +1,75 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../database/firebase';
 import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit } from 'firebase/firestore';
-import { Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, PlusCircle, Gamepad2, Medal, Ban, Cross, Clock } from 'lucide-react';
+import { Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, Medal, Cross, Clock } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 
 export default function QuizGame() {
   const { usuario } = useOutletContext();
   const [perguntas, setPerguntas] = useState([]);
   const [indiceAtual, setIndiceAtual] = useState(0);
-  const [score, setScore] = useState(0); // Este agora controla a pontuação da rodada
+  const [score, setScore] = useState(0);
   const [vidas, setVidas] = useState(3);
   const [respondido, setRespondido] = useState(false);
   const [opcaoSelecionada, setOpcaoSelecionada] = useState(null);
   const [loading, setLoading] = useState(true);
   const [gameOver, setGameOver] = useState(false);
   const [ranking, setRanking] = useState([]);
-  const [cooldown, setCooldown] = useState(null);
+  const [tempoProximaVida, setTempoProximaVida] = useState(null);
+  const [tempoRestante, setTempoRestante] = useState(10);
+  const [ultimaReg, setUltimaReg] = useState(null);
 
   const carregarJogo = async () => {
     setLoading(true);
     try {
-      // 1. Verificar Cooldown
       const userRef = doc(db, "usuarios", String(usuario.id));
       const userSnap = await getDoc(userRef);
-      const timestampBloqueio = userSnap.data()?.bloqueioQuiz?.seconds * 1000;
+      const data = userSnap.data();
       
-      if (timestampBloqueio) {
-        const agora = new Date().getTime();
-        if (agora - timestampBloqueio < 30 * 60 * 1000) {
-          setCooldown(Math.ceil((30 * 60 * 1000 - (agora - timestampBloqueio)) / 60000));
-          setLoading(false);
-          return;
+      let vidasDB = data?.vidasQuiz !== undefined ? data.vidasQuiz : 3;
+      let ultimaRegDb = data?.ultimaRegeneracaoVida?.toMillis() || Date.now();
+
+      if (vidasDB < 3) {
+        const agora = Date.now();
+        const tempoPassado = agora - ultimaRegDb;
+        const tempoNecessario = 10 * 60 * 1000;
+        const vidasGanhas = Math.floor(tempoPassado / tempoNecessario);
+        
+        if (vidasGanhas > 0) {
+          vidasDB = Math.min(3, vidasDB + vidasGanhas);
+          ultimaRegDb = ultimaRegDb + (vidasGanhas * tempoNecessario);
+          await updateDoc(userRef, { 
+            vidasQuiz: vidasDB, 
+            ultimaRegeneracaoVida: new Date(ultimaRegDb) 
+          });
         }
       }
 
-      // 2. Filtrar perguntas já acertadas
-      const progressoRef = doc(db, "progresso_quiz", String(usuario.id));
-      const progressoSnap = await getDoc(progressoRef);
-      const acertadasIds = progressoSnap.exists() ? progressoSnap.data().acertos || [] : [];
+      setVidas(vidasDB);
+      setUltimaReg(ultimaRegDb);
 
-      const snapPerguntas = await getDocs(collection(db, "quiz_biblico"));
-      const todas = snapPerguntas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      const disponiveis = todas.filter(p => !acertadasIds.includes(String(p.id)));
+      if (vidasDB > 0) {
+        const progressoRef = doc(db, "progresso_quiz", String(usuario.id));
+        const progressoSnap = await getDoc(progressoRef);
+        const acertadasIds = progressoSnap.exists() ? progressoSnap.data().acertos || [] : [];
 
-      if (disponiveis.length > 0) {
-        setPerguntas(disponiveis.sort(() => Math.random() - 0.5).slice(0, 10));
+        const snapPerguntas = await getDocs(collection(db, "quiz_biblico"));
+        const todas = snapPerguntas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const disponiveis = todas.filter(p => !acertadasIds.includes(String(p.id)));
+
+        if (disponiveis.length > 0) {
+          setPerguntas(disponiveis.sort(() => Math.random() - 0.5).slice(0, 10));
+        } else {
+          setPerguntas([]);
+        }
+        
+        setScore(0);
+        setIndiceAtual(0);
+        setGameOver(false);
+        setRespondido(false);
+        setTempoRestante(10);
       }
       
-      setVidas(3);
-      setScore(0); // Reseta score da rodada
-      setIndiceAtual(0);
-      setGameOver(false);
-      setRespondido(false);
-      setCooldown(null);
       await carregarRanking();
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -65,17 +82,27 @@ export default function QuizGame() {
   };
 
   const validarResposta = async (opcao) => {
-    if (respondido || gameOver) return;
+    if (respondido || gameOver || vidas <= 0) return;
     
     const questao = perguntas[indiceAtual];
-    const acertou = opcao === questao.resposta_correta;
+    const acertou = opcao !== null && opcao === questao.resposta_correta;
     const pontosVariacao = acertou ? 10 : -5;
 
-    // ATUALIZAÇÃO IMEDIATA DO ESTADO VISUAL
     setOpcaoSelecionada(opcao);
     setRespondido(true);
     setScore(prev => prev + pontosVariacao);
-    if (!acertou) setVidas(v => v - 1);
+    
+    let novasVidas = vidas;
+    let novaUltimaReg = ultimaReg;
+
+    if (!acertou) {
+      novasVidas -= 1;
+      setVidas(novasVidas);
+      if (vidas === 3) {
+        novaUltimaReg = Date.now();
+        setUltimaReg(novaUltimaReg);
+      }
+    }
 
     try {
       const userRef = doc(db, "usuarios", String(usuario.id));
@@ -83,16 +110,22 @@ export default function QuizGame() {
       const totalBanco = uSnap.data()?.recordeQuiz || 0;
       const novoTotal = Math.max(0, totalBanco + pontosVariacao);
 
-      // 1. Grava novo total no Firebase
-      await updateDoc(userRef, { recordeQuiz: novoTotal });
+      const updates = { recordeQuiz: novoTotal };
+      
+      if (!acertou) {
+        updates.vidasQuiz = novasVidas;
+        if (vidas === 3) {
+          updates.ultimaRegeneracaoVida = new Date(novaUltimaReg);
+        }
+      }
 
-      // 2. Atualiza Ranking local para refletir na hora
+      await updateDoc(userRef, updates);
+
       setRanking(prev => 
         prev.map(p => p.id === String(usuario.id) ? { ...p, recordeQuiz: novoTotal } : p)
             .sort((a, b) => (b.recordeQuiz || 0) - (a.recordeQuiz || 0))
       );
 
-      // 3. Se acertou, salva nos acertos
       if (acertou) {
         const progRef = doc(db, "progresso_quiz", String(usuario.id));
         const pSnap = await getDoc(progRef);
@@ -100,9 +133,7 @@ export default function QuizGame() {
         await setDoc(progRef, { acertos: [...new Set([...acertosAtuais, String(questao.id)])] }, { merge: true });
       }
 
-      // 4. Se perdeu a última vida
-      if (!acertou && vidas <= 1) {
-        await updateDoc(userRef, { bloqueioQuiz: new Date() });
+      if (!acertou && novasVidas <= 0) {
         setTimeout(() => setGameOver(true), 1500);
       }
     } catch (err) {
@@ -115,6 +146,7 @@ export default function QuizGame() {
       setIndiceAtual(v => v + 1);
       setRespondido(false);
       setOpcaoSelecionada(null);
+      setTempoRestante(10);
     } else {
       setGameOver(true);
     }
@@ -122,15 +154,65 @@ export default function QuizGame() {
 
   useEffect(() => { carregarJogo(); }, []);
 
+  useEffect(() => {
+    let interval;
+    if (vidas < 3 && ultimaReg) {
+      interval = setInterval(() => {
+        const agora = Date.now();
+        const tempoPassado = agora - ultimaReg;
+        const tempoNecessario = 10 * 60 * 1000;
+        
+        if (tempoPassado >= tempoNecessario) {
+          const vidasGanhas = Math.floor(tempoPassado / tempoNecessario);
+          if (vidasGanhas > 0) {
+            const novasVidas = Math.min(3, vidas + vidasGanhas);
+            setVidas(novasVidas);
+            setUltimaReg(ultimaReg + (vidasGanhas * tempoNecessario));
+            const userRef = doc(db, "usuarios", String(usuario.id));
+            updateDoc(userRef, { 
+              vidasQuiz: novasVidas, 
+              ultimaRegeneracaoVida: new Date(ultimaReg + (vidasGanhas * tempoNecessario)) 
+            }).catch(console.error);
+          }
+        } else {
+          const faltam = tempoNecessario - (tempoPassado % tempoNecessario);
+          const min = Math.floor(faltam / 60000);
+          const sec = Math.floor((faltam % 60000) / 1000);
+          setTempoProximaVida(`${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`);
+        }
+      }, 1000);
+    } else {
+      setTempoProximaVida(null);
+    }
+    return () => clearInterval(interval);
+  }, [vidas, ultimaReg, usuario.id]);
+
+  useEffect(() => {
+    let timer;
+    if (!loading && !gameOver && perguntas.length > 0 && !respondido && tempoRestante > 0 && vidas > 0) {
+      timer = setInterval(() => {
+        setTempoRestante(prev => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            validarResposta(null);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timer);
+  }, [loading, gameOver, perguntas, respondido, tempoRestante, vidas, indiceAtual]);
+
   if (loading) return <div className="p-20 text-center font-black text-gold animate-pulse italic">CARREGANDO...</div>;
 
-  if (cooldown) return (
-    <div className="max-w-xl mx-auto bg-slate-900 p-10 rounded-[3rem] border border-rose-500/30 text-center italic shadow-2xl">
+  if (vidas <= 0 && !loading) return (
+    <div className="max-w-xl mx-auto bg-slate-900 p-10 rounded-[3rem] border border-rose-500/30 text-center italic shadow-2xl animate-in zoom-in">
       <Clock size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
-      <h2 className="text-2xl font-black text-white uppercase mb-2">Acesso Temporário Bloqueado</h2>
-      <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6">Suas vidas acabaram. Tente em:</p>
-      <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{cooldown} MIN</div>
-      <button onClick={carregarJogo} className="bg-white/10 text-white px-8 py-3 rounded-xl font-black uppercase text-xs">Verificar</button>
+      <h2 className="text-3xl font-black text-white uppercase mb-2">Leia mais a Bíblia</h2>
+      <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6">Suas vidas acabaram. Próxima vida em:</p>
+      <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{tempoProximaVida || "00:00"}</div>
+      <button onClick={carregarJogo} className="bg-white/10 text-white px-8 py-3 rounded-xl font-black uppercase text-xs hover:bg-white/20 transition-all">Verificar Novamente</button>
     </div>
   );
 
@@ -172,15 +254,24 @@ export default function QuizGame() {
   return (
     <div className="max-w-4xl mx-auto space-y-6 italic font-sans animate-in fade-in">
       <div className="flex justify-between items-center bg-slate-900/80 p-6 rounded-[2rem] border border-white/10 shadow-xl backdrop-blur-md">
-        <div className="text-left">
+        <div className="text-left w-1/3">
           <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-2 text-left leading-none">Vidas</p>
           <div className="flex gap-2">
             {[...Array(3)].map((_, i) => (
               <Cross key={i} size={20} className={`${i < vidas ? 'text-rose-600 fill-rose-600' : 'text-slate-800'} transition-all duration-500`} />
             ))}
           </div>
+          {vidas < 3 && tempoProximaVida && (
+            <p className="text-[9px] font-bold text-slate-400 mt-2 uppercase tracking-wider">+1 em {tempoProximaVida}</p>
+          )}
         </div>
-        <div className="text-right">
+        
+        <div className="flex flex-col items-center justify-center w-1/3">
+          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 leading-none">Tempo</p>
+          <p className={`text-4xl font-black tabular-nums transition-colors duration-300 ${tempoRestante <= 3 ? 'text-rose-500 animate-pulse scale-110' : 'text-white'}`}>{tempoRestante}s</p>
+        </div>
+
+        <div className="text-right w-1/3">
           <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-right leading-none">Score Partida</p>
           <p className={`text-3xl font-black tabular-nums text-right ${score < 0 ? 'text-rose-500' : 'text-emerald-400'}`}>{score}</p>
         </div>
@@ -225,7 +316,7 @@ export default function QuizGame() {
           <div className="mt-2 space-y-2 animate-in slide-in-from-bottom-3 duration-500 text-left relative z-20">
             <div className="p-2.5 md:p-3 bg-gold/5 rounded-xl border-l-4 border-gold text-left flex flex-col justify-center">
               <p className="text-gold text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-0.5 text-left">Fonte</p>
-              <p className="text-white font-bold italic text-xs md:text-sm leading-snug text-left">{perguntas[indiceAtual].referencia}</p>
+              <p className="text-white font-bold italic text-xs md:text-sm leading-snug text-left">{perguntas[indiceAtual]?.referencia || 'Bíblia Sagrada'}</p>
             </div>
             
             <div className="flex flex-col sm:flex-row gap-2 mt-1.5">
