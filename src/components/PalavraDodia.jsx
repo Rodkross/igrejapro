@@ -271,15 +271,15 @@ export default function PalavraDodia({ compactTablet = false }) {
       </div>
 
       {showLikesModal && (
-        <div className="fixed inset-0 z-[999] flex items-stretch md:items-center justify-center p-0 md:p-4 bg-slate-900/60 backdrop-blur-md animate-in fade-in duration-200">
-          <div className="bg-[#0f172a] w-full md:max-w-sm h-full md:h-auto md:max-h-[80vh] rounded-none md:rounded-[24px] shadow-2xl overflow-hidden flex flex-col border border-white/10 transform transition-all animate-in zoom-in-95 duration-200">
+        <div className="fixed inset-0 z-[999] flex items-center justify-center p-4 bg-black/60 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="bg-slate-900/80 backdrop-blur-lg w-full max-w-sm rounded-3xl shadow-2xl overflow-hidden flex flex-col border border-white/10 transform transition-all animate-in zoom-in-95 duration-200 max-h-[calc(100vh-2rem)]">
             <div className="p-5 border-b border-white/10 flex items-center justify-between bg-white/5 shrink-0">
               <h3 className="font-bold text-white tracking-wide text-sm uppercase">Quem Curtiu</h3>
               <button onClick={() => setShowLikesModal(false)} className="text-white/50 hover:text-white transition-colors bg-white/5 hover:bg-white/10 rounded-full p-1.5">
                 <X size={18} />
               </button>
             </div>
-            <div className="flex-1 min-h-0 overflow-y-auto p-5 pb-[calc(1.25rem+env(safe-area-inset-bottom))]">
+            <div className="flex-1 min-h-0 overflow-y-auto p-5">
               {carregandoUsuarios ? (
                 <div className="flex justify-center items-center py-8">
                    <Loader2 className="animate-spin text-gold" size={24} />
