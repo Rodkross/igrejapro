@@ -1,9 +1,24 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../database/firebase';
-import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit, deleteField, writeBatch } from 'firebase/firestore';
 import { useOutletContext } from 'react-router-dom';
 
 import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2 } from 'lucide-react';
+
+const getSeasonKey = () => {
+  const agora = new Date();
+  const ano = agora.getFullYear();
+  const mes = String(agora.getMonth() + 1).padStart(2, '0');
+  return `${ano}-${mes}`;
+};
+
+const formatarTemporada = (seasonKey) => {
+  if (!seasonKey) return null;
+
+  const [ano, mes] = seasonKey.split('-');
+  const data = new Date(Number(ano), Number(mes) - 1, 1);
+  return data.toLocaleDateString('pt-BR', { month: 'long', year: 'numeric' });
+};
 
 export default function QuizGame() {
   const { usuario } = useOutletContext();
@@ -19,6 +34,9 @@ export default function QuizGame() {
   const [cooldown, setCooldown] = useState(null);
   const [tempoRestante, setTempoRestante] = useState(15);
   const [mostraControles, setMostraControles] = useState(false);
+  const [quizConcluido, setQuizConcluido] = useState(false);
+  const [ultimoCampeao, setUltimoCampeao] = useState(null);
+  const [ultimaTemporada, setUltimaTemporada] = useState(null);
 
   const carregarRanking = useCallback(async () => {
     const q = query(collection(db, "usuarios"), orderBy("recordeQuiz", "desc"), limit(5));
@@ -26,9 +44,71 @@ export default function QuizGame() {
     setRanking(snap.docs.map(doc => ({ id: doc.id, ...doc.data() })));
   }, []);
 
+  const sincronizarTemporadaQuiz = useCallback(async () => {
+    const temporadaAtual = getSeasonKey();
+    const metaRef = doc(db, "quiz_config", "ranking_mensal");
+    const metaSnap = await getDoc(metaRef);
+    const metaAtual = metaSnap.exists() ? metaSnap.data() : null;
+
+    if (!metaSnap.exists()) {
+      await setDoc(metaRef, {
+        temporadaAtual,
+        ultimaTemporada: null,
+        ultimoCampeao: null,
+        atualizadoEm: new Date().toISOString()
+      }, { merge: true });
+
+      setUltimoCampeao(null);
+      setUltimaTemporada(null);
+      return;
+    }
+
+    setUltimoCampeao(metaAtual?.ultimoCampeao || null);
+    setUltimaTemporada(metaAtual?.ultimaTemporada || null);
+
+    if (metaAtual?.temporadaAtual === temporadaAtual) {
+      return;
+    }
+
+    const rankingAnteriorSnap = await getDocs(query(collection(db, "usuarios"), orderBy("recordeQuiz", "desc"), limit(1)));
+    const campeaoAnterior = rankingAnteriorSnap.empty
+      ? null
+      : (() => {
+          const docCampeao = rankingAnteriorSnap.docs[0];
+          const dados = docCampeao.data();
+          return {
+            id: String(docCampeao.id),
+            nome: dados.nome || 'Participante',
+            fotoUrl: dados.fotoUrl || '',
+            pontuacao: dados.recordeQuiz || 0
+          };
+        })();
+
+    const usuariosSnap = await getDocs(collection(db, "usuarios"));
+    const batch = writeBatch(db);
+
+    usuariosSnap.docs.forEach((usuarioDoc) => {
+      batch.update(usuarioDoc.ref, { recordeQuiz: 0 });
+    });
+
+    batch.set(metaRef, {
+      temporadaAtual,
+      ultimaTemporada: metaAtual?.temporadaAtual || null,
+      ultimoCampeao: campeaoAnterior,
+      atualizadoEm: new Date().toISOString()
+    }, { merge: true });
+
+    await batch.commit();
+
+    setUltimoCampeao(campeaoAnterior);
+    setUltimaTemporada(metaAtual?.temporadaAtual || null);
+  }, []);
+
   const carregarJogo = useCallback(async () => {
     setLoading(true);
     try {
+      await sincronizarTemporadaQuiz();
+
       // 1. Verificar Cooldown
       const userRef = doc(db, "usuarios", String(usuario.id));
       const userSnap = await getDoc(userRef);
@@ -57,6 +137,10 @@ export default function QuizGame() {
 
       if (disponiveis.length > 0) {
         setPerguntas(disponiveis.sort(() => Math.random() - 0.5).slice(0, 10));
+        setQuizConcluido(false);
+      } else {
+        setPerguntas([]);
+        setQuizConcluido(true);
       }
       
       setVidas(3);
@@ -70,7 +154,23 @@ export default function QuizGame() {
       await carregarRanking();
     } catch (err) { console.error(err); }
     setLoading(false);
-  }, [usuario.id, carregarRanking]);
+  }, [usuario.id, carregarRanking, sincronizarTemporadaQuiz]);
+
+  const reiniciarProgresso = useCallback(async () => {
+    setLoading(true);
+    try {
+      const progressoRef = doc(db, "progresso_quiz", String(usuario.id));
+      await setDoc(progressoRef, { acertos: [] }, { merge: true });
+
+      const userRef = doc(db, "usuarios", String(usuario.id));
+      await updateDoc(userRef, { bloqueioQuiz: deleteField() });
+
+      await carregarJogo();
+    } catch (err) {
+      console.error("Erro ao reiniciar progresso do quiz:", err);
+      setLoading(false);
+    }
+  }, [usuario.id, carregarJogo]);
 
   const validarResposta = useCallback(async (opcao) => {
     if (respondido || gameOver) return;
@@ -176,6 +276,38 @@ export default function QuizGame() {
 
   useEffect(() => { carregarJogo(); }, [carregarJogo]);
 
+  const renderUltimoCampeao = () => {
+    if (!ultimoCampeao) return null;
+
+    return (
+      <div className="mb-4 p-4 rounded-2xl border border-emerald-400/20 bg-emerald-400/10">
+        <p className="text-[10px] font-black text-emerald-300 uppercase tracking-widest mb-2">
+          Campeao da Ultima Temporada
+        </p>
+        <div className="flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3 min-w-0">
+            {ultimoCampeao.fotoUrl ? (
+              <img src={ultimoCampeao.fotoUrl} alt="" className="w-8 h-8 rounded-full object-cover border border-white/10 shadow-sm" />
+            ) : (
+              <div className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center font-bold text-xs text-white uppercase">
+                {ultimoCampeao.nome?.charAt(0) || '?'}
+              </div>
+            )}
+            <div className="min-w-0">
+              <p className="font-black text-white uppercase text-[11px] tracking-wider truncate">{ultimoCampeao.nome}</p>
+              <p className="text-[9px] text-emerald-200 uppercase tracking-widest">
+                {formatarTemporada(ultimaTemporada) || 'Temporada anterior'}
+              </p>
+            </div>
+          </div>
+          <span className="font-black text-white bg-white/10 px-3 py-1 rounded-lg text-sm shrink-0">
+            {ultimoCampeao.pontuacao || 0}
+          </span>
+        </div>
+      </div>
+    );
+  };
+
   if (loading) return <div className="p-20 text-center font-black text-gold animate-pulse italic">CARREGANDO...</div>;
 
   if (cooldown) {
@@ -192,6 +324,44 @@ export default function QuizGame() {
     );
   }
 
+  if (quizConcluido && !loading) return (
+    <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in zoom-in duration-500 italic">
+      <div className="bg-slate-900 rounded-[3rem] p-10 border border-emerald-500/20 shadow-2xl text-center flex flex-col justify-center">
+        <Trophy size={60} className="text-emerald-400 mx-auto mb-4" />
+        <h2 className="text-3xl font-black text-white uppercase mb-2">Quiz Conclui­do</h2>
+        <p className="text-slate-300 font-bold uppercase text-[10px] tracking-widest leading-relaxed mb-8">
+          Você já acertou todas as perguntas disponi­veis.
+        </p>
+        <button onClick={reiniciarProgresso} className="w-full bg-emerald-400 text-slate-950 font-black py-4 rounded-xl uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl">
+          <RotateCcw size={18} /> Reiniciar Progresso
+        </button>
+      </div>
+
+      <div className="bg-slate-900 rounded-[3rem] p-8 border border-white/5 shadow-2xl text-left">
+        <h3 className="text-xl font-black text-white uppercase mb-6 flex items-center gap-2 text-left"><Medal className="text-gold" size={24} /> Ranking Global</h3>
+        {renderUltimoCampeao()}
+        <div className="space-y-3">
+          {ranking.map((p, i) => (
+            <div key={p.id} className={`flex justify-between items-center p-4 rounded-2xl border ${p.id === String(usuario.id) ? 'bg-gold/10 border-gold/50 shadow-gold/5 shadow-lg' : 'bg-white/5 border-white/10'}`}>
+              <div className="flex items-center gap-3 text-left">
+                <span className="font-black text-gold text-lg shrink-0">#{i+1}</span>
+                <div className="shrink-0">
+                  {p.fotoUrl ? (
+                    <img src={p.fotoUrl} alt="" className="w-6 h-6 rounded-full object-cover border border-white/10 shadow-sm" />
+                  ) : (
+                    <div className="w-6 h-6 rounded-full bg-white/10 flex items-center justify-center font-bold text-[10px] text-white uppercase">{p.nome?.charAt(0) || '?'}</div>
+                  )}
+                </div>
+                <span className="font-bold text-white uppercase text-[10px] tracking-widest leading-none truncate">{p.nome}</span>
+              </div>
+              <span className="font-black text-white bg-white/10 px-3 py-1 rounded-lg text-sm">{p.recordeQuiz || 0}</span>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+
   if (gameOver || (perguntas.length === 0 && !loading)) return (
     <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in zoom-in duration-500 italic">
       <div className="bg-slate-900 rounded-[3rem] p-10 border border-gold/20 shadow-2xl text-center flex flex-col justify-center">
@@ -205,6 +375,7 @@ export default function QuizGame() {
 
       <div className="bg-slate-900 rounded-[3rem] p-8 border border-white/5 shadow-2xl text-left">
         <h3 className="text-xl font-black text-white uppercase mb-6 flex items-center gap-2 text-left"><Medal className="text-gold" size={24} /> Ranking Global</h3>
+        {renderUltimoCampeao()}
         <div className="space-y-3">
           {ranking.map((p, i) => (
             <div key={p.id} className={`flex justify-between items-center p-4 rounded-2xl border ${p.id === String(usuario.id) ? 'bg-gold/10 border-gold/50 shadow-gold/5 shadow-lg' : 'bg-white/5 border-white/10'}`}>

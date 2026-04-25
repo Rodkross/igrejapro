@@ -162,9 +162,7 @@ export default function App() {
             {/* Rota temporária para importar os dados do Quiz */}
             <Route path="entretenimento/importar" element={
               <RotaMobilePermitida isMobile={isMobile}>
-                <RotaPrivada usuario={usuario} modulo="usuarios">
-                  <ImportadorQuiz />
-                </RotaPrivada>
+                <ImportadorQuiz />
               </RotaMobilePermitida>
             } />
 

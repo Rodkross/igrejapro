@@ -9,11 +9,25 @@ import { UploadCloud, CheckCircle, AlertTriangle, Loader2 } from 'lucide-react';
 export default function ImportadorQuiz() {
   const [status, setStatus] = useState('parado');
   const [progresso, setProgresso] = useState(0);
+  const ids = Array.isArray(quizData) ? quizData.map((item) => Number(item.id)) : [];
+  const idsDuplicados = ids.filter((id, index) => Number.isFinite(id) && ids.indexOf(id) !== index);
+  const possuiIdInvalido = ids.some((id) => !Number.isInteger(id) || id < 1);
+  const menorId = ids.length ? Math.min(...ids) : null;
+  const maiorId = ids.length ? Math.max(...ids) : null;
 
   const importarUmPorUm = async () => {
     // Validação inicial para evitar erro se o JSON falhar
     if (!quizData || quizData.length === 0) {
       console.error("Arquivo JSON não carregado corretamente.");
+      setStatus('erro');
+      return;
+    }
+
+    if (possuiIdInvalido || idsDuplicados.length > 0) {
+      console.error("IDs do quiz invalidos ou duplicados.", {
+        possuiIdInvalido,
+        idsDuplicados: [...new Set(idsDuplicados)]
+      });
       setStatus('erro');
       return;
     }
@@ -67,6 +81,9 @@ export default function ImportadorQuiz() {
           </button>
           <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">
             Destino: Google Firestore
+          </p>
+          <p className="text-slate-500 text-[10px] uppercase font-bold tracking-widest">
+            IDs no arquivo: {menorId ?? '-'} até {maiorId ?? '-'}
           </p>
         </div>
       )}

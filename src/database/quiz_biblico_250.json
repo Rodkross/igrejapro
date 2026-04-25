@@ -1156,12 +1156,12 @@
         "pergunta": "Qual homem perdeu tudo mas não amaldiçoou a Deus?",
         "opcoes": [
             "Abraão",
-            "Job",
+            "Jó",
             "Daniel",
             "José"
         ],
-        "resposta_correta": "Job",
-        "referencia": "Job 1"
+        "resposta_correta": "Jó",
+        "referencia": "Jó 1"
     },
     {
         "id": 98,
@@ -2998,5 +2998,3005 @@
         ],
         "resposta_correta": "Jericó",
         "referencia": "Josué 6"
+    },
+    {
+        "id": 251,
+        "pergunta": "Qual era a profissão de Amós antes de ser chamado como profeta?",
+        "opcoes": [
+            "Pescador",
+            "Pastor de ovelhas e colhedor de sicômoros",
+            "Escriba",
+            "Sacerdote"
+        ],
+        "resposta_correta": "Pastor de ovelhas e colhedor de sicômoros",
+        "referencia": "Amós 7:14"
+    },
+    {
+        "id": 252,
+        "pergunta": "Quem foi o sucessor do sumo sacerdote Arão?",
+        "opcoes": [
+            "Eleazar",
+            "Nadabe",
+            "Abiu",
+            "Ilamar"
+        ],
+        "resposta_correta": "Eleazar",
+        "referencia": "Números 20:28"
+    },
+    {
+        "id": 253,
+        "pergunta": "Qual era o nome da cidade onde Ló se refugiou após sair de Sodoma antes de ir para as montanhas?",
+        "opcoes": [
+            "Zoar",
+            "Gibeão",
+            "Hebron",
+            "Betel"
+        ],
+        "resposta_correta": "Zoar",
+        "referencia": "Gênesis 19:22-23"
+    },
+    {
+        "id": 254,
+        "pergunta": "Como se chamava o pai de Josué?",
+        "opcoes": [
+            "Calebe",
+            "Num",
+            "Arão",
+            "Hur"
+        ],
+        "resposta_correta": "Num",
+        "referencia": "Josué 1:1"
+    },
+    {
+        "id": 255,
+        "pergunta": "Qual foi o castigo de Geazi por mentir a Eliseu e aceitar presentes de Naamã?",
+        "opcoes": [
+            "Ficou mudo",
+            "Ficou cego",
+            "Ficou leproso",
+            "Foi exilado"
+        ],
+        "resposta_correta": "Ficou leproso",
+        "referencia": "2 Reis 5:27"
+    },
+    {
+        "id": 256,
+        "pergunta": "Quem foi o rei de Judá que começou a reinar com apenas 8 anos de idade?",
+        "opcoes": [
+            "Joás",
+            "Josias",
+            "Manassés",
+            "Ezequias"
+        ],
+        "resposta_correta": "Josias",
+        "referencia": "2 Reis 22:1"
+    },
+    {
+        "id": 257,
+        "pergunta": "Qual era o nome do monte onde os profetas de Baal foram desafiados por Elias?",
+        "opcoes": [
+            "Monte Horebe",
+            "Monte Carmelo",
+            "Monte Sinai",
+            "Monte Hermom"
+        ],
+        "resposta_correta": "Monte Carmelo",
+        "referencia": "1 Reis 18:19"
+    },
+    {
+        "id": 258,
+        "pergunta": "Quem foi a mulher que matou o general Sísera com uma estaca na têmpora?",
+        "opcoes": [
+            "Débora",
+            "Raabe",
+            "Jael",
+            "Dalila"
+        ],
+        "resposta_correta": "Jael",
+        "referencia": "Juízes 4:21"
+    },
+    {
+        "id": 259,
+        "pergunta": "Qual o nome do filho de Davi que tinha cabelos muito longos e pesados?",
+        "opcoes": [
+            "Amnon",
+            "Adonias",
+            "Absalão",
+            "Salomão"
+        ],
+        "resposta_correta": "Absalão",
+        "referencia": "2 Samuel 14:26"
+    },
+    {
+        "id": 260,
+        "pergunta": "Em que livro se encontra a história de Balaão e a jumenta que falou?",
+        "opcoes": [
+            "Êxodo",
+            "Levítico",
+            "Números",
+            "Deuteronômio"
+        ],
+        "resposta_correta": "Números",
+        "referencia": "Números 22"
+    },
+    {
+        "id": 261,
+        "pergunta": "Quem era o rei da Babilônia que teve um sonho com uma estátua de vários metais?",
+        "opcoes": [
+            "Belsazar",
+            "Nabucodonosor",
+            "Dario",
+            "Ciro"
+        ],
+        "resposta_correta": "Nabucodonosor",
+        "referencia": "Daniel 2"
+    },
+    {
+        "id": 262,
+        "pergunta": "Qual dos apóstolos era conhecido como 'o Zelote'?",
+        "opcoes": [
+            "Simão",
+            "Judas",
+            "Mateus",
+            "Tomé"
+        ],
+        "resposta_correta": "Simão",
+        "referencia": "Lucas 6:15"
+    },
+    {
+        "id": 263,
+        "pergunta": "Quem foi o pai de João Batista?",
+        "opcoes": [
+            "Zacarias",
+            "José",
+            "Simeão",
+            "Ananias"
+        ],
+        "resposta_correta": "Zacarias",
+        "referencia": "Lucas 1:13"
+    },
+    {
+        "id": 264,
+        "pergunta": "Qual era a cidade de origem de Filipe, André e Pedro?",
+        "opcoes": [
+            "Nazaré",
+            "Cafarnaum",
+            "Betsaida",
+            "Caná"
+        ],
+        "resposta_correta": "Betsaida",
+        "referencia": "João 1:44"
+    },
+    {
+        "id": 265,
+        "pergunta": "Quem foi a pessoa que caiu do terceiro andar enquanto Paulo pregava um longo sermão?",
+        "opcoes": [
+            "Eutico",
+            "Tíquico",
+            "Onésimo",
+            "Epafrodito"
+        ],
+        "resposta_correta": "Eutico",
+        "referencia": "Atos 20:9"
+    },
+    {
+        "id": 266,
+        "pergunta": "Qual era a profissão de Cornélio, o primeiro gentio convertido?",
+        "opcoes": [
+            "Pescador",
+            "Centurião Romano",
+            "Cobrador de impostos",
+            "Carpinteiro"
+        ],
+        "resposta_correta": "Centurião Romano",
+        "referencia": "Atos 10:1"
+    },
+    {
+        "id": 267,
+        "pergunta": "Quem escreveu a Epístola aos Hebreus (segundo a tradição mais comum, embora seja anônima)?",
+        "opcoes": [
+            "Pedro",
+            "Tiago",
+            "Paulo",
+            "João"
+        ],
+        "resposta_correta": "Paulo",
+        "referencia": "Tradição Eclesiástica"
+    },
+    {
+        "id": 268,
+        "pergunta": "Qual o nome da sogra de Pedro, que Jesus curou de uma febre?",
+        "opcoes": [
+            "A Bíblia não menciona o nome",
+            "Maria",
+            "Ana",
+            "Isabel"
+        ],
+        "resposta_correta": "A Bíblia não menciona o nome",
+        "referencia": "Mateus 8:14"
+    },
+    {
+        "id": 269,
+        "pergunta": "Quantas janelas tinha a Arca de Noé?",
+        "opcoes": [
+            "Uma",
+            "Duas",
+            "Sete",
+            "Doze"
+        ],
+        "resposta_correta": "Uma",
+        "referencia": "Gênesis 6:16"
+    },
+    {
+        "id": 270,
+        "pergunta": "Qual foi o primeiro dos dez mandamentos?",
+        "opcoes": [
+            "Não matarás",
+            "Não terás outros deuses diante de mim",
+            "Honra teu pai e tua mãe",
+            "Não furtarás"
+        ],
+        "resposta_correta": "Não terás outros deuses diante de mim",
+        "referencia": "Êxodo 20:3"
+    },
+    {
+        "id": 271,
+        "pergunta": "Quem foi o filho de Jacó que não foi para o Egito na primeira viagem dos irmãos?",
+        "opcoes": [
+            "José",
+            "Rúben",
+            "Benjamim",
+            "Judá"
+        ],
+        "resposta_correta": "Benjamim",
+        "referencia": "Gênesis 42:4"
+    },
+    {
+        "id": 272,
+        "pergunta": "Qual o nome do mar que os israelitas atravessaram ao sair do Egito?",
+        "opcoes": [
+            "Mar da Galileia",
+            "Mar Morto",
+            "Mar Vermelho",
+            "Mar Mediterrâneo"
+        ],
+        "resposta_correta": "Mar Vermelho",
+        "referencia": "Êxodo 14"
+    },
+    {
+        "id": 273,
+        "pergunta": "Quantos anos viveu Adão?",
+        "opcoes": [
+            "930 anos",
+            "950 anos",
+            "969 anos",
+            "120 anos"
+        ],
+        "resposta_correta": "930 anos",
+        "referencia": "Gênesis 5:5"
+    },
+    {
+        "id": 274,
+        "pergunta": "Quem era o governador da Judeia quando Jesus foi crucificado?",
+        "opcoes": [
+            "Herodes",
+            "Pôncio Pilatos",
+            "Félix",
+            "Festo"
+        ],
+        "resposta_correta": "Pôncio Pilatos",
+        "referencia": "Mateus 27:2"
+    },
+    {
+        "id": 275,
+        "pergunta": "Quem foi o companheiro de Paulo na sua primeira viagem missionária?",
+        "opcoes": [
+            "Silas",
+            "Barnabé",
+            "Timóteo",
+            "Lucas"
+        ],
+        "resposta_correta": "Barnabé",
+        "referencia": "Atos 13:2"
+    },
+    {
+        "id": 276,
+        "pergunta": "Qual era a profissão de Esdras?",
+        "opcoes": [
+            "Rei",
+            "Escriba e Sacerdote",
+            "Profeta e Pescador",
+            "Guerreiro"
+        ],
+        "resposta_correta": "Escriba e Sacerdote",
+        "referencia": "Esdras 7:6"
+    },
+    {
+        "id": 277,
+        "pergunta": "Quantos capítulos tem o livro de Isaías?",
+        "opcoes": [
+            "50",
+            "66",
+            "100",
+            "150"
+        ],
+        "resposta_correta": "66",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 278,
+        "pergunta": "Quem era a mãe de Ismael?",
+        "opcoes": [
+            "Sara",
+            "Hagar",
+            "Quetura",
+            "Lia"
+        ],
+        "resposta_correta": "Hagar",
+        "referencia": "Gênesis 16:15"
+    },
+    {
+        "id": 279,
+        "pergunta": "Qual o nome do lugar onde Jesus foi transfigurado?",
+        "opcoes": [
+            "Monte das Oliveiras",
+            "Monte Sinai",
+            "Monte Tabor (ou um monte alto)",
+            "Monte Sinai"
+        ],
+        "resposta_correta": "Monte Tabor (ou um monte alto)",
+        "referencia": "Mateus 17:1"
+    },
+    {
+        "id": 280,
+        "pergunta": "Quem foi a mulher que deu à luz Samuel após anos de esterilidade?",
+        "opcoes": [
+            "Ana",
+            "Penina",
+            "Raquel",
+            "Isabel"
+        ],
+        "resposta_correta": "Ana",
+        "referencia": "1 Samuel 1"
+    },
+    {
+        "id": 281,
+        "pergunta": "Qual o nome do anjo que apareceu a Maria?",
+        "opcoes": [
+            "Miguel",
+            "Gabriel",
+            "Rafael",
+            "Uriel"
+        ],
+        "resposta_correta": "Gabriel",
+        "referencia": "Lucas 1:26"
+    },
+    {
+        "id": 282,
+        "pergunta": "Quem foi o rei que sucedeu a Saul em Israel?",
+        "opcoes": [
+            "Salomão",
+            "Davi",
+            "Jónatas",
+            "Isbosete"
+        ],
+        "resposta_correta": "Davi",
+        "referencia": "2 Samuel 2:4"
+    },
+    {
+        "id": 283,
+        "pergunta": "Quem foi o profeta que foi engolido por um grande peixe?",
+        "opcoes": [
+            "Elias",
+            "Jonas",
+            "Daniel",
+            "Amós"
+        ],
+        "resposta_correta": "Jonas",
+        "referencia": "Jonas 1:17"
+    },
+    {
+        "id": 284,
+        "pergunta": "Qual o nome do deserto onde o povo de Israel vagou por 40 anos?",
+        "opcoes": [
+            "Deserto do Saara",
+            "Deserto de Sinai",
+            "Deserto da Judeia",
+            "Deserto de Neguebe"
+        ],
+        "resposta_correta": "Deserto de Sinai",
+        "referencia": "Êxodo 19:1"
+    },
+    {
+        "id": 285,
+        "pergunta": "Qual era a língua original da maioria do Novo Testamento?",
+        "opcoes": [
+            "Hebraico",
+            "Aramaico",
+            "Latim",
+            "Grego"
+        ],
+        "resposta_correta": "Grego",
+        "referencia": "História Bíblica"
+    },
+    {
+        "id": 286,
+        "pergunta": "Quem era o marido de Ester?",
+        "opcoes": [
+            "Mordecai",
+            "Hamã",
+            "Assuero (Xerxes)",
+            "Artaxerxes"
+        ],
+        "resposta_correta": "Assuero (Xerxes)",
+        "referencia": "Ester 2:17"
+    },
+    {
+        "id": 287,
+        "pergunta": "Quem foi o apóstolo que duvidou da ressurreição de Jesus até vê-Lo?",
+        "opcoes": [
+            "Pedro",
+            "João",
+            "Tomé",
+            "Tiago"
+        ],
+        "resposta_correta": "Tomé",
+        "referencia": "João 20:25"
+    },
+    {
+        "id": 288,
+        "pergunta": "Quem foi o homem que ajudou Jesus a carregar a cruz?",
+        "opcoes": [
+            "Simão Pedro",
+            "Simão Cirineu",
+            "José de Arimateia",
+            "Nicodemos"
+        ],
+        "resposta_correta": "Simão Cirineu",
+        "referencia": "Lucas 23:26"
+    },
+    {
+        "id": 289,
+        "pergunta": "Qual era o nome da irmã de Lázaro e Marta?",
+        "opcoes": [
+            "Maria",
+            "Maria Madalena",
+            "Salomé",
+            "Joana"
+        ],
+        "resposta_correta": "Maria",
+        "referencia": "João 11:1"
+    },
+    {
+        "id": 290,
+        "pergunta": "Qual foi o primeiro milagre de Jesus?",
+        "opcoes": [
+            "Cura de um cego",
+            "Multiplicação dos pães",
+            "Transformação de água em vinho",
+            "Ressurreição de Lázaro"
+        ],
+        "resposta_correta": "Transformação de água em vinho",
+        "referencia": "João 2:11"
+    },
+    {
+        "id": 291,
+        "pergunta": "Qual discípulo era conhecido por ser um cobrador de impostos?",
+        "opcoes": [
+            "Pedro",
+            "Mateus",
+            "André",
+            "Filipe"
+        ],
+        "resposta_correta": "Mateus",
+        "referencia": "Mateus 9:9"
+    },
+    {
+        "id": 292,
+        "pergunta": "Quem foi o profeta que sucedeu Elias?",
+        "opcoes": [
+            "Eliseu",
+            "Isaías",
+            "Jeremias",
+            "Miqueias"
+        ],
+        "resposta_correta": "Eliseu",
+        "referencia": "2 Reis 2:15"
+    },
+    {
+        "id": 293,
+        "pergunta": "Quantos livros tem o Novo Testamento?",
+        "opcoes": [
+            "21",
+            "27",
+            "39",
+            "66"
+        ],
+        "resposta_correta": "27",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 294,
+        "pergunta": "Quem foi o autor do livro de Apocalipse?",
+        "opcoes": [
+            "Paulo",
+            "Pedro",
+            "João",
+            "Lucas"
+        ],
+        "resposta_correta": "João",
+        "referencia": "Apocalipse 1:1"
+    },
+    {
+        "id": 295,
+        "pergunta": "Qual era o nome do gigante que Davi derrotou?",
+        "opcoes": [
+            "Golias",
+            "Og",
+            "Enaque",
+            "Siseu"
+        ],
+        "resposta_correta": "Golias",
+        "referencia": "1 Samuel 17"
+    },
+    {
+        "id": 296,
+        "pergunta": "Quantas tribos tinha Israel?",
+        "opcoes": [
+            "10",
+            "12",
+            "7",
+            "40"
+        ],
+        "resposta_correta": "12",
+        "referencia": "Gênesis 49:28"
+    },
+    {
+        "id": 297,
+        "pergunta": "Quem foi o primeiro homem criado por Deus?",
+        "opcoes": [
+            "Noé",
+            "Abraão",
+            "Adão",
+            "Moises"
+        ],
+        "resposta_correta": "Adão",
+        "referencia": "Gênesis 2:7"
+    },
+    {
+        "id": 298,
+        "pergunta": "Qual foi o sinal da aliança de Deus com Noé?",
+        "opcoes": [
+            "O Arco-íris",
+            "A Circuncisão",
+            "As Tábuas da Lei",
+            "O Cordeiro"
+        ],
+        "resposta_correta": "O Arco-íris",
+        "referencia": "Gênesis 9:13"
+    },
+    {
+        "id": 299,
+        "pergunta": "Quem era o pai de Salomão?",
+        "opcoes": [
+            "Saul",
+            "Davi",
+            "Samuel",
+            "Jesse"
+        ],
+        "resposta_correta": "Davi",
+        "referencia": "1 Reis 1:13"
+    },
+    {
+        "id": 300,
+        "pergunta": "Qual o nome da cidade onde Jesus nasceu?",
+        "opcoes": [
+            "Nazaré",
+            "Jerusalém",
+            "Belém",
+            "Jericó"
+        ],
+        "resposta_correta": "Belém",
+        "referencia": "Mateus 2:1"
+    },
+    {
+        "id": 301,
+        "pergunta": "Quem era o rei de Israel conhecido por sua grande sabedoria?",
+        "opcoes": [
+            "Davi",
+            "Saul",
+            "Salomão",
+            "Ezequias"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3:12"
+    },
+    {
+        "id": 302,
+        "pergunta": "Quem batizou Jesus no Rio Jordão?",
+        "opcoes": [
+            "Pedro",
+            "João Batista",
+            "André",
+            "Tiago"
+        ],
+        "resposta_correta": "João Batista",
+        "referencia": "Mateus 3:13"
+    },
+    {
+        "id": 303,
+        "pergunta": "Qual o nome do discípulo que traiu Jesus?",
+        "opcoes": [
+            "Pedro",
+            "Tomé",
+            "Judas Iscariotes",
+            "Simão"
+        ],
+        "resposta_correta": "Judas Iscariotes",
+        "referencia": "Mateus 26:14-15"
+    },
+    {
+        "id": 304,
+        "pergunta": "Qual o nome do monte onde Jesus foi crucificado?",
+        "opcoes": [
+            "Monte Sinai",
+            "Monte das Oliveiras",
+            "Gólgota",
+            "Monte Carmelo"
+        ],
+        "resposta_correta": "Gólgota",
+        "referencia": "João 19:17"
+    },
+    {
+        "id": 305,
+        "pergunta": "Quantos dias Jesus jejuou no deserto?",
+        "opcoes": [
+            "7",
+            "12",
+            "40",
+            "50"
+        ],
+        "resposta_correta": "40",
+        "referencia": "Mateus 4:2"
+    },
+    {
+        "id": 306,
+        "pergunta": "Quem foi jogado na cova dos leões?",
+        "opcoes": [
+            "Daniel",
+            "José",
+            "Ezequiel",
+            "Jeremias"
+        ],
+        "resposta_correta": "Daniel",
+        "referencia": "Daniel 6:16"
+    },
+    {
+        "id": 307,
+        "pergunta": "Qual o nome do primeiro livro da Bíblia?",
+        "opcoes": [
+            "Êxodo",
+            "Gênesis",
+            "Mateus",
+            "Apocalipse"
+        ],
+        "resposta_correta": "Gênesis",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 308,
+        "pergunta": "Quem era a esposa de Isaque?",
+        "opcoes": [
+            "Sara",
+            "Rebeca",
+            "Raquel",
+            "Lia"
+        ],
+        "resposta_correta": "Rebeca",
+        "referencia": "Gênesis 24:67"
+    },
+    {
+        "id": 309,
+        "pergunta": "Quem foi vendido como escravo pelos próprios irmãos?",
+        "opcoes": [
+            "Benjamim",
+            "José",
+            "Rúben",
+            "Judá"
+        ],
+        "resposta_correta": "José",
+        "referencia": "Gênesis 37:28"
+    },
+    {
+        "id": 310,
+        "pergunta": "Quem abriu o Mar Vermelho?",
+        "opcoes": [
+            "Josué",
+            "Moisés",
+            "Arão",
+            "Davi"
+        ],
+        "resposta_correta": "Moisés",
+        "referencia": "Êxodo 14:21"
+    },
+    {
+        "id": 311,
+        "pergunta": "Qual o nome do homem mais forte da Bíblia?",
+        "opcoes": [
+            "Sansão",
+            "Gideão",
+            "Davi",
+            "Saul"
+        ],
+        "resposta_correta": "Sansão",
+        "referencia": "Juízes 14:6"
+    },
+    {
+        "id": 312,
+        "pergunta": "Quem construiu a Arca?",
+        "opcoes": [
+            "Abraão",
+            "Noé",
+            "Moisés",
+            "Ló"
+        ],
+        "resposta_correta": "Noé",
+        "referencia": "Gênesis 6:14"
+    },
+    {
+        "id": 313,
+        "pergunta": "Qual animal tentou Eva no Éden?",
+        "opcoes": [
+            "Leão",
+            "Serpente",
+            "Lobo",
+            "Águia"
+        ],
+        "resposta_correta": "Serpente",
+        "referencia": "Gênesis 3:1"
+    },
+    {
+        "id": 314,
+        "pergunta": "Quem negou Jesus três vezes?",
+        "opcoes": [
+            "Judas",
+            "João",
+            "Pedro",
+            "Tomé"
+        ],
+        "resposta_correta": "Pedro",
+        "referencia": "Mateus 26:75"
+    },
+    {
+        "id": 315,
+        "pergunta": "Quantos discípulos Jesus tinha?",
+        "opcoes": [
+            "7",
+            "10",
+            "12",
+            "40"
+        ],
+        "resposta_correta": "12",
+        "referencia": "Mateus 10:1"
+    },
+    {
+        "id": 316,
+        "pergunta": "Quem foi a primeira mulher?",
+        "opcoes": [
+            "Eva",
+            "Sara",
+            "Maria",
+            "Rute"
+        ],
+        "resposta_correta": "Eva",
+        "referencia": "Gênesis 3:20"
+    },
+    {
+        "id": 317,
+        "pergunta": "Quem matou Abel?",
+        "opcoes": [
+            "Adão",
+            "Caim",
+            "Sete",
+            "Enoque"
+        ],
+        "resposta_correta": "Caim",
+        "referencia": "Gênesis 4:8"
+    },
+    {
+        "id": 318,
+        "pergunta": "Qual o nome da terra para onde Moisés levou o povo?",
+        "opcoes": [
+            "Egito",
+            "Babilônia",
+            "Canaã",
+            "Assíria"
+        ],
+        "resposta_correta": "Canaã",
+        "referencia": "Êxodo 3:8"
+    },
+    {
+        "id": 319,
+        "pergunta": "Quem recebeu os 10 mandamentos?",
+        "opcoes": [
+            "Abraão",
+            "Josué",
+            "Moisés",
+            "Arão"
+        ],
+        "resposta_correta": "Moisés",
+        "referencia": "Êxodo 20"
+    },
+    {
+        "id": 320,
+        "pergunta": "Qual o nome do filho de Abraão e Sara?",
+        "opcoes": [
+            "Ismael",
+            "Isaque",
+            "Jacó",
+            "Esaú"
+        ],
+        "resposta_correta": "Isaque",
+        "referencia": "Gênesis 21:3"
+    },
+    {
+        "id": 321,
+        "pergunta": "Quem interpretava sonhos no Egito?",
+        "opcoes": [
+            "Daniel",
+            "José",
+            "Moisés",
+            "Arão"
+        ],
+        "resposta_correta": "José",
+        "referencia": "Gênesis 41"
+    },
+    {
+        "id": 322,
+        "pergunta": "Quem derrubou as muralhas de Jericó?",
+        "opcoes": [
+            "Davi",
+            "Moisés",
+            "Josué",
+            "Gideão"
+        ],
+        "resposta_correta": "Josué",
+        "referencia": "Josué 6"
+    },
+    {
+        "id": 323,
+        "pergunta": "Qual o nome do pastor de ovelhas que virou rei?",
+        "opcoes": [
+            "Saul",
+            "Salomão",
+            "Davi",
+            "Samuel"
+        ],
+        "resposta_correta": "Davi",
+        "referencia": "1 Samuel 16"
+    },
+    {
+        "id": 324,
+        "pergunta": "Quem andou sobre as águas com Jesus?",
+        "opcoes": [
+            "João",
+            "Tiago",
+            "Pedro",
+            "André"
+        ],
+        "resposta_correta": "Pedro",
+        "referencia": "Mateus 14:29"
+    },
+    {
+        "id": 325,
+        "pergunta": "Qual o nome da cidade onde as muralhas caíram?",
+        "opcoes": [
+            "Jerusalém",
+            "Jericó",
+            "Belém",
+            "Nazaré"
+        ],
+        "resposta_correta": "Jericó",
+        "referencia": "Josué 6"
+    },
+    {
+        "id": 326,
+        "pergunta": "Qual o nome do profeta que desafiou os profetas de Baal?",
+        "opcoes": [
+            "Elias",
+            "Eliseu",
+            "Isaías",
+            "Jeremias"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "1 Reis 18"
+    },
+    {
+        "id": 327,
+        "pergunta": "Quantas pragas Deus enviou ao Egito?",
+        "opcoes": [
+            "7",
+            "10",
+            "12",
+            "3"
+        ],
+        "resposta_correta": "10",
+        "referencia": "Êxodo 7-12"
+    },
+    {
+        "id": 328,
+        "pergunta": "Quem foi ressuscitado por Jesus após 4 dias morto?",
+        "opcoes": [
+            "Lázaro",
+            "Pedro",
+            "João",
+            "Estêvão"
+        ],
+        "resposta_correta": "Lázaro",
+        "referencia": "João 11"
+    },
+    {
+        "id": 329,
+        "pergunta": "Quem escreveu a maioria dos Salmos?",
+        "opcoes": [
+            "Salomão",
+            "Davi",
+            "Asafe",
+            "Moisés"
+        ],
+        "resposta_correta": "Davi",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 330,
+        "pergunta": "Qual o nome do jardim onde viviam Adão e Eva?",
+        "opcoes": [
+            "Getsêmani",
+            "Jardim do Éden",
+            "Sião",
+            "Carmelo"
+        ],
+        "resposta_correta": "Jardim do Éden",
+        "referencia": "Gênesis 2"
+    },
+    {
+        "id": 331,
+        "pergunta": "Quem foi o sucessor de Moisés?",
+        "opcoes": [
+            "Arão",
+            "Josué",
+            "Calebe",
+            "Eleazar"
+        ],
+        "resposta_correta": "Josué",
+        "referencia": "Josué 1"
+    },
+    {
+        "id": 332,
+        "pergunta": "Qual discípulo era pescador?",
+        "opcoes": [
+            "Mateus",
+            "Lucas",
+            "Pedro",
+            "Paulo"
+        ],
+        "resposta_correta": "Pedro",
+        "referencia": "Mateus 4:18"
+    },
+    {
+        "id": 333,
+        "pergunta": "Quantas pessoas Noé levou na arca?",
+        "opcoes": [
+            "2",
+            "8",
+            "12",
+            "100"
+        ],
+        "resposta_correta": "8",
+        "referencia": "Gênesis 7:13"
+    },
+    {
+        "id": 334,
+        "pergunta": "Quem era o rei que queria matar o bebê Jesus?",
+        "opcoes": [
+            "Pilatos",
+            "Herodes",
+            "César",
+            "Agripa"
+        ],
+        "resposta_correta": "Herodes",
+        "referencia": "Mateus 2"
+    },
+    {
+        "id": 335,
+        "pergunta": "Qual o nome da mãe de Jesus?",
+        "opcoes": [
+            "Marta",
+            "Maria",
+            "Madalena",
+            "Isabel"
+        ],
+        "resposta_correta": "Maria",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 336,
+        "pergunta": "Quem foi o apóstolo dos gentios?",
+        "opcoes": [
+            "Pedro",
+            "Tiago",
+            "João",
+            "Paulo"
+        ],
+        "resposta_correta": "Paulo",
+        "referencia": "Romanos 11:13"
+    },
+    {
+        "id": 337,
+        "pergunta": "O que Deus criou no primeiro dia?",
+        "opcoes": [
+            "O sol",
+            "A luz",
+            "O mar",
+            "Os animais"
+        ],
+        "resposta_correta": "A luz",
+        "referencia": "Gênesis 1:3"
+    },
+    {
+        "id": 338,
+        "pergunta": "Em que cidade os cristãos foram chamados assim pela primeira vez?",
+        "opcoes": [
+            "Jerusalém",
+            "Antioquia",
+            "Roma",
+            "Éfeso"
+        ],
+        "resposta_correta": "Antioquia",
+        "referencia": "Atos 11:26"
+    },
+    {
+        "id": 339,
+        "pergunta": "Quem foi o primeiro rei de Israel?",
+        "opcoes": [
+            "Davi",
+            "Saul",
+            "Salomão",
+            "Samuel"
+        ],
+        "resposta_correta": "Saul",
+        "referencia": "1 Samuel 10"
+    },
+    {
+        "id": 340,
+        "pergunta": "Quantos anos o povo de Israel ficou no Egito?",
+        "opcoes": [
+            "40",
+            "70",
+            "430",
+            "1000"
+        ],
+        "resposta_correta": "430",
+        "referencia": "Êxodo 12:40"
+    },
+    {
+        "id": 341,
+        "pergunta": "Quem era a irmã de Moisés?",
+        "opcoes": [
+            "Rute",
+            "Miriã",
+            "Raabe",
+            "Débora"
+        ],
+        "resposta_correta": "Miriã",
+        "referencia": "Números 26:59"
+    },
+    {
+        "id": 342,
+        "pergunta": "Qual o nome do mar que Jesus acalmou?",
+        "opcoes": [
+            "Mar Vermelho",
+            "Mar Morto",
+            "Mar da Galileia",
+            "Mar Cáspio"
+        ],
+        "resposta_correta": "Mar da Galileia",
+        "referencia": "Marcos 4"
+    },
+    {
+        "id": 343,
+        "pergunta": "Qual o nome do homem que foi levado aos céus em um redemoinho?",
+        "opcoes": [
+            "Moisés",
+            "Enoque",
+            "Elias",
+            "Eliseu"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "2 Reis 2"
+    },
+    {
+        "id": 344,
+        "pergunta": "Quem escreveu o livro de Atos?",
+        "opcoes": [
+            "Pedro",
+            "Paulo",
+            "Lucas",
+            "João"
+        ],
+        "resposta_correta": "Lucas",
+        "referencia": "Atos 1:1"
+    },
+    {
+        "id": 345,
+        "pergunta": "Quem foi a mulher que traiu Sansão?",
+        "opcoes": [
+            "Rute",
+            "Dalila",
+            "Jezabel",
+            "Ester"
+        ],
+        "resposta_correta": "Dalila",
+        "referencia": "Juízes 16"
+    },
+    {
+        "id": 346,
+        "pergunta": "Qual o nome do monte onde Moisés morreu?",
+        "opcoes": [
+            "Monte Sinai",
+            "Monte Nebo",
+            "Monte Carmelo",
+            "Monte das Oliveiras"
+        ],
+        "resposta_correta": "Monte Nebo",
+        "referencia": "Deuteronômio 34"
+    },
+    {
+        "id": 347,
+        "pergunta": "Quantos anos viveu Moisés?",
+        "opcoes": [
+            "80",
+            "100",
+            "120",
+            "150"
+        ],
+        "resposta_correta": "120",
+        "referencia": "Deuteronômio 34:7"
+    },
+    {
+        "id": 348,
+        "pergunta": "Quem era o pai de Jacó?",
+        "opcoes": [
+            "Abraão",
+            "Isaque",
+            "Ismael",
+            "Terá"
+        ],
+        "resposta_correta": "Isaque",
+        "referencia": "Gênesis 25"
+    },
+    {
+        "id": 349,
+        "pergunta": "Quem foi a rainha que salvou o povo judeu do extermínio?",
+        "opcoes": [
+            "Ester",
+            "Vasti",
+            "Jezabel",
+            "Atalia"
+        ],
+        "resposta_correta": "Ester",
+        "referencia": "Livro de Ester"
+    },
+    {
+        "id": 350,
+        "pergunta": "Qual o nome do homem que ressuscitou um menino em Sarepta?",
+        "opcoes": [
+            "Elias",
+            "Eliseu",
+            "Isaías",
+            "Jeremias"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "1 Reis 17"
+    },
+    {
+        "id": 351,
+        "pergunta": "Quem pediu sabedoria a Deus em vez de riquezas?",
+        "opcoes": [
+            "Davi",
+            "Saul",
+            "Salomão",
+            "Samuel"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3"
+    },
+    {
+        "id": 352,
+        "pergunta": "Quem era o melhor amigo de Davi?",
+        "opcoes": [
+            "Samuel",
+            "Saul",
+            "Jônatas",
+            "Abner"
+        ],
+        "resposta_correta": "Jônatas",
+        "referencia": "1 Samuel 18"
+    },
+    {
+        "id": 353,
+        "pergunta": "Qual o nome do deserto onde Jesus foi tentado?",
+        "opcoes": [
+            "Deserto de Judá",
+            "Deserto de Sinai",
+            "Deserto da Galileia",
+            "Deserto de Neguebe"
+        ],
+        "resposta_correta": "Deserto de Judá",
+        "referencia": "Mateus 4"
+    },
+    {
+        "id": 354,
+        "pergunta": "Quem foi o primeiro mártir cristão?",
+        "opcoes": [
+            "Tiago",
+            "Estêvão",
+            "Pedro",
+            "Paulo"
+        ],
+        "resposta_correta": "Estêvão",
+        "referencia": "Atos 7"
+    },
+    {
+        "id": 355,
+        "pergunta": "Qual o nome do anjo que anunciou o nascimento de João Batista?",
+        "opcoes": [
+            "Miguel",
+            "Gabriel",
+            "Rafael",
+            "Lúcifer"
+        ],
+        "resposta_correta": "Gabriel",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 356,
+        "pergunta": "Quem era o sogro de Moisés?",
+        "opcoes": [
+            "Jetro",
+            "Labão",
+            "Potifar",
+            "Terá"
+        ],
+        "resposta_correta": "Jetro",
+        "referencia": "Êxodo 3"
+    },
+    {
+        "id": 357,
+        "pergunta": "Qual o nome do rio onde Naamã foi curado da lepra?",
+        "opcoes": [
+            "Rio Nilo",
+            "Rio Eufrates",
+            "Rio Jordão",
+            "Rio Tigre"
+        ],
+        "resposta_correta": "Rio Jordão",
+        "referencia": "2 Reis 5"
+    },
+    {
+        "id": 358,
+        "pergunta": "Quem foi arrebatado aos céus sem morrer?",
+        "opcoes": [
+            "Enoque",
+            "Moisés",
+            "Abraão",
+            "Jacó"
+        ],
+        "resposta_correta": "Enoque",
+        "referencia": "Gênesis 5:24"
+    },
+    {
+        "id": 359,
+        "pergunta": "Quem foi a mulher que ungiu os pés de Jesus com perfume caro?",
+        "opcoes": [
+            "Marta",
+            "Maria (irmã de Lázaro)",
+            "Maria Madalena",
+            "Salomé"
+        ],
+        "resposta_correta": "Maria (irmã de Lázaro)",
+        "referencia": "João 12"
+    },
+    {
+        "id": 360,
+        "pergunta": "Quantas pessoas Noé salvou na arca incluindo ele?",
+        "opcoes": [
+            "2",
+            "4",
+            "8",
+            "12"
+        ],
+        "resposta_correta": "8",
+        "referencia": "1 Pedro 3:20"
+    },
+    {
+        "id": 361,
+        "pergunta": "Qual o nome da montanha onde os Dez Mandamentos foram entregues?",
+        "opcoes": [
+            "Monte Sinai",
+            "Monte Carmelo",
+            "Monte das Oliveiras",
+            "Monte Tabor"
+        ],
+        "resposta_correta": "Monte Sinai",
+        "referencia": "Êxodo 19"
+    },
+    {
+        "id": 362,
+        "pergunta": "Quem foi o rei que viu uma mão escrevendo na parede?",
+        "opcoes": [
+            "Nabucodonosor",
+            "Belsazar",
+            "Dario",
+            "Ciro"
+        ],
+        "resposta_correta": "Belsazar",
+        "referencia": "Daniel 5"
+    },
+    {
+        "id": 363,
+        "pergunta": "Quem foi o sucessor de Elias?",
+        "opcoes": [
+            "Isaías",
+            "Jeremias",
+            "Eliseu",
+            "Ezequiel"
+        ],
+        "resposta_correta": "Eliseu",
+        "referencia": "2 Reis 2"
+    },
+    {
+        "id": 364,
+        "pergunta": "Qual discípulo era médico?",
+        "opcoes": [
+            "Mateus",
+            "Lucas",
+            "João",
+            "Pedro"
+        ],
+        "resposta_correta": "Lucas",
+        "referencia": "Colossenses 4:14"
+    },
+    {
+        "id": 365,
+        "pergunta": "Quem era o marido de Rute?",
+        "opcoes": [
+            "Malom",
+            "Boaz",
+            "Quiliom",
+            "Elimeleque"
+        ],
+        "resposta_correta": "Boaz",
+        "referencia": "Rute 4"
+    },
+    {
+        "id": 366,
+        "pergunta": "Quem foi jogado na fornalha ardente?",
+        "opcoes": [
+            "Daniel",
+            "Sadraque, Mesaque e Abednego",
+            "José",
+            "Davi"
+        ],
+        "resposta_correta": "Sadraque, Mesaque e Abednego",
+        "referencia": "Daniel 3"
+    },
+    {
+        "id": 367,
+        "pergunta": "Qual o nome do filho de Davi que construiu o templo?",
+        "opcoes": [
+            "Adonias",
+            "Absalão",
+            "Salomão",
+            "Natã"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 6"
+    },
+    {
+        "id": 368,
+        "pergunta": "Qual é o menor livro da Bíblia?",
+        "opcoes": [
+            "Judas",
+            "Filemon",
+            "2 João",
+            "3 João"
+        ],
+        "resposta_correta": "2 João",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 369,
+        "pergunta": "Qual o nome da sogra de Rute?",
+        "opcoes": [
+            "Ana",
+            "Noemi",
+            "Sara",
+            "Isabel"
+        ],
+        "resposta_correta": "Noemi",
+        "referencia": "Rute 1"
+    },
+    {
+        "id": 370,
+        "pergunta": "Quem foi o profeta que reconstruiu os muros de Jerusalém?",
+        "opcoes": [
+            "Esdras",
+            "Neemias",
+            "Ezequiel",
+            "Daniel"
+        ],
+        "resposta_correta": "Neemias",
+        "referencia": "Neemias 2"
+    },
+    {
+        "id": 371,
+        "pergunta": "Quem era o pai de João Batista?",
+        "opcoes": [
+            "Zacarias",
+            "José",
+            "Simão",
+            "Joaquim"
+        ],
+        "resposta_correta": "Zacarias",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 372,
+        "pergunta": "Quem foi a primeira pessoa a ver Jesus ressuscitado?",
+        "opcoes": [
+            "Pedro",
+            "João",
+            "Maria Madalena",
+            "Tiago"
+        ],
+        "resposta_correta": "Maria Madalena",
+        "referencia": "João 20:14"
+    },
+    {
+        "id": 373,
+        "pergunta": "Qual o nome do lugar onde Jesus orou antes de ser preso?",
+        "opcoes": [
+            "Gólgota",
+            "Getsêmani",
+            "Sião",
+            "Betânia"
+        ],
+        "resposta_correta": "Getsêmani",
+        "referencia": "Mateus 26"
+    },
+    {
+        "id": 374,
+        "pergunta": "Quem era o centurião romano que teve o servo curado por Jesus?",
+        "opcoes": [
+            "Cornélio",
+            "O Centurião de Cafarnaum",
+            "Longino",
+            "Pilatos"
+        ],
+        "resposta_correta": "O Centurião de Cafarnaum",
+        "referencia": "Mateus 8"
+    },
+    {
+        "id": 375,
+        "pergunta": "Quem foi o sucessor de Salomão?",
+        "opcoes": [
+            "Roboão",
+            "Jeroboão",
+            "Josafá",
+            "Acabe"
+        ],
+        "resposta_correta": "Roboão",
+        "referencia": "1 Reis 11:43"
+    },
+    {
+        "id": 376,
+        "pergunta": "Quantos pães e peixes Jesus usou para alimentar 5 mil?",
+        "opcoes": [
+            "5 pães e 2 peixes",
+            "7 pães e 3 peixes",
+            "12 pães e 2 peixes",
+            "10 pães e 5 peixes"
+        ],
+        "resposta_correta": "5 pães e 2 peixes",
+        "referencia": "João 6:9"
+    },
+    {
+        "id": 377,
+        "pergunta": "Quem foi a mulher juíza em Israel?",
+        "opcoes": [
+            "Rute",
+            "Débora",
+            "Ester",
+            "Miriã"
+        ],
+        "resposta_correta": "Débora",
+        "referencia": "Juízes 4"
+    },
+    {
+        "id": 378,
+        "pergunta": "Qual o nome do monte onde a arca de Noé parou?",
+        "opcoes": [
+            "Ararate",
+            "Sinai",
+            "Nebo",
+            "Carmelo"
+        ],
+        "resposta_correta": "Ararate",
+        "referencia": "Gênesis 8:4"
+    },
+    {
+        "id": 379,
+        "pergunta": "Quem era o rei de Judá que teve sua vida prolongada por 15 anos?",
+        "opcoes": [
+            "Josias",
+            "Ezequias",
+            "Manassés",
+            "Acaz"
+        ],
+        "resposta_correta": "Ezequias",
+        "referencia": "2 Reis 20"
+    },
+    {
+        "id": 380,
+        "pergunta": "Quem foi o apóstolo que substituiu Judas?",
+        "opcoes": [
+            "Paulo",
+            "Matias",
+            "Barnabé",
+            "Silas"
+        ],
+        "resposta_correta": "Matias",
+        "referencia": "Atos 1:26"
+    },
+    {
+        "id": 381,
+        "pergunta": "Qual o nome da ilha onde Paulo naufragou?",
+        "opcoes": [
+            "Creta",
+            "Chipre",
+            "Malta",
+            "Patmos"
+        ],
+        "resposta_correta": "Malta",
+        "referencia": "Atos 28:1"
+    },
+    {
+        "id": 382,
+        "pergunta": "Quem escreveu o livro de Lamentações?",
+        "opcoes": [
+            "Isaías",
+            "Jeremias",
+            "Ezequiel",
+            "Daniel"
+        ],
+        "resposta_correta": "Jeremias",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 383,
+        "pergunta": "Quantas vezes os israelitas rodearam Jericó no último dia?",
+        "opcoes": [
+            "1",
+            "3",
+            "7",
+            "12"
+        ],
+        "resposta_correta": "7",
+        "referencia": "Josué 6:15"
+    },
+    {
+        "id": 384,
+        "pergunta": "Quem foi o profeta que viu um vale de ossos secos?",
+        "opcoes": [
+            "Isaías",
+            "Jeremias",
+            "Ezequiel",
+            "Daniel"
+        ],
+        "resposta_correta": "Ezequiel",
+        "referencia": "Ezequiel 37"
+    },
+    {
+        "id": 385,
+        "pergunta": "Quem era a mãe de Samuel?",
+        "opcoes": [
+            "Ana",
+            "Penina",
+            "Maria",
+            "Isabel"
+        ],
+        "resposta_correta": "Ana",
+        "referencia": "1 Samuel 1"
+    },
+    {
+        "id": 386,
+        "pergunta": "Qual o nome da cidade de onde Maria e José eram?",
+        "opcoes": [
+            "Belém",
+            "Jerusalém",
+            "Nazaré",
+            "Cafarnaum"
+        ],
+        "resposta_correta": "Nazaré",
+        "referencia": "Lucas 2:4"
+    },
+    {
+        "id": 387,
+        "pergunta": "Quem foi o rei que mandou Daniel para a cova dos leões?",
+        "opcoes": [
+            "Nabucodonosor",
+            "Dario",
+            "Ciro",
+            "Belsazar"
+        ],
+        "resposta_correta": "Dario",
+        "referencia": "Daniel 6"
+    },
+    {
+        "id": 388,
+        "pergunta": "Quantos capítulos tem o livro de Salmos?",
+        "opcoes": [
+            "100",
+            "150",
+            "119",
+            "200"
+        ],
+        "resposta_correta": "150",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 389,
+        "pergunta": "Quem era o pai de Ismael?",
+        "opcoes": [
+            "Isaque",
+            "Jacó",
+            "Abraão",
+            "Ló"
+        ],
+        "resposta_correta": "Abraão",
+        "referencia": "Gênesis 16"
+    },
+    {
+        "id": 390,
+        "pergunta": "Qual discípulo era conhecido como o Zelote?",
+        "opcoes": [
+            "Simão",
+            "Judas",
+            "Bartolomeu",
+            "Tiago"
+        ],
+        "resposta_correta": "Simão",
+        "referencia": "Lucas 6:15"
+    },
+    {
+        "id": 391,
+        "pergunta": "O que aconteceu com a mulher de Ló?",
+        "opcoes": [
+            "Morreu",
+            "Virou estátua de sal",
+            "Ficou cega",
+            "Desapareceu"
+        ],
+        "resposta_correta": "Virou estátua de sal",
+        "referencia": "Gênesis 19:26"
+    },
+    {
+        "id": 392,
+        "pergunta": "Quem foi o profeta que ungiu Davi?",
+        "opcoes": [
+            "Samuel",
+            "Natã",
+            "Elias",
+            "Gad"
+        ],
+        "resposta_correta": "Samuel",
+        "referencia": "1 Samuel 16"
+    },
+    {
+        "id": 393,
+        "pergunta": "Qual o nome da primeira cidade que os israelitas conquistaram?",
+        "opcoes": [
+            "Ai",
+            "Jericó",
+            "Gibeão",
+            "Hebron"
+        ],
+        "resposta_correta": "Jericó",
+        "referencia": "Josué 6"
+    },
+    {
+        "id": 394,
+        "pergunta": "Quem era o rei da Babilônia que enlouqueceu?",
+        "opcoes": [
+            "Belsazar",
+            "Nabucodonosor",
+            "Ciro",
+            "Artaxerxes"
+        ],
+        "resposta_correta": "Nabucodonosor",
+        "referencia": "Daniel 4"
+    },
+    {
+        "id": 395,
+        "pergunta": "Quem foi levado por Deus em uma carruagem de fogo?",
+        "opcoes": [
+            "Moisés",
+            "Elias",
+            "Enoque",
+            "Samuel"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "2 Reis 2"
+    },
+    {
+        "id": 396,
+        "pergunta": "Qual o nome do mar onde os discípulos pescaram por orientação de Jesus?",
+        "opcoes": [
+            "Mar Vermelho",
+            "Mar Morto",
+            "Mar da Galileia (Tiberíades)",
+            "Mar Cáspio"
+        ],
+        "resposta_correta": "Mar da Galileia (Tiberíades)",
+        "referencia": "João 21"
+    },
+    {
+        "id": 397,
+        "pergunta": "Quem foi a mulher de Boaz?",
+        "opcoes": [
+            "Noemi",
+            "Rute",
+            "Orfa",
+            "Raabe"
+        ],
+        "resposta_correta": "Rute",
+        "referencia": "Rute 4"
+    },
+    {
+        "id": 398,
+        "pergunta": "Quem pediu sabedoria e recebeu riquezas também?",
+        "opcoes": [
+            "Salomão",
+            "Davi",
+            "Saul",
+            "Josias"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3"
+    },
+    {
+        "id": 399,
+        "pergunta": "Qual o nome do filho de Abraão que quase foi sacrificado?",
+        "opcoes": [
+            "Ismael",
+            "Isaque",
+            "Jacó",
+            "Esaú"
+        ],
+        "resposta_correta": "Isaque",
+        "referencia": "Gênesis 22"
+    },
+    {
+        "id": 400,
+        "pergunta": "Quem era o imperador romano no nascimento de Jesus?",
+        "opcoes": [
+            "Tibério",
+            "Nero",
+            "César Augusto",
+            "Cláudio"
+        ],
+        "resposta_correta": "César Augusto",
+        "referencia": "Lucas 2:1"
+    },
+    {
+        "id": 401,
+        "pergunta": "Qual o nome do lugar onde Jesus nasceu?",
+        "opcoes": [
+            "Belém",
+            "Nazaré",
+            "Jerusalém",
+            "Cafarnaum"
+        ],
+        "resposta_correta": "Belém",
+        "referencia": "Mateus 2"
+    },
+    {
+        "id": 402,
+        "pergunta": "Quem foi o profeta que morou em uma caverna e foi alimentado por corvos?",
+        "opcoes": [
+            "Eliseu",
+            "Elias",
+            "Jeremias",
+            "Isaías"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "1 Reis 17"
+    },
+    {
+        "id": 403,
+        "pergunta": "Quantos apóstolos Jesus tinha?",
+        "opcoes": [
+            "7",
+            "10",
+            "12",
+            "15"
+        ],
+        "resposta_correta": "12",
+        "referencia": "Lucas 6:13"
+    },
+    {
+        "id": 404,
+        "pergunta": "Quem era o pai de Davi?",
+        "opcoes": [
+            "Saul",
+            "Samuel",
+            "Jessé",
+            "Boaz"
+        ],
+        "resposta_correta": "Jessé",
+        "referencia": "1 Samuel 16"
+    },
+    {
+        "id": 405,
+        "pergunta": "Quem foi a mulher que escondeu os espiões em Jericó?",
+        "opcoes": [
+            "Raabe",
+            "Débora",
+            "Rute",
+            "Miriã"
+        ],
+        "resposta_correta": "Raabe",
+        "referencia": "Josué 2"
+    },
+    {
+        "id": 406,
+        "pergunta": "Quem era o irmão de Arão?",
+        "opcoes": [
+            "Moisés",
+            "Josué",
+            "Calebe",
+            "Samuel"
+        ],
+        "resposta_correta": "Moisés",
+        "referencia": "Êxodo 4"
+    },
+    {
+        "id": 407,
+        "pergunta": "Quem foi o profeta que falou com uma jumenta?",
+        "opcoes": [
+            "Balaão",
+            "Elias",
+            "Eliseu",
+            "Amós"
+        ],
+        "resposta_correta": "Balaão",
+        "referencia": "Números 22"
+    },
+    {
+        "id": 408,
+        "pergunta": "Qual o nome da esposa de Isaque?",
+        "opcoes": [
+            "Sara",
+            "Rebeca",
+            "Raquel",
+            "Lia"
+        ],
+        "resposta_correta": "Rebeca",
+        "referencia": "Gênesis 24"
+    },
+    {
+        "id": 409,
+        "pergunta": "Quem foi vendido pelos irmãos como escravo?",
+        "opcoes": [
+            "Benjamim",
+            "José",
+            "Rúben",
+            "Gade"
+        ],
+        "resposta_correta": "José",
+        "referencia": "Gênesis 37"
+    },
+    {
+        "id": 410,
+        "pergunta": "Quem foi o primeiro homem?",
+        "opcoes": [
+            "Adão",
+            "Noé",
+            "Abraão",
+            "Sete"
+        ],
+        "resposta_correta": "Adão",
+        "referencia": "Gênesis 2"
+    },
+    {
+        "id": 411,
+        "pergunta": "Quem batizou Jesus?",
+        "opcoes": [
+            "Pedro",
+            "João Batista",
+            "Tiago",
+            "André"
+        ],
+        "resposta_correta": "João Batista",
+        "referencia": "Mateus 3"
+    },
+    {
+        "id": 412,
+        "pergunta": "Qual discípulo negou Jesus 3 vezes?",
+        "opcoes": [
+            "Judas",
+            "João",
+            "Pedro",
+            "Tomé"
+        ],
+        "resposta_correta": "Pedro",
+        "referencia": "Mateus 26"
+    },
+    {
+        "id": 413,
+        "pergunta": "Quem construiu a arca?",
+        "opcoes": [
+            "Noé",
+            "Abraão",
+            "Moisés",
+            "Davi"
+        ],
+        "resposta_correta": "Noé",
+        "referencia": "Gênesis 6"
+    },
+    {
+        "id": 414,
+        "pergunta": "Qual foi a primeira praga do Egito?",
+        "opcoes": [
+            "Rãs",
+            "Piolhos",
+            "Água em sangue",
+            "Gafanhotos"
+        ],
+        "resposta_correta": "Água em sangue",
+        "referencia": "Êxodo 7"
+    },
+    {
+        "id": 415,
+        "pergunta": "Quem recebeu os 10 mandamentos?",
+        "opcoes": [
+            "Josué",
+            "Moisés",
+            "Arão",
+            "Samuel"
+        ],
+        "resposta_correta": "Moisés",
+        "referencia": "Êxodo 20"
+    },
+    {
+        "id": 416,
+        "pergunta": "Quem era o rei mais forte da Bíblia?",
+        "opcoes": [
+            "Sansão",
+            "Davi",
+            "Saul",
+            "Salomão"
+        ],
+        "resposta_correta": "Sansão",
+        "referencia": "Juízes 14"
+    },
+    {
+        "id": 417,
+        "pergunta": "Quem foi jogado na cova dos leões?",
+        "opcoes": [
+            "Daniel",
+            "José",
+            "Ezequiel",
+            "Jeremias"
+        ],
+        "resposta_correta": "Daniel",
+        "referencia": "Daniel 6"
+    },
+    {
+        "id": 418,
+        "pergunta": "Qual animal falou com Eva?",
+        "opcoes": [
+            "Leão",
+            "Serpente",
+            "Lobo",
+            "Águia"
+        ],
+        "resposta_correta": "Serpente",
+        "referencia": "Gênesis 3"
+    },
+    {
+        "id": 419,
+        "pergunta": "Quantos livros tem a Bíblia?",
+        "opcoes": [
+            "40",
+            "66",
+            "73",
+            "100"
+        ],
+        "resposta_correta": "66",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 420,
+        "pergunta": "Quem era o sucessor de Moisés?",
+        "opcoes": [
+            "Arão",
+            "Josué",
+            "Calebe",
+            "Samuel"
+        ],
+        "resposta_correta": "Josué",
+        "referencia": "Josué 1"
+    },
+    {
+        "id": 421,
+        "pergunta": "Qual o nome do jardim onde Adão e Eva viviam?",
+        "opcoes": [
+            "Éden",
+            "Getsêmani",
+            "Sião",
+            "Carmelo"
+        ],
+        "resposta_correta": "Éden",
+        "referencia": "Gênesis 2"
+    },
+    {
+        "id": 422,
+        "pergunta": "Quem matou Golias?",
+        "opcoes": [
+            "Saul",
+            "Davi",
+            "Salomão",
+            "Samuel"
+        ],
+        "resposta_correta": "Davi",
+        "referencia": "1 Samuel 17"
+    },
+    {
+        "id": 423,
+        "pergunta": "Qual o nome da cidade das muralhas que caíram?",
+        "opcoes": [
+            "Jerusalém",
+            "Jericó",
+            "Belém",
+            "Nazaré"
+        ],
+        "resposta_correta": "Jericó",
+        "referencia": "Josué 6"
+    },
+    {
+        "id": 424,
+        "pergunta": "Quantos anos o povo de Israel ficou no deserto?",
+        "opcoes": [
+            "7",
+            "12",
+            "40",
+            "70"
+        ],
+        "resposta_correta": "40",
+        "referencia": "Números 14"
+    },
+    {
+        "id": 425,
+        "pergunta": "Quem foi o apóstolo que escreveu a maioria das cartas do Novo Testamento?",
+        "opcoes": [
+            "Pedro",
+            "João",
+            "Paulo",
+            "Tiago"
+        ],
+        "resposta_correta": "Paulo",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 426,
+        "pergunta": "Qual o nome do rio onde Jesus foi batizado?",
+        "opcoes": [
+            "Nilo",
+            "Eufrates",
+            "Jordão",
+            "Tigre"
+        ],
+        "resposta_correta": "Jordão",
+        "referencia": "Mateus 3"
+    },
+    {
+        "id": 427,
+        "pergunta": "Quem foi ressuscitado após 4 dias morto?",
+        "opcoes": [
+            "Lázaro",
+            "Pedro",
+            "João",
+            "Estêvão"
+        ],
+        "resposta_correta": "Lázaro",
+        "referencia": "João 11"
+    },
+    {
+        "id": 428,
+        "pergunta": "Qual o nome do último livro da Bíblia?",
+        "opcoes": [
+            "Judas",
+            "Malaquias",
+            "Apocalipse",
+            "Gênesis"
+        ],
+        "resposta_correta": "Apocalipse",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 429,
+        "pergunta": "Quem era a irmã de Moisés?",
+        "opcoes": [
+            "Rute",
+            "Miriã",
+            "Raquel",
+            "Sara"
+        ],
+        "resposta_correta": "Miriã",
+        "referencia": "Êxodo 15"
+    },
+    {
+        "id": 430,
+        "pergunta": "Quem era o rei de Israel conhecido pela sabedoria?",
+        "opcoes": [
+            "Davi",
+            "Saul",
+            "Salomão",
+            "Ezequias"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3"
+    },
+    {
+        "id": 431,
+        "pergunta": "Quem foi levado por corvos para ser alimentado?",
+        "opcoes": [
+            "Elias",
+            "Eliseu",
+            "Isaías",
+            "Jeremias"
+        ],
+        "resposta_correta": "Elias",
+        "referencia": "1 Reis 17"
+    },
+    {
+        "id": 432,
+        "pergunta": "Qual animal engoliu Jonas?",
+        "opcoes": [
+            "Baleia",
+            "Grande Peixe",
+            "Tubarão",
+            "Polvo"
+        ],
+        "resposta_correta": "Grande Peixe",
+        "referencia": "Jonas 1"
+    },
+    {
+        "id": 433,
+        "pergunta": "Quem era o pai de Isaque?",
+        "opcoes": [
+            "Noé",
+            "Ló",
+            "Abraão",
+            "Jacó"
+        ],
+        "resposta_correta": "Abraão",
+        "referencia": "Gênesis 21"
+    },
+    {
+        "id": 434,
+        "pergunta": "Quem foi a primeira mulher?",
+        "opcoes": [
+            "Eva",
+            "Sara",
+            "Maria",
+            "Rute"
+        ],
+        "resposta_correta": "Eva",
+        "referencia": "Gênesis 2"
+    },
+    {
+        "id": 435,
+        "pergunta": "Quem matou Abel?",
+        "opcoes": [
+            "Caim",
+            "Sete",
+            "Enoque",
+            "Adão"
+        ],
+        "resposta_correta": "Caim",
+        "referencia": "Gênesis 4"
+    },
+    {
+        "id": 436,
+        "pergunta": "Quem interpretou sonhos no Egito?",
+        "opcoes": [
+            "Daniel",
+            "José",
+            "Moisés",
+            "Arão"
+        ],
+        "resposta_correta": "José",
+        "referencia": "Gênesis 41"
+    },
+    {
+        "id": 437,
+        "pergunta": "Qual o nome da cidade onde Jesus nasceu?",
+        "opcoes": [
+            "Belém",
+            "Nazaré",
+            "Jerusalém",
+            "Jericó"
+        ],
+        "resposta_correta": "Belém",
+        "referencia": "Mateus 2"
+    },
+    {
+        "id": 438,
+        "pergunta": "Quem era o melhor amigo de Davi?",
+        "opcoes": [
+            "Jônatas",
+            "Saul",
+            "Samuel",
+            "Abner"
+        ],
+        "resposta_correta": "Jônatas",
+        "referencia": "1 Samuel 18"
+    },
+    {
+        "id": 439,
+        "pergunta": "Quem foi o primeiro rei de Israel?",
+        "opcoes": [
+            "Davi",
+            "Saul",
+            "Salomão",
+            "Samuel"
+        ],
+        "resposta_correta": "Saul",
+        "referencia": "1 Samuel 10"
+    },
+    {
+        "id": 440,
+        "pergunta": "Quem atravessou o Mar Vermelho?",
+        "opcoes": [
+            "Moisés e o povo",
+            "Josué",
+            "Davi",
+            "Noé"
+        ],
+        "resposta_correta": "Moisés e o povo",
+        "referencia": "Êxodo 14"
+    },
+    {
+        "id": 441,
+        "pergunta": "Quantas pragas teve o Egito?",
+        "opcoes": [
+            "7",
+            "10",
+            "12",
+            "40"
+        ],
+        "resposta_correta": "10",
+        "referencia": "Êxodo 7-12"
+    },
+    {
+        "id": 442,
+        "pergunta": "Quem foi o traidor de Jesus?",
+        "opcoes": [
+            "Pedro",
+            "João",
+            "Judas Iscariotes",
+            "André"
+        ],
+        "resposta_correta": "Judas Iscariotes",
+        "referencia": "Mateus 26"
+    },
+    {
+        "id": 443,
+        "pergunta": "Quem ressuscitou um menino?",
+        "opcoes": [
+            "Elias",
+            "Eliseu",
+            "Ambos",
+            "Nenhum"
+        ],
+        "resposta_correta": "Ambos",
+        "referencia": "1 Reis 17 / 2 Reis 4"
+    },
+    {
+        "id": 444,
+        "pergunta": "Quem era a mãe de Samuel?",
+        "opcoes": [
+            "Ana",
+            "Penina",
+            "Isabel",
+            "Maria"
+        ],
+        "resposta_correta": "Ana",
+        "referencia": "1 Samuel 1"
+    },
+    {
+        "id": 445,
+        "pergunta": "Quem foi o profeta que morou no deserto e comia gafanhotos?",
+        "opcoes": [
+            "João Batista",
+            "Elias",
+            "Amós",
+            "Ezequiel"
+        ],
+        "resposta_correta": "João Batista",
+        "referencia": "Mateus 3"
+    },
+    {
+        "id": 446,
+        "pergunta": "Quem era o imperador romano na morte de Jesus?",
+        "opcoes": [
+            "César Augusto",
+            "Tibério",
+            "Nero",
+            "Cláudio"
+        ],
+        "resposta_correta": "Tibério",
+        "referencia": "Lucas 3"
+    },
+    {
+        "id": 447,
+        "pergunta": "Quem escreveu o Apocalipse?",
+        "opcoes": [
+            "Paulo",
+            "Pedro",
+            "João",
+            "Tiago"
+        ],
+        "resposta_correta": "João",
+        "referencia": "Apocalipse 1"
+    },
+    {
+        "id": 448,
+        "pergunta": "Qual o nome da sogra de Rute?",
+        "opcoes": [
+            "Noemi",
+            "Sara",
+            "Rebeca",
+            "Lia"
+        ],
+        "resposta_correta": "Noemi",
+        "referencia": "Rute 1"
+    },
+    {
+        "id": 449,
+        "pergunta": "Quem pediu sabedoria?",
+        "opcoes": [
+            "Davi",
+            "Salomão",
+            "Samuel",
+            "Saul"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3"
+    },
+    {
+        "id": 450,
+        "pergunta": "Quantos dias Jesus ficou no deserto?",
+        "opcoes": [
+            "7",
+            "12",
+            "40",
+            "50"
+        ],
+        "resposta_correta": "40",
+        "referencia": "Mateus 4"
+    },
+    {
+        "id": 451,
+        "pergunta": "Quem foi a mulher de Noé?",
+        "opcoes": [
+            "A Bíblia não diz o nome",
+            "Sara",
+            "Rute",
+            "Maria"
+        ],
+        "resposta_correta": "A Bíblia não diz o nome",
+        "referencia": "Gênesis 6"
+    },
+    {
+        "id": 452,
+        "pergunta": "Quem era o pai de Jacó?",
+        "opcoes": [
+            "Abraão",
+            "Isaque",
+            "Ismael",
+            "Ló"
+        ],
+        "resposta_correta": "Isaque",
+        "referencia": "Gênesis 25"
+    },
+    {
+        "id": 453,
+        "pergunta": "Quem era o irmão de Jacó?",
+        "opcoes": [
+            "Esaú",
+            "Ismael",
+            "José",
+            "Benjamim"
+        ],
+        "resposta_correta": "Esaú",
+        "referencia": "Gênesis 25"
+    },
+    {
+        "id": 454,
+        "pergunta": "Quem foi a mulher que ungiu Jesus?",
+        "opcoes": [
+            "Maria",
+            "Marta",
+            "Madalena",
+            "Joana"
+        ],
+        "resposta_correta": "Maria",
+        "referencia": "João 12"
+    },
+    {
+        "id": 455,
+        "pergunta": "Quem foi arrebatado?",
+        "opcoes": [
+            "Elias",
+            "Enoque",
+            "Ambos",
+            "Nenhum"
+        ],
+        "resposta_correta": "Ambos",
+        "referencia": "Gênesis 5 / 2 Reis 2"
+    },
+    {
+        "id": 456,
+        "pergunta": "Quem era o centurião de Cafarnaum?",
+        "opcoes": [
+            "Um oficial romano",
+            "Um pescador",
+            "Um rei",
+            "Um profeta"
+        ],
+        "resposta_correta": "Um oficial romano",
+        "referencia": "Mateus 8"
+    },
+    {
+        "id": 457,
+        "pergunta": "Quem foi o sucessor de Elias?",
+        "opcoes": [
+            "Eliseu",
+            "Isaías",
+            "Jeremias",
+            "Miqueias"
+        ],
+        "resposta_correta": "Eliseu",
+        "referencia": "2 Reis 2"
+    },
+    {
+        "id": 458,
+        "pergunta": "Quem era a mãe de Jesus?",
+        "opcoes": [
+            "Maria",
+            "Marta",
+            "Isabel",
+            "Ana"
+        ],
+        "resposta_correta": "Maria",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 459,
+        "pergunta": "Quem era o rei que enlouqueceu?",
+        "opcoes": [
+            "Saul",
+            "Nabucodonosor",
+            "Belsazar",
+            "Herodes"
+        ],
+        "resposta_correta": "Nabucodonosor",
+        "referencia": "Daniel 4"
+    },
+    {
+        "id": 460,
+        "pergunta": "Quem escreveu os Salmos?",
+        "opcoes": [
+            "Davi",
+            "Salomão",
+            "Moisés",
+            "Vários"
+        ],
+        "resposta_correta": "Vários",
+        "referencia": "Salmos"
+    },
+    {
+        "id": 461,
+        "pergunta": "Quem foi o primeiro rei?",
+        "opcoes": [
+            "Saul",
+            "Davi",
+            "Salomão",
+            "Samuel"
+        ],
+        "resposta_correta": "Saul",
+        "referencia": "1 Samuel 10"
+    },
+    {
+        "id": 462,
+        "pergunta": "Quem era o marido de Ester?",
+        "opcoes": [
+            "Assuero",
+            "Hamã",
+            "Mordecai",
+            "Dario"
+        ],
+        "resposta_correta": "Assuero",
+        "referencia": "Ester 2"
+    },
+    {
+        "id": 463,
+        "pergunta": "Quem foi jogado na cova?",
+        "opcoes": [
+            "Daniel",
+            "José",
+            "Ezequiel",
+            "Jeremias"
+        ],
+        "resposta_correta": "Daniel",
+        "referencia": "Daniel 6"
+    },
+    {
+        "id": 464,
+        "pergunta": "Quem era a esposa de Isaque?",
+        "opcoes": [
+            "Rebeca",
+            "Sara",
+            "Raquel",
+            "Lia"
+        ],
+        "resposta_correta": "Rebeca",
+        "referencia": "Gênesis 24"
+    },
+    {
+        "id": 465,
+        "pergunta": "Quem era o pai de Davi?",
+        "opcoes": [
+            "Jessé",
+            "Saul",
+            "Samuel",
+            "Boaz"
+        ],
+        "resposta_correta": "Jessé",
+        "referencia": "1 Samuel 16"
+    },
+    {
+        "id": 466,
+        "pergunta": "Quem era a irmã de Moisés?",
+        "opcoes": [
+            "Miriã",
+            "Rute",
+            "Sara",
+            "Raquel"
+        ],
+        "resposta_correta": "Miriã",
+        "referencia": "Êxodo 15"
+    },
+    {
+        "id": 467,
+        "pergunta": "Quem batizou Jesus?",
+        "opcoes": [
+            "João Batista",
+            "Pedro",
+            "Tiago",
+            "André"
+        ],
+        "resposta_correta": "João Batista",
+        "referencia": "Mateus 3"
+    },
+    {
+        "id": 468,
+        "pergunta": "Quem era o sucessor de Moisés?",
+        "opcoes": [
+            "Josué",
+            "Arão",
+            "Samuel",
+            "Calebe"
+        ],
+        "resposta_correta": "Josué",
+        "referencia": "Josué 1"
+    },
+    {
+        "id": 469,
+        "pergunta": "Quem construiu a arca?",
+        "opcoes": [
+            "Noé",
+            "Abraão",
+            "Moisés",
+            "Davi"
+        ],
+        "resposta_correta": "Noé",
+        "referencia": "Gênesis 6"
+    },
+    {
+        "id": 470,
+        "pergunta": "Quem era a primeira mulher?",
+        "opcoes": [
+            "Eva",
+            "Sara",
+            "Maria",
+            "Rute"
+        ],
+        "resposta_correta": "Eva",
+        "referencia": "Gênesis 2"
+    },
+    {
+        "id": 471,
+        "pergunta": "Quem matou Abel?",
+        "opcoes": [
+            "Caim",
+            "Adão",
+            "Sete",
+            "Enoque"
+        ],
+        "resposta_correta": "Caim",
+        "referencia": "Gênesis 4"
+    },
+    {
+        "id": 472,
+        "pergunta": "Quem interpretou sonhos?",
+        "opcoes": [
+            "José",
+            "Daniel",
+            "Ambos",
+            "Nenhum"
+        ],
+        "resposta_correta": "Ambos",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 473,
+        "pergunta": "Quem era o rei sábio?",
+        "opcoes": [
+            "Salomão",
+            "Davi",
+            "Saul",
+            "Josias"
+        ],
+        "resposta_correta": "Salomão",
+        "referencia": "1 Reis 3"
+    },
+    {
+        "id": 474,
+        "pergunta": "Quem era o homem forte?",
+        "opcoes": [
+            "Sansão",
+            "Davi",
+            "Gideão",
+            "Saul"
+        ],
+        "resposta_correta": "Sansão",
+        "referencia": "Juízes 14"
+    },
+    {
+        "id": 475,
+        "pergunta": "Quem era o melhor amigo de Davi?",
+        "opcoes": [
+            "Jônatas",
+            "Saul",
+            "Samuel",
+            "Abner"
+        ],
+        "resposta_correta": "Jônatas",
+        "referencia": "1 Samuel 18"
+    },
+    {
+        "id": 476,
+        "pergunta": "Quantos apóstolos tinha Jesus?",
+        "opcoes": [
+            "12",
+            "7",
+            "10",
+            "15"
+        ],
+        "resposta_correta": "12",
+        "referencia": "Mateus 10"
+    },
+    {
+        "id": 477,
+        "pergunta": "Quem escreveu Atos?",
+        "opcoes": [
+            "Lucas",
+            "Pedro",
+            "Paulo",
+            "João"
+        ],
+        "resposta_correta": "Lucas",
+        "referencia": "Atos 1"
+    },
+    {
+        "id": 478,
+        "pergunta": "Quem foi arrebatado vivo?",
+        "opcoes": [
+            "Elias",
+            "Enoque",
+            "Ambos",
+            "Nenhum"
+        ],
+        "resposta_correta": "Ambos",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 479,
+        "pergunta": "Quem era a mãe de Jesus?",
+        "opcoes": [
+            "Maria",
+            "Marta",
+            "Isabel",
+            "Ana"
+        ],
+        "resposta_correta": "Maria",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 480,
+        "pergunta": "Quem era o pai de Isaque?",
+        "opcoes": [
+            "Abraão",
+            "Ló",
+            "Noé",
+            "Jacó"
+        ],
+        "resposta_correta": "Abraão",
+        "referencia": "Gênesis 21"
+    },
+    {
+        "id": 481,
+        "pergunta": "Quem era o rei de Judá que curou?",
+        "opcoes": [
+            "Ezequias",
+            "Josias",
+            "Manassés",
+            "Acaz"
+        ],
+        "resposta_correta": "Ezequias",
+        "referencia": "2 Reis 20"
+    },
+    {
+        "id": 482,
+        "pergunta": "Quem era o sucessor de Elias?",
+        "opcoes": [
+            "Eliseu",
+            "Isaías",
+            "Jeremias",
+            "Miqueias"
+        ],
+        "resposta_correta": "Eliseu",
+        "referencia": "2 Reis 2"
+    },
+    {
+        "id": 483,
+        "pergunta": "Quem era a sogra de Noemi?",
+        "opcoes": [
+            "A Bíblia não menciona",
+            "Sara",
+            "Rebeca",
+            "Lia"
+        ],
+        "resposta_correta": "A Bíblia não menciona",
+        "referencia": "Rute"
+    },
+    {
+        "id": 484,
+        "pergunta": "Quem era a rainha judia?",
+        "opcoes": [
+            "Ester",
+            "Jezabel",
+            "Atalia",
+            "Vasti"
+        ],
+        "resposta_correta": "Ester",
+        "referencia": "Ester"
+    },
+    {
+        "id": 485,
+        "pergunta": "Quem era o pai de João Batista?",
+        "opcoes": [
+            "Zacarias",
+            "José",
+            "Joaquim",
+            "Simão"
+        ],
+        "resposta_correta": "Zacarias",
+        "referencia": "Lucas 1"
+    },
+    {
+        "id": 486,
+        "pergunta": "Quem era o traidor?",
+        "opcoes": [
+            "Judas",
+            "Pedro",
+            "Tomé",
+            "João"
+        ],
+        "resposta_correta": "Judas",
+        "referencia": "Mateus 26"
+    },
+    {
+        "id": 487,
+        "pergunta": "Quem era o centurião?",
+        "opcoes": [
+            "Um oficial",
+            "Um rei",
+            "Um profeta",
+            "Um pescador"
+        ],
+        "resposta_correta": "Um oficial",
+        "referencia": "Mateus 8"
+    },
+    {
+        "id": 488,
+        "pergunta": "Quem era a irmã de Lázaro?",
+        "opcoes": [
+            "Marta e Maria",
+            "Maria e Madalena",
+            "Salomé",
+            "Joana"
+        ],
+        "resposta_correta": "Marta e Maria",
+        "referencia": "João 11"
+    },
+    {
+        "id": 489,
+        "pergunta": "Quem era o imperador?",
+        "opcoes": [
+            "Augusto",
+            "Tibério",
+            "Nero",
+            "César"
+        ],
+        "resposta_correta": "Augusto / Tibério",
+        "referencia": "Lucas"
+    },
+    {
+        "id": 490,
+        "pergunta": "Quem era o apóstolo dos gentios?",
+        "opcoes": [
+            "Paulo",
+            "Pedro",
+            "João",
+            "Tiago"
+        ],
+        "resposta_correta": "Paulo",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 491,
+        "pergunta": "Quem era o rei de Israel?",
+        "opcoes": [
+            "Saul",
+            "Davi",
+            "Salomão",
+            "Todos"
+        ],
+        "resposta_correta": "Todos",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 492,
+        "pergunta": "Quem era o profeta chorão?",
+        "opcoes": [
+            "Jeremias",
+            "Isaías",
+            "Ezequiel",
+            "Daniel"
+        ],
+        "resposta_correta": "Jeremias",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 493,
+        "pergunta": "Quem era o homem de paciência?",
+        "opcoes": [
+            "Jó",
+            "Abraão",
+            "Noé",
+            "Moisés"
+        ],
+        "resposta_correta": "Jó",
+        "referencia": "Jó"
+    },
+    {
+        "id": 494,
+        "pergunta": "Quem era o filho de Davi?",
+        "opcoes": [
+            "Salomão",
+            "Absalão",
+            "Adonias",
+            "Todos"
+        ],
+        "resposta_correta": "Todos",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 495,
+        "pergunta": "Quem era a sogra de Rute?",
+        "opcoes": [
+            "Noemi",
+            "Sara",
+            "Raquel",
+            "Lia"
+        ],
+        "resposta_correta": "Noemi",
+        "referencia": "Rute"
+    },
+    {
+        "id": 496,
+        "pergunta": "Quem era o anfitrião de Jesus?",
+        "opcoes": [
+            "Marta e Maria",
+            "Zaqueu",
+            "Simão",
+            "Todos"
+        ],
+        "resposta_correta": "Todos",
+        "referencia": "Bíblia"
+    },
+    {
+        "id": 497,
+        "pergunta": "Quem era o rei da Babilônia?",
+        "opcoes": [
+            "Nabucodonosor",
+            "Belsazar",
+            "Dario",
+            "Ciro"
+        ],
+        "resposta_correta": "Nabucodonosor",
+        "referencia": "Daniel"
+    },
+    {
+        "id": 498,
+        "pergunta": "Quem era o profeta do peixe?",
+        "opcoes": [
+            "Jonas",
+            "Elias",
+            "Amós",
+            "Naum"
+        ],
+        "resposta_correta": "Jonas",
+        "referencia": "Jonas"
+    },
+    {
+        "id": 499,
+        "pergunta": "Quem era a esposa de Moisés?",
+        "opcoes": [
+            "Zípora",
+            "Miriã",
+            "Raabe",
+            "Débora"
+        ],
+        "resposta_correta": "Zípora",
+        "referencia": "Êxodo"
+    },
+    {
+        "id": 500,
+        "pergunta": "Quem era o anjo do anúncio?",
+        "opcoes": [
+            "Gabriel",
+            "Miguel",
+            "Rafael",
+            "Uriel"
+        ],
+        "resposta_correta": "Gabriel",
+        "referencia": "Lucas"
     }
 ]
