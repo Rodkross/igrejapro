@@ -267,9 +267,12 @@ export default function EstudoPalavra() {
           {/* Fundo radiante */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80vw] md:w-[800px] h-[300px] bg-gold/15 blur-[100px] rounded-full pointer-events-none -z-10" />
           
-          <span className="inline-block whitespace-nowrap px-5 py-1.5 md:py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-widest text-[10px] md:text-xs uppercase mb-6 md:mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]">
-            Palavra do Dia • {refUrl}
-          </span>
+          <div 
+            className="inline-flex w-max px-6 py-2 rounded-full bg-gold/10 border border-gold/20 text-gold font-bold tracking-[0.2em] text-[10px] md:text-xs uppercase mb-6 md:mb-8 shadow-[0_0_20px_rgba(212,175,55,0.1)]"
+            style={{ whiteSpace: 'nowrap', width: 'max-content' }}
+          >
+            <span>Palavra do Dia &bull; <span className="ml-1">{refUrl}</span></span>
+          </div>
           
           <div className="relative inline-block w-full max-w-3xl">
             <h1 className="text-2xl md:text-4xl lg:text-[2.75rem] font-medium text-white leading-snug md:leading-[1.3] italic relative z-10 px-2 md:px-6 font-serif text-center tracking-tight drop-shadow-md">
