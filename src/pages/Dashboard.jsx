@@ -545,7 +545,7 @@ export default function Dashboard() {
                             </div>
                             <div className="min-w-0 flex-1">
                                 <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
-                                <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
+                                <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.funcaoEclesiastica || 'Membro'}</p>
                                 <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
                                   {u.biografia || "Sem biografia disponível."}
                                 </p>
@@ -615,7 +615,7 @@ function MembroCard({ u, isCasal }) {
       </div>
       <div className="min-w-0 flex-1">
         <p className="font-display font-bold text-navy text-base leading-tight truncate">{u.nome}</p>
-        <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.cargoNome || 'Membro'}</p>
+        <p className="text-[9px] font-bold text-royal uppercase tracking-widest mt-0.5">{u.funcaoEclesiastica || 'Membro'}</p>
         <p className="text-[11px] text-slate-500 font-medium leading-relaxed mt-1 line-clamp-2 italic">
           {u.biografia || "Sem biografia disponível."}
         </p>
