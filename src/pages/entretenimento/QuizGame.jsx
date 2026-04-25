@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '../../database/firebase';
 import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit } from 'firebase/firestore';
-import { Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, PlusCircle, Gamepad2, Medal, Ban, Cross, Clock } from 'lucide-react';
+import { Trophy, ArrowRight, RotateCcw, CheckCircle2, XCircle, PlusCircle, Gamepad2, Medal, Ban, Cross, Clock, Loader2 } from 'lucide-react';
 import { useOutletContext } from 'react-router-dom';
 
 export default function QuizGame() {
@@ -16,6 +16,8 @@ export default function QuizGame() {
   const [gameOver, setGameOver] = useState(false);
   const [ranking, setRanking] = useState([]);
   const [cooldown, setCooldown] = useState(null);
+  const [tempoRestante, setTempoRestante] = useState(10);
+  const [mostraControles, setMostraControles] = useState(false);
 
   const carregarJogo = async () => {
     setLoading(true);
@@ -53,6 +55,8 @@ export default function QuizGame() {
       setGameOver(false);
       setRespondido(false);
       setCooldown(null);
+      setTempoRestante(10);
+      setMostraControles(false);
       await carregarRanking();
     } catch (err) { console.error(err); }
     setLoading(false);
@@ -68,12 +72,13 @@ export default function QuizGame() {
     if (respondido || gameOver) return;
     
     const questao = perguntas[indiceAtual];
-    const acertou = opcao === questao.resposta_correta;
+    const acertou = opcao !== null && opcao === questao.resposta_correta;
     const pontosVariacao = acertou ? 10 : -5;
 
     // ATUALIZAÇÃO IMEDIATA DO ESTADO VISUAL
     setOpcaoSelecionada(opcao);
     setRespondido(true);
+    setMostraControles(false); // Esconde os botões de ação temporariamente
     setScore(prev => prev + pontosVariacao);
     if (!acertou) setVidas(v => v - 1);
 
@@ -100,13 +105,18 @@ export default function QuizGame() {
         await setDoc(progRef, { acertos: [...new Set([...acertosAtuais, String(questao.id)])] }, { merge: true });
       }
 
-      // 4. Se perdeu a última vida
+      // 4. Se perdeu a última vida, encerra o jogo. Senão, agenda a exibição dos controles.
       if (!acertou && vidas <= 1) {
         await updateDoc(userRef, { bloqueioQuiz: new Date() });
         setTimeout(() => setGameOver(true), 1500);
+      } else {
+        const delay = acertou ? 1500 : 10000; // 1.5s para acerto, 10s de penalidade para erro
+        setTimeout(() => setMostraControles(true), delay);
       }
     } catch (err) {
       console.error("Erro ao processar resposta:", err);
+      // Em caso de erro, mostra os controles após um delay padrão para não travar o usuário
+      setTimeout(() => setMostraControles(true), 1500);
     }
   };
 
@@ -115,12 +125,34 @@ export default function QuizGame() {
       setIndiceAtual(v => v + 1);
       setRespondido(false);
       setOpcaoSelecionada(null);
+      setTempoRestante(10);
+      setMostraControles(false);
     } else {
       setGameOver(true);
     }
   };
 
-  useEffect(() => { carregarJogo(); }, []);
+  useEffect(() => {
+    if (respondido || gameOver || loading || perguntas.length === 0) {
+        return;
+    }
+
+    const timerId = setInterval(() => {
+        setTempoRestante(prev => {
+            if (prev > 1) {
+                return prev - 1;
+            } else {
+                clearInterval(timerId);
+                validarResposta(null); // Tempo esgotado, conta como resposta errada
+                return 0;
+            }
+        });
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [respondido, gameOver, loading, indiceAtual]);
+
+  useEffect(() => { carregarJogo(); }, [usuario.id]);
 
   if (loading) return <div className="p-20 text-center font-black text-gold animate-pulse italic">CARREGANDO...</div>;
 
@@ -180,6 +212,10 @@ export default function QuizGame() {
             ))}
           </div>
         </div>
+        <div className="text-center">
+          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-center leading-none">TEMPO</p>
+          <p className={`text-3xl font-black tabular-nums text-center transition-colors ${tempoRestante <= 3 ? 'text-rose-500 animate-pulse' : 'text-white'}`}>{tempoRestante}</p>
+        </div>
         <div className="text-right">
           <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-right leading-none">Score Partida</p>
           <p className={`text-3xl font-black tabular-nums text-right ${score < 0 ? 'text-rose-500' : 'text-emerald-400'}`}>{score}</p>
@@ -228,14 +264,22 @@ export default function QuizGame() {
               <p className="text-white font-bold italic text-xs md:text-sm leading-snug text-left">{perguntas[indiceAtual].referencia}</p>
             </div>
             
-            <div className="flex flex-col sm:flex-row gap-2 mt-1.5">
-              <button onClick={proximaQuestao} className="w-full sm:flex-1 bg-gold text-navy font-black py-2 md:py-3 rounded-lg uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl text-[11px] md:text-sm">
-                Próxima <ArrowRight size={14}/>
-              </button>
-              <button onClick={() => setGameOver(true)} className="w-full sm:w-auto bg-white/5 text-white/40 font-black py-2 md:py-3 px-4 rounded-lg uppercase text-[9px] tracking-wider hover:bg-rose-500/20 hover:text-rose-500 transition-all shadow-none">
-                Parar
-              </button>
-            </div>
+            {mostraControles ? (
+              <div className="flex flex-col sm:flex-row gap-2 mt-1.5 animate-in fade-in">
+                <button onClick={proximaQuestao} className="w-full sm:flex-1 bg-gold text-navy font-black py-2 md:py-3 rounded-lg uppercase flex items-center justify-center gap-2 hover:bg-white transition-all shadow-xl text-[11px] md:text-sm">
+                  Próxima <ArrowRight size={14}/>
+                </button>
+                <button onClick={() => setGameOver(true)} className="w-full sm:w-auto bg-white/5 text-white/40 font-black py-2 md:py-3 px-4 rounded-lg uppercase text-[9px] tracking-wider hover:bg-rose-500/20 hover:text-rose-500 transition-all shadow-none">
+                  Parar
+                </button>
+              </div>
+            ) : (
+              !gameOver && (
+                <div className="mt-4 text-center animate-in fade-in">
+                  <Loader2 className="animate-spin text-gold mx-auto" size={24} />
+                </div>
+              )
+            )}
           </div>
         )}
       </div>
