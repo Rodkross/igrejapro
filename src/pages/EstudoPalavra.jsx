@@ -1,7 +1,34 @@
 import React, { useEffect, useState, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2 } from 'lucide-react';
+import { db } from '../database/firebase';
+import { doc, updateDoc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2, Trophy, Medal, Check, ChevronRight } from 'lucide-react';
+
+import imgMedalPaper from '../assets/medal-paper.png';
+import imgMedalWood from '../assets/medal-wood.png';
+import imgMedalSteel from '../assets/medal-steel.png';
+import imgMedalBronze from '../assets/medal-bronze.png';
+import imgMedalSilver from '../assets/medal-silver.png';
+import imgMedalGold from '../assets/medal-gold.png';
+import imgMedalDiamond from '../assets/medal-diamond.png';
+
+function lerUsuarioLogado() {
+  try {
+    const salvo = sessionStorage.getItem('usuarioLogado');
+    return salvo ? JSON.parse(salvo) : null;
+  } catch (error) {
+    return null;
+  }
+}
+
+function formatarChaveDia() {
+  const data = new Date();
+  const ano = data.getFullYear();
+  const mes = String(data.getMonth() + 1).padStart(2, '0');
+  const dia = String(data.getDate()).padStart(2, '0');
+  return `${ano}-${mes}-${dia}`;
+}
 
 const livrosMetadata = {
   'João': {
@@ -132,6 +159,15 @@ export default function EstudoPalavra() {
   const [targetVerseArr, setTargetVerseArr] = useState([]);
   const [copiado, setCopiado] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  
+  // States para Gamificação e Leitura
+  const [usuarioData, setUsuarioData] = useState(null);
+  const [concluindo, setConcluindo] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(null); // { medalha: 'Bronze', dias: 30 }
+  const [leitores, setLeitores] = useState([]);
+  const usuarioLogado = lerUsuarioLogado();
+  const hoje = formatarChaveDia();
+
   const printRef = useRef(null);
 
   // Extração do Nome do Livro e Dicionários
@@ -140,6 +176,62 @@ export default function EstudoPalavra() {
 
   const metadataLivro = livrosMetadata[livroPT] || null;
   const contextMsg = versiculosContexto[refUrl] || null;
+
+  useEffect(() => {
+    if (usuarioLogado?.id) {
+      const unsub = onSnapshot(doc(db, "usuarios", String(usuarioLogado.id)), (docSnap) => {
+        if (docSnap.exists()) {
+          setUsuarioData(docSnap.data());
+        }
+      });
+      return () => unsub();
+    }
+  }, [usuarioLogado?.id]);
+
+  useEffect(() => {
+    const q = query(
+      collection(db, 'usuarios'),
+      where('devocionaisLidos', '>', 0),
+      orderBy('devocionaisLidos', 'desc')
+    );
+    const unsub = onSnapshot(q, (snap) => {
+      const users = [];
+      snap.forEach(docSnap => {
+        users.push({ id: docSnap.id, ...docSnap.data() });
+      });
+      setLeitores(users);
+    }, (error) => {
+      console.error('Erro ao buscar leitores:', error);
+    });
+    return () => unsub();
+  }, []);
+
+  const handleConcluirDevocional = async () => {
+    if (!usuarioLogado?.id || !usuarioData || concluindo) return;
+    if (usuarioData.ultimoDevocionalLido === hoje) return;
+
+    setConcluindo(true);
+    try {
+      const novosLidos = (Number(usuarioData.devocionaisLidos) || 0) + 1;
+      await updateDoc(doc(db, "usuarios", String(usuarioLogado.id)), {
+        devocionaisLidos: novosLidos,
+        ultimoDevocionalLido: hoje
+      });
+      
+      // Checar se bateu alguma meta
+      if (novosLidos === 5) setShowCelebration({ nome: 'Papel', nivel: 'O primeiro passo', dias: novosLidos, cor: 'text-stone-300', bg: 'bg-stone-300/20', border: 'border-stone-300/30', img: imgMedalPaper });
+      else if (novosLidos === 10) setShowCelebration({ nome: 'Madeira', nivel: 'Criando Raízes', dias: novosLidos, cor: 'text-orange-300', bg: 'bg-orange-300/20', border: 'border-orange-300/30', img: imgMedalWood });
+      else if (novosLidos === 25) setShowCelebration({ nome: 'Aço', nivel: 'A força do hábito', dias: novosLidos, cor: 'text-slate-400', bg: 'bg-slate-400/20', border: 'border-slate-400/30', img: imgMedalSteel });
+      else if (novosLidos === 30) setShowCelebration({ nome: 'Bronze', nivel: 'O primeiro pódio', dias: novosLidos, cor: 'text-amber-600', bg: 'bg-amber-100', border: 'border-amber-500', img: imgMedalBronze });
+      else if (novosLidos === 100) setShowCelebration({ nome: 'Prata', nivel: 'O brilho da constância', dias: novosLidos, cor: 'text-slate-400', bg: 'bg-slate-100', border: 'border-slate-400', img: imgMedalSilver });
+      else if (novosLidos === 200) setShowCelebration({ nome: 'Ouro', nivel: 'A maestria', dias: novosLidos, cor: 'text-yellow-500', bg: 'bg-yellow-100', border: 'border-yellow-500', img: imgMedalGold });
+      else if (novosLidos === 365) setShowCelebration({ nome: 'Diamante', nivel: 'A perfeição e durabilidade', dias: novosLidos, cor: 'text-cyan-400', bg: 'bg-cyan-100', border: 'border-cyan-400', img: imgMedalDiamond });
+    } catch (error) {
+      console.error("Erro ao concluir devocional:", error);
+    } finally {
+      setConcluindo(false);
+    }
+  };
 
   useEffect(() => {
     const fetchCapitulo = async () => {
@@ -454,10 +546,162 @@ export default function EstudoPalavra() {
             </div>
           ) : null}
         </div>
+
+        {/* BOTÃO DE CONCLUSÃO DE DEVOCIONAL */}
+        {!loading && capituloData && usuarioData && (
+          <div className="mt-8 flex flex-col items-center justify-center pt-8 border-t border-white/10 pb-8">
+            <h4 className="text-xl font-bold text-white mb-6 font-serif italic text-center">Encerre seu momento de reflexão</h4>
+            <button
+              onClick={handleConcluirDevocional}
+              disabled={usuarioData.ultimoDevocionalLido === hoje || concluindo}
+              className={`flex items-center gap-3 px-8 py-4 rounded-2xl font-bold uppercase tracking-widest transition-all shadow-xl ${
+                usuarioData.ultimoDevocionalLido === hoje 
+                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 cursor-default' 
+                  : 'bg-gold hover:bg-gold-light text-navy hover:-translate-y-1'
+              }`}
+            >
+              {concluindo ? (
+                <Loader2 size={24} className="animate-spin" />
+              ) : usuarioData.ultimoDevocionalLido === hoje ? (
+                <>
+                  <Check size={24} />
+                  <span>Devocional Concluído!</span>
+                </>
+              ) : (
+                <>
+                  <BookOpen size={24} />
+                  <span>Concluir Devocional de Hoje</span>
+                </>
+              )}
+            </button>
+            <p className="text-slate-400 text-sm mt-4 font-medium">Você já leu {Number(usuarioData.devocionaisLidos) || 0} devocionais.</p>
+          </div>
+        )}
+
+        {/* TRILHA DE PROGRESSO DOS LEITORES */}
+        {leitores.length > 0 && (
+          <div className="mt-16 border-t border-white/5 pt-12">
+            <div className="flex flex-col items-center mb-10 text-center">
+              <h3 className="text-2xl font-serif italic text-white mb-2">A Jornada da Congregação</h3>
+              <p className="text-slate-400 text-sm max-w-lg">Acompanhe os irmãos que estão firmes no propósito de leitura diária da Palavra.</p>
+            </div>
+
+            <div className="relative w-full overflow-x-auto pb-8 hide-scrollbar">
+              <div className="min-w-max px-4 flex items-start">
+                
+                {(() => {
+                  const marcos = [
+                    { min: 5, max: 9, nome: 'Papel', img: imgMedalPaper, cor: 'text-stone-300' },
+                    { min: 10, max: 24, nome: 'Madeira', img: imgMedalWood, cor: 'text-orange-300' },
+                    { min: 25, max: 29, nome: 'Aço', img: imgMedalSteel, cor: 'text-slate-400' },
+                    { min: 30, max: 99, nome: 'Bronze', img: imgMedalBronze, cor: 'text-amber-500' },
+                    { min: 100, max: 199, nome: 'Prata', img: imgMedalSilver, cor: 'text-slate-300' },
+                    { min: 200, max: 364, nome: 'Ouro', img: imgMedalGold, cor: 'text-yellow-400' },
+                    { min: 365, max: Infinity, nome: 'Diamante', img: imgMedalDiamond, cor: 'text-cyan-400' },
+                  ];
+
+                  // Também adicionar "Iniciante" (1-4) que não tem imagem de medalha
+                  const niveis = [
+                    { min: 1, max: 4, nome: 'Iniciante', img: null, cor: 'text-white/60' },
+                    ...marcos
+                  ];
+
+                  return niveis.map((nivel, idx) => {
+                    const usuariosNoNivel = leitores.filter(l => Number(l.devocionaisLidos) >= nivel.min && Number(l.devocionaisLidos) <= nivel.max);
+                    
+                    if (usuariosNoNivel.length === 0 && nivel.nome === 'Iniciante') return null;
+
+                    return (
+                      <div key={idx} className="flex flex-col items-center relative group min-w-[140px]">
+                        {/* Linha de conexão */}
+                        {idx !== 0 && (
+                          <div className="absolute top-8 -left-[50%] w-full h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent -z-10" />
+                        )}
+                        
+                        {/* Medalha / Ícone do Nível */}
+                        <div className="h-20 flex items-center justify-center mb-4">
+                          {nivel.img ? (
+                            <img src={nivel.img} alt={nivel.nome} className="w-16 h-16 object-contain drop-shadow-lg" title={nivel.nome} />
+                          ) : (
+                            <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center">
+                              <BookOpen size={20} className="text-white/40" />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <span className={`text-[10px] font-black uppercase tracking-widest ${nivel.cor} mb-4`}>
+                          {nivel.nome}
+                        </span>
+
+                        {/* Avatares dos usuários (Apenas fotos sobrepostas) */}
+                        <div className="flex justify-center -space-x-3 w-full px-2">
+                          {usuariosNoNivel.map((u, i) => (
+                            <div 
+                              key={u.id} 
+                              className="relative group/avatar"
+                              style={{ zIndex: usuariosNoNivel.length - i }}
+                            >
+                              {u.fotoUrl ? (
+                                <img src={u.fotoUrl} alt={u.nome} className="w-10 h-10 rounded-full object-cover shrink-0 border-2 border-[#0A0F1C] hover:scale-110 hover:-translate-y-2 transition-transform duration-200" title={u.nome} />
+                              ) : (
+                                <div className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center text-sm font-bold text-slate-300 shrink-0 border-2 border-[#0A0F1C] hover:scale-110 hover:-translate-y-2 transition-transform duration-200 cursor-default" title={u.nome}>
+                                  {u.nome?.charAt(0).toUpperCase() || 'U'}
+                                </div>
+                              )}
+                              
+                              {/* Badge flutuante com o número de devocionais */}
+                              <div className="absolute -top-2 -right-1.5 bg-black text-white text-[8px] font-black px-1.5 py-0.5 rounded-full border border-white/20 shadow-lg z-20 pointer-events-none group-hover/avatar:-translate-y-2 group-hover/avatar:scale-110 transition-transform duration-200">
+                                {Number(u.devocionaisLidos)}
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    );
+                  });
+                })()}
+
+              </div>
+            </div>
+          </div>
+        )}
+
       </section>
 
       {/* Espaçador massivo ao final para garantir que o iPad permita a rolagem passando do limite do conteúdo */}
       <div className="h-48 md:h-64 w-full opacity-0 pointer-events-none" aria-hidden="true" />
+
+      {/* MODAL DE CELEBRAÇÃO DE MEDALHA */}
+      {showCelebration && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-[#0A0F1C]/90 backdrop-blur-md animate-in fade-in duration-300">
+          <div className="bg-[#0A0F1C] border border-white/10 w-full max-w-md rounded-[2.5rem] p-8 shadow-[0_0_50px_rgba(212,175,55,0.15)] flex flex-col items-center text-center transform animate-in zoom-in-90 duration-500 relative overflow-hidden">
+            <div className={`absolute top-0 inset-x-0 h-32 ${showCelebration.bg} opacity-10 blur-3xl rounded-full`} />
+            
+            {showCelebration.img ? (
+              <img src={showCelebration.img} alt={showCelebration.nome} className="w-32 h-32 object-contain drop-shadow-2xl mb-4 relative z-10 hover:scale-110 transition-transform duration-500" />
+            ) : (
+              <div className={`w-24 h-24 rounded-full ${showCelebration.bg} border-4 ${showCelebration.border} flex items-center justify-center shadow-2xl mb-6 relative z-10`}>
+                <Trophy size={48} className={showCelebration.cor} />
+              </div>
+            )}
+            
+            <span className={`text-[10px] font-black uppercase tracking-[0.3em] ${showCelebration.cor} mb-2 relative z-10`}>Nova Conquista Desbloqueada</span>
+            <h2 className="text-4xl font-serif italic font-black text-white mb-2 relative z-10">{showCelebration.nome}</h2>
+            <p className="text-gold font-bold text-lg mb-6 relative z-10">"{showCelebration.nivel}"</p>
+            
+            <p className="text-slate-300 mb-8 leading-relaxed relative z-10">
+              Você atingiu a incrível marca de <strong className="text-white">{showCelebration.dias} dias</strong> ininterruptos ou acumulados de leitura e meditação na Palavra.
+            </p>
+
+            <button 
+              onClick={() => setShowCelebration(null)}
+              className="w-full py-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold uppercase tracking-widest transition-colors relative z-10"
+            >
+              Continuar Jornada
+            </button>
+          </div>
+        </div>
+      )}
 
     </div>
   );

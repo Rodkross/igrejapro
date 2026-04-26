@@ -1,8 +1,16 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { db } from '../database/firebase';
 import { doc, onSnapshot, runTransaction, serverTimestamp, collection, getDocs, query, orderBy, getDoc } from 'firebase/firestore';
-import { BookOpen, Cross, Heart, Loader2, X } from 'lucide-react';
+import { BookOpen, Cross, Heart, Loader2, X, Trophy, Medal } from 'lucide-react';
 import { Link } from 'react-router-dom';
+
+import imgMedalPaper from '../assets/medal-paper.png';
+import imgMedalWood from '../assets/medal-wood.png';
+import imgMedalSteel from '../assets/medal-steel.png';
+import imgMedalBronze from '../assets/medal-bronze.png';
+import imgMedalSilver from '../assets/medal-silver.png';
+import imgMedalGold from '../assets/medal-gold.png';
+import imgMedalDiamond from '../assets/medal-diamond.png';
 
 const PALAVRAS_DISPONIVEIS = [
   {
@@ -92,6 +100,7 @@ export default function PalavraDodia({ compactTablet = false }) {
   const [showLikesModal, setShowLikesModal] = useState(false);
   const [usuariosQueCurtiram, setUsuariosQueCurtiram] = useState([]);
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
+  const [devocionaisLidos, setDevocionaisLidos] = useState(0);
 
   const palavraDoDia = useMemo(() => obterPalavraDoDia(), []);
   const usuarioLogado = useMemo(() => lerUsuarioLogado(), []);
@@ -116,11 +125,59 @@ export default function PalavraDodia({ compactTablet = false }) {
       setUsuarioCurtiu(docSnap.exists());
     });
 
+    const usuarioRef = doc(db, 'usuarios', usuarioId);
+    const unsubPerfil = onSnapshot(usuarioRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setDevocionaisLidos(Number(docSnap.data()?.devocionaisLidos) || 0);
+      }
+    });
+
     return () => {
       unsubCurtidas();
       unsubUsuario();
+      unsubPerfil();
     };
   }, [palavraDoDia.id, usuarioId]);
+
+  const getMedalhaInfo = () => {
+    if (devocionaisLidos >= 365) return { nome: 'Diamante', image: imgMedalDiamond, cor: 'text-cyan-400', next: null };
+    if (devocionaisLidos >= 200) return { nome: 'Ouro', image: imgMedalGold, cor: 'text-yellow-400', next: 365 };
+    if (devocionaisLidos >= 100) return { nome: 'Prata', image: imgMedalSilver, cor: 'text-slate-300', next: 200 };
+    if (devocionaisLidos >= 30) return { nome: 'Bronze', image: imgMedalBronze, cor: 'text-amber-500', next: 100 };
+    if (devocionaisLidos >= 25) return { nome: 'Aço', image: imgMedalSteel, cor: 'text-slate-400', next: 30 };
+    if (devocionaisLidos >= 10) return { nome: 'Madeira', image: imgMedalWood, cor: 'text-orange-300', next: 25 };
+    if (devocionaisLidos >= 5) return { nome: 'Papel', image: imgMedalPaper, cor: 'text-stone-300', next: 10 };
+    return { nome: 'Iniciante', image: null, cor: 'text-white/60', next: 5 };
+  };
+
+  const renderMedalha = () => {
+    if (devocionaisLidos === 0) return null;
+    const info = getMedalhaInfo();
+    const progresso = info.next ? Math.min(100, Math.max(0, Math.round((devocionaisLidos / info.next) * 100))) : 100;
+    
+    return (
+      <div className="flex flex-col items-end shrink-0">
+        <div className="flex flex-col items-center">
+          {info.image ? (
+            <img src={info.image} alt={info.nome} className="w-14 h-14 object-contain drop-shadow-xl" />
+          ) : (
+            <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border bg-white/10 border-white/10 ${info.cor}`}>
+              <BookOpen size={14}/>
+              <span className="text-[9px] font-black uppercase tracking-widest">{info.nome}</span>
+            </div>
+          )}
+        </div>
+        {info.next && (
+          <div className="flex items-center gap-2 mt-1 w-full justify-end">
+            <span className="text-[8px] font-bold text-white/40 uppercase">{devocionaisLidos}/{info.next}</span>
+            <div className="w-12 h-1 bg-white/10 rounded-full overflow-hidden">
+              <div className={`h-full rounded-full ${info.cor.replace('text-', 'bg-')}`} style={{ width: `${progresso}%` }} />
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  };
 
   const handleCurtir = async () => {
     if (!usuarioId || usuarioCurtiu || curtindo) return;
@@ -214,14 +271,17 @@ export default function PalavraDodia({ compactTablet = false }) {
       <div className="absolute -bottom-8 -right-8 w-24 h-24 rounded-full bg-gold/10 blur-3xl"></div>
 
       <div className={`relative z-10 flex flex-col ${compactTablet ? 'gap-4' : 'gap-4'}`}>
-        <div className={`flex items-center ${compactTablet ? 'gap-3' : 'gap-3'}`}>
-          <div className={`bg-gold/20 rounded-lg flex items-center justify-center border border-gold/30 ${compactTablet ? 'w-10 h-10' : 'w-10 h-10'}`}>
-            <BookOpen size={compactTablet ? 18 : 18} className="text-gold" />
+        <div className="flex items-start justify-between gap-2">
+          <div className={`flex items-center ${compactTablet ? 'gap-3' : 'gap-3'}`}>
+            <div className={`bg-gold/20 rounded-lg flex items-center justify-center border border-gold/30 ${compactTablet ? 'w-10 h-10' : 'w-10 h-10'}`}>
+              <BookOpen size={compactTablet ? 18 : 18} className="text-gold" />
+            </div>
+            <div>
+              <p className={`font-bold text-gold uppercase tracking-widest ${compactTablet ? 'text-[9px]' : 'text-[9px]'}`}>Palavra do Dia</p>
+              <p className={`font-bold text-white/80 ${compactTablet ? 'text-[11px]' : 'text-[11px]'}`}>{palavraDoDia.referencia}</p>
+            </div>
           </div>
-          <div>
-            <p className={`font-bold text-gold uppercase tracking-widest ${compactTablet ? 'text-[9px]' : 'text-[9px]'}`}>Palavra do Dia</p>
-            <p className={`font-bold text-white/80 ${compactTablet ? 'text-[11px]' : 'text-[11px]'}`}>{palavraDoDia.referencia}</p>
-          </div>
+          {renderMedalha()}
         </div>
 
         <p className={`font-medium text-slate-100 italic ${compactTablet ? 'text-sm leading-relaxed' : 'text-sm leading-relaxed'}`}>
