@@ -50,6 +50,7 @@ export default function ImportadorQuiz() {
           opcoes: item.opcoes,
           resposta_correta: item.resposta_correta,
           referencia: item.referencia,
+          dica: item.dica || null,
           ativo: true,
           sincronizadoEm: new Date().toISOString()
         });
@@ -127,3 +128,4 @@ export default function ImportadorQuiz() {
     </div>
   );
 }
+//http://localhost:5173/entretenimento/importar
