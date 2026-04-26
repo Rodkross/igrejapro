@@ -1,9 +1,8 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { db } from '../../database/firebase';
-import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit, deleteField, writeBatch } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, orderBy, setDoc, getDoc, query, limit, deleteField, writeBatch, where } from 'firebase/firestore';
 import { useOutletContext } from 'react-router-dom';
-
-import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2, BookOpen } from 'lucide-react';
+import { Clock, Trophy, RotateCcw, Medal, Cross, CheckCircle2, CircleX, ArrowRight, Loader2, BookOpen, Lightbulb, Timer } from 'lucide-react';
 
 const getSeasonKey = () => {
   const agora = new Date();
@@ -41,6 +40,11 @@ export default function QuizGame() {
   const [verseLoading, setVerseLoading] = useState(false);
   const [verseData, setVerseData] = useState(null);
 
+  const [dicasRestantes, setDicasRestantes] = useState(3);
+  const [dicaRevelada, setDicaRevelada] = useState(false);
+  const [usouDicaNestaQuestao, setUsouDicaNestaQuestao] = useState(false);
+  const [dicasCooldown, setDicasCooldown] = useState(null);
+
   const abrirModalVersiculo = async (referencia) => {
     setModalVerseOpen(true);
     setVerseLoading(true);
@@ -59,6 +63,27 @@ export default function QuizGame() {
       setVerseData("Erro ao buscar o versículo.");
     }
     setVerseLoading(false);
+  };
+
+  const handleRevelarDica = async () => {
+    if (dicasRestantes > 0 && !dicaRevelada) {
+      const novasDicas = dicasRestantes - 1;
+      setDicasRestantes(novasDicas);
+      setDicaRevelada(true);
+      setUsouDicaNestaQuestao(true);
+
+      try {
+        const userRef = doc(db, "usuarios", String(usuario.id));
+        const updates = { dicasQuiz: novasDicas };
+        if (dicasRestantes === 3) { // Estava cheio antes de usar
+          updates.ultimaDicaUsadaQuiz = new Date();
+          setDicasCooldown(5 * 60); // Inicia o cooldown visual de 5 minutos
+        }
+        await updateDoc(userRef, updates);
+      } catch (err) {
+        console.error("Erro ao atualizar dicas:", err);
+      }
+    }
   };
 
   const carregarRanking = useCallback(async () => {
@@ -137,6 +162,7 @@ export default function QuizGame() {
       const userRef = doc(db, "usuarios", String(usuario.id));
       const userSnap = await getDoc(userRef);
       const userData = userSnap.data() || {};
+      const agora = new Date().getTime();
       
       let vidasCalc = userData.vidasQuiz !== undefined ? Number(userData.vidasQuiz) : 3;
       if (isNaN(vidasCalc)) vidasCalc = 3;
@@ -160,7 +186,7 @@ export default function QuizGame() {
           vidasCalc = 0;
       }
 
-      const agora = new Date().getTime();
+      const updates = {};
       const tempoVida = 10 * 60 * 1000; // 10 minutos por vida
 
       if (vidasCalc < 3 && tsUltimaVida) {
@@ -173,12 +199,10 @@ export default function QuizGame() {
               } else {
                   tsUltimaVida += recup * tempoVida;
               }
-              
-              await updateDoc(userRef, {
-                  vidasQuiz: vidasCalc,
-                  ultimaVidaPerdidaQuiz: tsUltimaVida ? new Date(tsUltimaVida) : deleteField(),
-                  bloqueioQuiz: deleteField()
-              });
+
+              updates.vidasQuiz = vidasCalc;
+              updates.ultimaVidaPerdidaQuiz = tsUltimaVida ? new Date(tsUltimaVida) : deleteField();
+              updates.bloqueioQuiz = deleteField();
           }
       }
 
@@ -192,22 +216,57 @@ export default function QuizGame() {
           }
       }
 
+      // 1.b. Verificar Dicas e Cooldown
+      let dicasCalc = userData.dicasQuiz !== undefined ? Number(userData.dicasQuiz) : 3;
+      if (isNaN(dicasCalc)) dicasCalc = 3;
+      dicasCalc = Math.max(0, dicasCalc);
+
+      let tsUltimaDica = null;
+      if (userData.ultimaDicaUsadaQuiz) {
+        if (typeof userData.ultimaDicaUsadaQuiz.toMillis === 'function') {
+          tsUltimaDica = userData.ultimaDicaUsadaQuiz.toMillis();
+        } else if (userData.ultimaDicaUsadaQuiz.seconds) {
+          tsUltimaDica = userData.ultimaDicaUsadaQuiz.seconds * 1000;
+        } else {
+          tsUltimaDica = new Date(userData.ultimaDicaUsadaQuiz).getTime();
+        }
+      }
+
+      const tempoDica = 5 * 60 * 1000; // 5 minutos por dica
+
+      if (dicasCalc < 3 && tsUltimaDica) {
+        const dec = agora - tsUltimaDica;
+        if (dec >= tempoDica) {
+          const recup = Math.floor(dec / tempoDica);
+          dicasCalc = Math.min(3, dicasCalc + recup);
+          if (dicasCalc === 3) {
+            tsUltimaDica = null;
+          } else {
+            tsUltimaDica += recup * tempoDica;
+          }
+          updates.dicasQuiz = dicasCalc;
+          updates.ultimaDicaUsadaQuiz = tsUltimaDica ? new Date(tsUltimaDica) : deleteField();
+        }
+      }
+
+      if (Object.keys(updates).length > 0) {
+        await updateDoc(userRef, updates);
+      }
+
       // 2. Filtrar perguntas já acertadas
       const progressoRef = doc(db, "progresso_quiz", String(usuario.id));
       const progressoSnap = await getDoc(progressoRef);
       const acertadasIds = progressoSnap.exists() ? progressoSnap.data().acertos || [] : [];
 
-      const snapPerguntas = await getDocs(collection(db, "quiz_biblico"));
+      const q = query(collection(db, "quiz_biblico"), where("ativo", "==", true));
+      const snapPerguntas = await getDocs(q);
       const todas = snapPerguntas.docs.map(doc => ({ id: doc.id, ...doc.data() }));
       
-      let perguntasRodada = todas.filter(p => !acertadasIds.includes(String(p.id))).sort(() => Math.random() - 0.5).slice(0, 10);
+      const perguntasNaoRespondidas = todas.filter(p => !acertadasIds.includes(String(p.id)));
       
-      // Sempre garante 10 perguntas na rodada puxando das já respondidas se necessário
-      if (perguntasRodada.length < 10 && todas.length > 0) {
-          const faltam = 10 - perguntasRodada.length;
-          const respondidas = todas.filter(p => acertadasIds.includes(String(p.id))).sort(() => Math.random() - 0.5).slice(0, faltam);
-          perguntasRodada = [...perguntasRodada, ...respondidas];
-      }
+      // Pega 10 perguntas aleatórias que ainda não foram respondidas corretamente.
+      // Se não houver mais perguntas inéditas, o jogo é considerado concluído.
+      const perguntasRodada = perguntasNaoRespondidas.sort(() => Math.random() - 0.5).slice(0, 10);
 
       if (perguntasRodada.length > 0) {
         setPerguntas(perguntasRodada);
@@ -218,13 +277,22 @@ export default function QuizGame() {
       }
       
       setVidas(vidasCalc);
+      setDicasRestantes(dicasCalc);
       setScore(0); // Reseta score da rodada
       setIndiceAtual(0);
       setGameOver(false);
       setRespondido(false);
       setCooldown(null); // Reseta o cooldown
+      if (dicasCalc < 3 && tsUltimaDica) {
+        const dec = agora - tsUltimaDica;
+        setDicasCooldown(Math.ceil((tempoDica - (dec % tempoDica)) / 1000));
+      } else {
+        setDicasCooldown(null);
+      }
       setTempoRestante(15); // Define o tempo da questão para 15 segundos
       setMostraControles(false);
+      setDicaRevelada(false);
+      setUsouDicaNestaQuestao(false);
     } catch (err) { console.error(err); }
     setLoading(false);
   }, [usuario.id, carregarRanking, sincronizarTemporadaQuiz]);
@@ -239,7 +307,9 @@ export default function QuizGame() {
       await updateDoc(userRef, { 
           bloqueioQuiz: deleteField(),
           vidasQuiz: 3,
-          ultimaVidaPerdidaQuiz: deleteField()
+          ultimaVidaPerdidaQuiz: deleteField(),
+          dicasQuiz: 3,
+          ultimaDicaUsadaQuiz: deleteField()
       });
 
       await carregarJogo();
@@ -254,7 +324,7 @@ export default function QuizGame() {
 
     const questao = perguntas[indiceAtual];
     const acertou = opcao !== null && opcao === questao.resposta_correta;
-    const pontosVariacao = acertou ? 10 : -5;
+    const pontosVariacao = acertou ? (usouDicaNestaQuestao ? 5 : 10) : -5;
     const vidasAposResposta = Math.max(0, acertou ? vidas : vidas - 1);
 
     // ATUALIZAÇÃO IMEDIATA DO ESTADO VISUAL
@@ -286,6 +356,8 @@ export default function QuizGame() {
           updates.vidasQuiz = vidasAposResposta;
           if (vidas === 3 || (!data.ultimaVidaPerdidaQuiz && !data.bloqueioQuiz)) {
               updates.ultimaVidaPerdidaQuiz = new Date();
+              // Inicia o cooldown visual de 10 minutos
+              setCooldown(10 * 60);
           }
           if (vidasAposResposta === 0) {
               updates.bloqueioQuiz = deleteField();
@@ -317,13 +389,15 @@ export default function QuizGame() {
       setOpcaoSelecionada(null);
       setTempoRestante(15);
       setMostraControles(false);
+      setDicaRevelada(false);
+      setUsouDicaNestaQuestao(false);
     } else {
       setGameOver(true);
     }
   };
 
   useEffect(() => {
-    if (respondido || gameOver || loading || perguntas.length === 0) {
+    if (respondido || gameOver || loading || perguntas.length === 0 || dicaRevelada) {
         return;
     }
 
@@ -340,7 +414,7 @@ export default function QuizGame() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [respondido, gameOver, loading, indiceAtual]);
+  }, [respondido, gameOver, loading, indiceAtual, dicaRevelada]);
 
   useEffect(() => {
     if (cooldown === null) return;
@@ -357,6 +431,23 @@ export default function QuizGame() {
 
     return () => clearInterval(timerId);
   }, [cooldown, carregarJogo]);
+
+  useEffect(() => {
+    if (dicasCooldown === null) return;
+
+    if (dicasCooldown <= 0) {
+      // Quando o timer de dica acaba, recarrega o jogo para recalcular
+      // vidas e dicas de forma sincronizada.
+      carregarJogo();
+      return;
+    }
+
+    const timerId = setInterval(() => {
+      setDicasCooldown(prev => (prev > 0 ? prev - 1 : 0));
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, [dicasCooldown, carregarJogo]);
 
   useEffect(() => { carregarJogo(); }, [carregarJogo]);
 
@@ -521,6 +612,25 @@ export default function QuizGame() {
           </div>
         </div>
         <div className="text-center">
+          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-2 text-center leading-none">Dicas</p>
+          {dicasCooldown !== null && dicasRestantes < 3 ? (
+            <div className="flex flex-col items-center gap-1">
+              <div className="flex justify-center items-center gap-1.5">
+                {[...Array(3)].map((_, i) => (
+                  <Lightbulb key={i} size={16} className={`${i < dicasRestantes ? 'text-yellow-400 fill-yellow-400/30' : 'text-slate-800'} transition-all`} />
+                ))}
+              </div>
+              <span className="text-[9px] text-slate-500 font-bold tabular-nums flex items-center gap-1">
+                <Timer size={10} /> {Math.floor(dicasCooldown / 60)}:{(dicasCooldown % 60).toString().padStart(2, '0')}
+              </span>
+            </div>
+          ) : (
+            <div className="flex justify-center items-center gap-1.5 h-[26px]">
+              {[...Array(3)].map((_, i) => ( <Lightbulb key={i} size={16} className={`${i < dicasRestantes ? 'text-yellow-400 fill-yellow-400/30' : 'text-slate-800'} transition-all`} /> ))}
+            </div>
+          )}
+        </div>
+        <div className="text-center">
           <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-center leading-none">TEMPO</p>
           <p className={`text-3xl font-black tabular-nums text-center transition-colors ${tempoRestante <= 3 ? 'text-rose-500 animate-pulse' : 'text-white'}`}>{tempoRestante}</p>
         </div>
@@ -532,6 +642,27 @@ export default function QuizGame() {
 
       <div className={`bg-slate-900 rounded-[2rem] transition-all duration-500 border border-white/5 text-left relative overflow-hidden shadow-2xl ${respondido ? 'p-4 md:p-6' : 'p-6 md:p-8'}`}>
         <h3 className={`font-black text-white relative z-10 text-left leading-tight tracking-tight transition-all duration-300 ${respondido ? 'text-base md:text-lg mb-2' : 'text-lg md:text-xl mb-6'}`}>{perguntas[indiceAtual]?.pergunta}</h3>
+        
+        {/* DICA */}
+        {perguntas[indiceAtual]?.dica && !respondido && (
+          <div className="my-4 text-center">
+            {!dicaRevelada ? (
+              <button
+                onClick={handleRevelarDica}
+                disabled={dicasRestantes <= 0}
+                className="bg-yellow-500/10 text-yellow-400 text-xs font-bold uppercase tracking-wider px-4 py-2 rounded-full border border-yellow-500/20 hover:bg-yellow-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 mx-auto"
+              >
+                <Lightbulb size={14} />
+                Usar Dica ({dicasRestantes} restantes)
+              </button>
+            ) : (
+              <div className="p-3 bg-yellow-500/10 border-l-4 border-yellow-500 text-yellow-200 text-sm italic rounded-r-lg animate-in fade-in text-left">
+                <p className="font-bold">{perguntas[indiceAtual]?.dica}</p>
+              </div>
+            )}
+          </div>
+        )}
+
         <div className={`grid grid-cols-1 md:grid-cols-2 relative z-10 text-left transition-all duration-300 ${respondido ? 'gap-1.5 md:gap-2' : 'gap-2 md:gap-3'}`}>
           {perguntas[indiceAtual]?.opcoes.map((op, i) => {
             const isSelected = op === opcaoSelecionada;
@@ -567,6 +698,16 @@ export default function QuizGame() {
 
         {respondido && (
           <div className="mt-2 space-y-2 animate-in slide-in-from-bottom-3 duration-500 text-left relative z-20">
+            
+            {usouDicaNestaQuestao && (
+              <div 
+                className="p-2.5 md:p-3 bg-yellow-500/10 rounded-xl border-l-4 border-yellow-500 text-left flex items-center gap-2"
+              >
+                <Lightbulb size={16} className="text-yellow-500 shrink-0" />
+                <p className="text-yellow-300 font-bold italic text-xs md:text-sm leading-snug text-left">Você usou uma dica nesta questão.</p>
+              </div>
+            )}
+
             <div 
               className="p-2.5 md:p-3 bg-gold/5 rounded-xl border-l-4 border-gold text-left flex flex-col justify-center cursor-pointer hover:bg-gold/10 transition-colors shadow-sm"
               onClick={() => abrirModalVersiculo(perguntas[indiceAtual].referencia)}
