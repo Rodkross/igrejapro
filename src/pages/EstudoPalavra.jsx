@@ -165,6 +165,7 @@ export default function EstudoPalavra() {
   const [concluindo, setConcluindo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(null); // { medalha: 'Bronze', dias: 30 }
   const [leitores, setLeitores] = useState([]);
+  const scrollContainerRef = useRef(null);
   const usuarioLogado = lerUsuarioLogado();
   const hoje = formatarChaveDia();
 
@@ -205,6 +206,22 @@ export default function EstudoPalavra() {
     });
     return () => unsub();
   }, []);
+
+  // Auto-scroll para a posição do usuário logado na trilha
+  useEffect(() => {
+    if (leitores.length > 0 && usuarioLogado?.id && scrollContainerRef.current) {
+      // Usar setTimeout para garantir que a renderização foi concluída
+      const timeoutId = setTimeout(() => {
+        const el = scrollContainerRef.current.querySelector('#nivel-usuario-logado');
+        if (el && scrollContainerRef.current) {
+          const container = scrollContainerRef.current;
+          const scrollLeft = el.offsetLeft - container.clientWidth / 2 + el.clientWidth / 2;
+          container.scrollTo({ left: scrollLeft, behavior: 'smooth' });
+        }
+      }, 500);
+      return () => clearTimeout(timeoutId);
+    }
+  }, [leitores, usuarioLogado?.id]);
 
   const handleConcluirDevocional = async () => {
     if (!usuarioLogado?.id || !usuarioData || concluindo) return;
@@ -586,7 +603,7 @@ export default function EstudoPalavra() {
               <p className="text-slate-400 text-sm max-w-lg">Acompanhe os irmãos que estão firmes no propósito de leitura diária da Palavra.</p>
             </div>
 
-            <div className="relative w-full overflow-x-auto pb-8 hide-scrollbar">
+            <div ref={scrollContainerRef} className="relative w-full overflow-x-auto pb-8 hide-scrollbar">
               <div className="min-w-max px-4 flex items-start">
                 
                 {(() => {
@@ -611,8 +628,10 @@ export default function EstudoPalavra() {
                     
                     if (usuariosNoNivel.length === 0 && nivel.nome === 'Iniciante') return null;
 
+                    const isLogadoAqui = usuariosNoNivel.some(u => String(u.id) === String(usuarioLogado?.id));
+
                     return (
-                      <div key={idx} className="flex flex-col items-center relative group min-w-[140px]">
+                      <div key={idx} id={isLogadoAqui ? 'nivel-usuario-logado' : undefined} className="flex flex-col items-center relative group min-w-[140px]">
                         {/* Linha de conexão */}
                         {idx !== 0 && (
                           <div className="absolute top-8 -left-[50%] w-full h-[2px] bg-gradient-to-r from-transparent via-white/10 to-transparent -z-10" />
