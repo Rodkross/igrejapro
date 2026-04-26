@@ -354,15 +354,29 @@ export default function Layout({ usuario, aoSair }) {
         <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
-          {/* BOTÃO VOLTAR - ESQUERDA */}
+          {/* BOTÃO VOLTAR - ESQUERDA (APENAS MOBILE) */}
           {location.pathname !== '/' && (
-            <Link to="/" className={`flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
+            <Link to="/" className={`md:hidden flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
               location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
             }`}>
               <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
               <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
             </Link>
           )}
+
+          {/* LOGO - ESQUERDA (VISÍVEL NO DESKTOP ATÉ XL, ONDE NÃO TEM SIDEBAR) */}
+          <Link to="/" className="hidden md:flex xl:hidden items-center gap-3 mr-4 z-10 outline-none group">
+            {configGeral?.igrejaLogo ? (
+               <img src={configGeral.igrejaLogo} alt="Logo" className="w-10 h-10 object-contain rounded-xl bg-white/10 p-1.5 border border-white/10 group-hover:scale-105 transition-transform" />
+            ) : (
+               <div className="w-10 h-10 rounded-xl bg-gradient-gold flex items-center justify-center shadow-gold group-hover:scale-105 transition-transform">
+                 <span className="font-display font-black text-navy text-base">✛</span>
+               </div>
+            )}
+            <div className="leading-tight">
+              <h1 className="font-display text-sm font-black text-white tracking-tight line-clamp-1">{configGeral?.igrejaNome || 'Igreja Pro'}</h1>
+            </div>
+          </Link>
 
           {/* EVENTO AO VIVO - ESQUERDA */}
           <div className={`flex items-center gap-1 relative z-10 text-left ${

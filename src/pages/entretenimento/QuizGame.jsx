@@ -37,6 +37,29 @@ export default function QuizGame() {
   const [quizConcluido, setQuizConcluido] = useState(false);
   const [ultimoCampeao, setUltimoCampeao] = useState(null);
   const [ultimaTemporada, setUltimaTemporada] = useState(null);
+  const [modalVerseOpen, setModalVerseOpen] = useState(false);
+  const [verseLoading, setVerseLoading] = useState(false);
+  const [verseData, setVerseData] = useState(null);
+
+  const abrirModalVersiculo = async (referencia) => {
+    setModalVerseOpen(true);
+    setVerseLoading(true);
+    setVerseData(null);
+    try {
+      const url = `https://bible-api.com/${encodeURIComponent(referencia)}?translation=almeida`;
+      const response = await fetch(url);
+      const data = await response.json();
+      if (data.error) {
+         setVerseData("Não foi possível carregar o versículo.");
+      } else {
+         setVerseData(data);
+      }
+    } catch (err) {
+      console.error(err);
+      setVerseData("Erro ao buscar o versículo.");
+    }
+    setVerseLoading(false);
+  };
 
   const carregarRanking = useCallback(async () => {
     const q = query(collection(db, "usuarios"), orderBy("recordeQuiz", "desc"), limit(5));
@@ -544,8 +567,13 @@ export default function QuizGame() {
 
         {respondido && (
           <div className="mt-2 space-y-2 animate-in slide-in-from-bottom-3 duration-500 text-left relative z-20">
-            <div className="p-2.5 md:p-3 bg-gold/5 rounded-xl border-l-4 border-gold text-left flex flex-col justify-center">
-              <p className="text-gold text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-0.5 text-left">Fonte</p>
+            <div 
+              className="p-2.5 md:p-3 bg-gold/5 rounded-xl border-l-4 border-gold text-left flex flex-col justify-center cursor-pointer hover:bg-gold/10 transition-colors shadow-sm"
+              onClick={() => abrirModalVersiculo(perguntas[indiceAtual].referencia)}
+            >
+              <p className="text-gold text-[8px] md:text-[9px] font-black uppercase tracking-widest mb-0.5 text-left flex items-center gap-1">
+                <BookOpen size={10} /> Fonte (Clique para ler)
+              </p>
               <p className="text-white font-bold italic text-xs md:text-sm leading-snug text-left">{perguntas[indiceAtual].referencia}</p>
             </div>
             
@@ -568,6 +596,52 @@ export default function QuizGame() {
           </div>
         )}
       </div>
+
+      {/* Modal de Versículo */}
+      {modalVerseOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-in fade-in" onClick={() => setModalVerseOpen(false)}>
+          <div className="bg-slate-900 border border-gold/30 p-6 md:p-8 rounded-[2rem] max-w-lg w-full shadow-2xl shadow-gold/10 relative animate-in zoom-in-95 duration-300" onClick={e => e.stopPropagation()}>
+            <button 
+              onClick={() => setModalVerseOpen(false)}
+              className="absolute top-5 right-5 text-slate-500 hover:text-white transition-colors bg-white/5 hover:bg-white/10 p-2 rounded-full"
+            >
+              <CircleX size={24} />
+            </button>
+            <h3 className="text-xl md:text-2xl font-black text-gold uppercase mb-6 tracking-wider flex items-center gap-3">
+              <BookOpen size={24} className="text-gold" />
+              {perguntas[indiceAtual]?.referencia}
+            </h3>
+            
+            <div className="text-white/90 font-serif leading-relaxed text-left max-h-[50vh] md:max-h-[60vh] overflow-y-auto pr-3 custom-scrollbar">
+              {verseLoading ? (
+                <div className="flex flex-col items-center justify-center py-12 gap-4">
+                  <Loader2 className="animate-spin text-gold" size={40} />
+                  <span className="text-xs uppercase tracking-widest text-gold/70 font-bold animate-pulse">Buscando na Bíblia...</span>
+                </div>
+              ) : (
+                typeof verseData === 'string' ? (
+                  <p className="text-rose-400 italic text-center py-8 font-sans font-bold">{verseData}</p>
+                ) : (
+                  <div className="space-y-4">
+                    {verseData?.verses?.map((v, i) => (
+                      <p key={i} className="text-sm md:text-base">
+                        <sup className="text-gold font-bold mr-2 text-[10px] md:text-xs">{v.verse}</sup>
+                        {v.text}
+                      </p>
+                    )) || <p className="italic text-center py-6 font-sans">{verseData?.text || 'Versículo não encontrado.'}</p>}
+                  </div>
+                )
+              )}
+            </div>
+            
+            <div className="mt-8 pt-4 border-t border-white/10 flex justify-end">
+               <button onClick={() => setModalVerseOpen(false)} className="bg-white/10 text-white px-6 py-2.5 rounded-xl font-bold text-xs uppercase tracking-wider hover:bg-white/20 transition-colors">
+                 Fechar
+               </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
