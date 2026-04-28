@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Layout from "./components/Layout";
 import Login from "./pages/Login";
@@ -28,9 +28,9 @@ import Lancamentos from './pages/Financeiro/Lancamentos';
 import RelatoriosFinanceiros from "./pages/Relatorios/RelatoriosFinanceiros";
 
 // --- ÁREA DE ENTRETENIMENTO E UTILITÁRIOS ---
-import QuizGame from './pages/entretenimento/QuizGame';
-import ImportadorQuiz from './pages/entretenimento/ImportadorQuiz'; // Importação do Importador
-import EstudoPalavra from './pages/EstudoPalavra'; // Estudo Palavra (Sefaria)
+const QuizGame = lazy(() => import('./pages/entretenimento/QuizGame'));
+const ImportadorQuiz = lazy(() => import('./pages/entretenimento/ImportadorQuiz'));
+const EstudoPalavra = lazy(() => import('./pages/EstudoPalavra'));
 
 // --- DEFINIÇÃO DA ROTA PRIVADA ---
 const RotaPrivada = ({ usuario, modulo, children }) => {
@@ -145,7 +145,11 @@ export default function App() {
 
           <Route 
             path="/estudo-palavra" 
-            element={usuario ? <EstudoPalavra /> : <Navigate to="/login" replace />} 
+            element={usuario ? (
+              <Suspense fallback={<div className="w-full h-screen flex items-center justify-center bg-slate-900 text-white">Carregando estudo...</div>}>
+                <EstudoPalavra />
+              </Suspense>
+            ) : <Navigate to="/login" replace />} 
           />
 
           <Route 
@@ -160,14 +164,18 @@ export default function App() {
             {/* Bloco de Entretenimento */}
             <Route path="entretenimento/quiz" element={
               <RotaMobilePermitida isMobile={isMobile} allowMobile>
-                <QuizGame />
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><p>Carregando Quiz...</p></div>}>
+                  <QuizGame />
+                </Suspense>
               </RotaMobilePermitida>
             } />
             
             {/* Rota temporária para importar os dados do Quiz */}
             <Route path="entretenimento/importar" element={
               <RotaMobilePermitida isMobile={isMobile}>
-                <ImportadorQuiz />
+                <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><p>Carregando importador...</p></div>}>
+                  <ImportadorQuiz />
+                </Suspense>
               </RotaMobilePermitida>
             } />
 
