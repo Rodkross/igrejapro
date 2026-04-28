@@ -6,9 +6,6 @@ import { ModalProvider } from "./contexts/ModalContext";
 import { db } from "./database/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 
-import Comunidade from './pages/comunidade/Comunidade';
-
-
 // --- PÁGINAS DE CADASTRO ---
 import Dashboard from "./pages/Dashboard"; 
 import Usuarios from "./pages/Cadastros/Usuarios";
@@ -28,6 +25,7 @@ import Lancamentos from './pages/Financeiro/Lancamentos';
 import RelatoriosFinanceiros from "./pages/Relatorios/RelatoriosFinanceiros";
 
 // --- ÁREA DE ENTRETENIMENTO E UTILITÁRIOS ---
+const Comunidade = lazy(() => import('./pages/Comunidade/Comunidade'));
 const QuizGame = lazy(() => import('./pages/entretenimento/QuizGame'));
 const ImportadorQuiz = lazy(() => import('./pages/entretenimento/ImportadorQuiz'));
 const EstudoPalavra = lazy(() => import('./pages/EstudoPalavra'));
@@ -159,7 +157,11 @@ export default function App() {
             <Route index element={<Dashboard />} />
 
             {/* Rota da Comunidade */}
-            <Route path="comunidade" element={<Comunidade />} />
+            <Route path="comunidade" element={
+              <Suspense fallback={<div className="w-full h-full flex items-center justify-center"><p>Carregando Comunidade...</p></div>}>
+                <Comunidade />
+              </Suspense>
+            } />
 
             {/* Bloco de Entretenimento */}
             <Route path="entretenimento/quiz" element={
