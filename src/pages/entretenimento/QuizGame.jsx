@@ -30,7 +30,8 @@ export default function QuizGame() {
   const [loading, setLoading] = useState(true);
   const [gameOver, setGameOver] = useState(false);
   const [ranking, setRanking] = useState([]);
-  const [cooldown, setCooldown] = useState(null);
+  const [vidasCooldown, setVidasCooldown] = useState(null);
+  const [mostrarTelaSemVidas, setMostrarTelaSemVidas] = useState(false);
   const [tempoRestante, setTempoRestante] = useState(15);
   const [mostraControles, setMostraControles] = useState(false);
   const [quizConcluido, setQuizConcluido] = useState(false);
@@ -63,6 +64,13 @@ export default function QuizGame() {
       setVerseData("Erro ao buscar o versículo.");
     }
     setVerseLoading(false);
+  };
+
+  const formatTime = (secs) => {
+    if (secs === null) return '';
+    const m = String(Math.floor(secs / 60)).padStart(2, '0');
+    const s = String(secs % 60).padStart(2, '0');
+    return `${m}:${s}`;
   };
 
   const handleRevelarDica = async () => {
@@ -206,16 +214,6 @@ export default function QuizGame() {
           }
       }
 
-      if (vidasCalc === 0) {
-          const dec = agora - (tsUltimaVida || agora);
-          if (dec < tempoVida) {
-              setCooldown(Math.ceil((tempoVida - dec) / 1000));
-              setVidas(0);
-              setLoading(false);
-              return;
-          }
-      }
-
       // 1.b. Verificar Dicas e Cooldown
       let dicasCalc = userData.dicasQuiz !== undefined ? Number(userData.dicasQuiz) : 3;
       if (isNaN(dicasCalc)) dicasCalc = 3;
@@ -282,7 +280,23 @@ export default function QuizGame() {
       setIndiceAtual(0);
       setGameOver(false);
       setRespondido(false);
-      setCooldown(null); // Reseta o cooldown
+      setMostrarTelaSemVidas(false);
+
+      if (vidasCalc === 0) {
+          const dec = agora - (tsUltimaVida || agora);
+          setVidasCooldown(Math.ceil((tempoVida - dec) / 1000));
+          setMostrarTelaSemVidas(true);
+          setLoading(false);
+          return;
+      }
+
+      if (vidasCalc < 3 && tsUltimaVida) {
+        const dec = agora - tsUltimaVida;
+        setVidasCooldown(Math.ceil((tempoVida - dec) / 1000));
+      } else {
+        setVidasCooldown(null);
+      }
+
       if (dicasCalc < 3 && tsUltimaDica) {
         const dec = agora - tsUltimaDica;
         setDicasCooldown(Math.ceil((tempoDica - (dec % tempoDica)) / 1000));
@@ -332,32 +346,27 @@ export default function QuizGame() {
     setRespondido(true);
     setScore(prev => prev + pontosVariacao);
     setVidas(vidasAposResposta);
-    setMostraControles(false);
 
-    // Lógica de fim de jogo ou próxima questão
-    if (vidasAposResposta < 1) {
-      setTimeout(() => setGameOver(true), 1500);
-    } else {
-      const delay = acertou ? 1500 : 2000;
-      setTimeout(() => setMostraControles(true), delay);
-    }
+    // Mostra controles imediatamente ou com um pequeno delay, garantindo que mesmo
+    // com 0 vidas ele consiga ver o erro e a fonte da resposta correta.
+    const delay = acertou ? 1500 : 2000;
+    setTimeout(() => setMostraControles(true), delay);
 
     // Atualiza dados no backend em segundo plano
     try {
       const userRef = doc(db, "usuarios", String(usuario.id));
       const uSnap = await getDoc(userRef);
       const data = uSnap.data() || {};
-      const totalBanco = data.recordeQuiz || 0;
-      const novoTotal = Math.max(0, totalBanco + pontosVariacao);
+      const totalBanco = Number(data.recordeQuiz) || 0;
+      const novoTotal = totalBanco + pontosVariacao;
 
       const updates = { recordeQuiz: novoTotal };
       
       if (!acertou) {
           updates.vidasQuiz = vidasAposResposta;
-          if (vidas === 3 || (!data.ultimaVidaPerdidaQuiz && !data.bloqueioQuiz)) {
+          if (vidas === 3) {
               updates.ultimaVidaPerdidaQuiz = new Date();
-              // Inicia o cooldown visual de 10 minutos
-              setCooldown(10 * 60);
+              setVidasCooldown(10 * 60);
           }
           if (vidasAposResposta === 0) {
               updates.bloqueioQuiz = deleteField();
@@ -380,9 +389,13 @@ export default function QuizGame() {
     } catch (err) {
       console.error("Erro ao processar pontuação/acertos:", err);
     }
-  }, [respondido, gameOver, perguntas, indiceAtual, vidas, usuario.id]);
+  }, [respondido, gameOver, perguntas, indiceAtual, vidas, usuario.id, usouDicaNestaQuestao]);
 
   const proximaQuestao = () => {
+    if (vidas === 0) {
+      setMostrarTelaSemVidas(true);
+      return;
+    }
     if (indiceAtual < perguntas.length - 1) {
       setIndiceAtual(v => v + 1);
       setRespondido(false);
@@ -414,40 +427,45 @@ export default function QuizGame() {
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [respondido, gameOver, loading, indiceAtual, dicaRevelada]);
+  }, [respondido, gameOver, loading, indiceAtual, dicaRevelada, validarResposta]);
 
   useEffect(() => {
-    if (cooldown === null) return;
-
-    if (cooldown <= 0) {
-      setCooldown(null); // Para o timer
-      carregarJogo(); // Tenta carregar o jogo novamente
-      return;
-    }
-
+    if (vidasCooldown === null || vidasCooldown <= 0) return;
     const timerId = setInterval(() => {
-      setCooldown(prev => (prev > 0 ? prev - 1 : 0));
+      setVidasCooldown(prev => {
+        if (prev <= 1) {
+          setVidas(v => {
+            const newVidas = Math.min(3, v + 1);
+            if (newVidas < 3) setTimeout(() => setVidasCooldown(10 * 60), 0);
+            return newVidas;
+          });
+          return null; // Pausa o timer local até o próximo ser ativado
+        }
+        return prev - 1;
+      });
     }, 1000);
-
     return () => clearInterval(timerId);
-  }, [cooldown, carregarJogo]);
+  }, [vidasCooldown]);
 
   useEffect(() => {
     if (dicasCooldown === null) return;
 
-    if (dicasCooldown <= 0) {
-      // Quando o timer de dica acaba, recarrega o jogo para recalcular
-      // vidas e dicas de forma sincronizada.
-      carregarJogo();
-      return;
-    }
-
     const timerId = setInterval(() => {
-      setDicasCooldown(prev => (prev > 0 ? prev - 1 : 0));
+      setDicasCooldown(prev => {
+        if (prev <= 1) {
+          setDicasRestantes(d => {
+            const newDicas = Math.min(3, d + 1);
+            if (newDicas < 3) setTimeout(() => setDicasCooldown(5 * 60), 0);
+            return newDicas;
+          });
+          return null;
+        }
+        return prev - 1;
+      });
     }, 1000);
 
     return () => clearInterval(timerId);
-  }, [dicasCooldown, carregarJogo]);
+  }, [dicasCooldown]);
 
   useEffect(() => { carregarJogo(); }, [carregarJogo]);
 
@@ -485,18 +503,18 @@ export default function QuizGame() {
 
   if (loading) return <div className="p-20 text-center font-black text-gold animate-pulse italic">CARREGANDO...</div>;
 
-  if (cooldown) {
-    const minutos = String(Math.floor(cooldown / 60)).padStart(2, '0');
-    const segundos = String(cooldown % 60).padStart(2, '0');
+  if (mostrarTelaSemVidas) {
     return (
       <div className="max-w-4xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-6 animate-in zoom-in duration-500 italic">
         <div className="bg-slate-900 rounded-[3rem] p-10 border border-rose-500/30 text-center flex flex-col justify-center shadow-2xl">
           <BookOpen size={60} className="mx-auto text-rose-500 mb-6 animate-pulse" />
           <h2 className="text-3xl font-black text-white uppercase mb-2">Vá ler a Bíblia!</h2>
           <p className="text-slate-400 font-bold uppercase text-[10px] tracking-widest mb-6 leading-relaxed">Suas vidas acabaram. Estude a Palavra e tente novamente em:</p>
-          <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">{minutos}:{segundos}</div>
+          <div className="text-5xl font-black text-rose-500 mb-8 tabular-nums text-center">
+            {vidasCooldown !== null ? formatTime(vidasCooldown) : "Pronto!"}
+          </div>
           <button onClick={carregarJogo} className="w-full bg-rose-500/20 text-rose-500 hover:bg-rose-500 hover:text-white py-4 rounded-xl font-black uppercase text-xs transition-all flex items-center justify-center gap-2 shadow-xl">
-            <RotateCcw size={18} /> Verificar
+            <RotateCcw size={18} /> Verificar e Continuar
           </button>
         </div>
 
@@ -602,41 +620,47 @@ export default function QuizGame() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-6 italic font-sans animate-in fade-in">
-      <div className="flex justify-between items-center bg-slate-900/80 p-6 rounded-[2rem] border border-white/10 shadow-xl backdrop-blur-md">
-        <div className="text-left">
-          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-2 text-left leading-none">Vidas</p>
-          <div className="flex gap-2">
+      <div className="flex justify-between items-center bg-slate-900/80 p-5 md:p-6 rounded-[2rem] border border-white/10 shadow-xl backdrop-blur-md">
+        <div className="flex flex-col items-center md:items-start flex-1 md:flex-none">
+          <p className="text-[10px] font-black text-rose-500 uppercase tracking-widest mb-1.5 leading-none">Vidas</p>
+          <div className="flex gap-1.5">
             {[...Array(3)].map((_, i) => (
-              <Cross key={i} size={20} className={`${i < vidas ? 'text-rose-600 fill-rose-600' : 'text-slate-800'} transition-all duration-500`} />
+              <Cross key={i} size={20} className={`${i < vidas ? 'text-rose-500 fill-rose-500 drop-shadow-[0_0_8px_rgba(244,63,94,0.5)]' : 'text-slate-800'} transition-all duration-500`} />
             ))}
           </div>
-        </div>
-        <div className="text-center">
-          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-2 text-center leading-none">Dicas</p>
-          {dicasCooldown !== null && dicasRestantes < 3 ? (
-            <div className="flex flex-col items-center gap-1">
-              <div className="flex justify-center items-center gap-1.5">
-                {[...Array(3)].map((_, i) => (
-                  <Lightbulb key={i} size={16} className={`${i < dicasRestantes ? 'text-yellow-400 fill-yellow-400/30' : 'text-slate-800'} transition-all`} />
-                ))}
-              </div>
-              <span className="text-[9px] text-slate-500 font-bold tabular-nums flex items-center gap-1">
-                <Timer size={10} /> {Math.floor(dicasCooldown / 60)}:{(dicasCooldown % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-          ) : (
-            <div className="flex justify-center items-center gap-1.5 h-[26px]">
-              {[...Array(3)].map((_, i) => ( <Lightbulb key={i} size={16} className={`${i < dicasRestantes ? 'text-yellow-400 fill-yellow-400/30' : 'text-slate-800'} transition-all`} /> ))}
-            </div>
+          {vidas < 3 && vidasCooldown > 0 && (
+            <p className="text-[10px] text-slate-400 font-bold mt-1.5 tabular-nums flex items-center gap-1">
+               <Timer size={10} /> {formatTime(vidasCooldown)}
+            </p>
           )}
         </div>
-        <div className="text-center">
-          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-center leading-none">TEMPO</p>
-          <p className={`text-3xl font-black tabular-nums text-center transition-colors ${tempoRestante <= 3 ? 'text-rose-500 animate-pulse' : 'text-white'}`}>{tempoRestante}</p>
+        
+        <div className="hidden md:flex flex-col items-center flex-1 md:flex-none">
+          <p className="text-[10px] font-black text-yellow-500 uppercase tracking-widest mb-1.5 leading-none">Dicas</p>
+          <div className="flex gap-1.5 h-[20px]">
+            {[...Array(3)].map((_, i) => ( 
+              <Lightbulb key={i} size={20} className={`${i < dicasRestantes ? 'text-yellow-400 fill-yellow-400/30 drop-shadow-[0_0_8px_rgba(250,204,21,0.3)]' : 'text-slate-800'} transition-all duration-500`} /> 
+            ))}
+          </div>
+          {dicasRestantes < 3 && dicasCooldown > 0 && (
+            <p className="text-[10px] text-slate-400 font-bold mt-1.5 tabular-nums flex items-center gap-1">
+               <Timer size={10} /> {formatTime(dicasCooldown)}
+            </p>
+          )}
         </div>
-        <div className="text-right">
-          <p className="text-[10px] font-black text-gold uppercase tracking-[0.4em] mb-1 text-right leading-none">Score Partida</p>
-          <p className={`text-3xl font-black tabular-nums text-right ${score < 0 ? 'text-rose-500' : 'text-emerald-400'}`}>{score}</p>
+        
+        <div className="flex flex-col items-center flex-1 md:flex-none">
+          <p className="text-[10px] font-black text-cyan-400 uppercase tracking-widest mb-1 leading-none">Tempo</p>
+          <p className={`text-2xl md:text-3xl font-black tabular-nums text-center transition-colors ${tempoRestante <= 5 ? 'text-rose-500 animate-pulse drop-shadow-[0_0_10px_rgba(244,63,94,0.5)]' : 'text-white'}`}>
+            {tempoRestante}
+          </p>
+        </div>
+        
+        <div className="flex flex-col items-center md:items-end flex-1 md:flex-none">
+          <p className="text-[10px] font-black text-emerald-400 uppercase tracking-widest mb-1.5 leading-none">Score</p>
+          <p className={`text-2xl md:text-3xl font-black tabular-nums text-right ${score < 0 ? 'text-rose-500' : 'text-emerald-400'}`}>
+            {score > 0 ? `+${score}` : score}
+          </p>
         </div>
       </div>
 
