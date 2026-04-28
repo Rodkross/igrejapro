@@ -356,16 +356,14 @@ export default function Layout({ usuario, aoSair }) {
 
           {/* BOTÃO VOLTAR - ESQUERDA (APENAS MOBILE) */}
           {location.pathname !== '/' && (
-            <Link to="/" className={`md:hidden flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10 ${
-              location.pathname.startsWith('/entretenimento/quiz') ? 'hidden' : ''
-            }`}>
+            <Link to="/" className="md:hidden flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10">
               <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
               <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
             </Link>
           )}
 
-          {/* LOGO - ESQUERDA (VISÍVEL NO DESKTOP ATÉ XL, ONDE NÃO TEM SIDEBAR) */}
-          <Link to="/" className="hidden md:flex xl:hidden items-center gap-3 mr-4 z-10 outline-none group">
+          {/* LOGO - ESQUERDA (OCULTO EM TABLETS E DESKTOP PARA EVITAR POLUIÇÃO VISUAL) */}
+          <Link to="/" className="hidden items-center gap-3 mr-4 z-10 outline-none group">
             {configGeral?.igrejaLogo ? (
                <img src={configGeral.igrejaLogo} alt="Logo" className="w-10 h-10 object-contain rounded-xl bg-white/10 p-1.5 border border-white/10 group-hover:scale-105 transition-transform" />
             ) : (
@@ -412,7 +410,7 @@ export default function Layout({ usuario, aoSair }) {
           {/* AVATAR DO USUÁRIO - DIREITA */}
           <div className="relative text-left ml-auto -mr-2" ref={userMenuRef}>
             <button onClick={() => setUserMenuAberto(!userMenuAberto)} className="flex items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-50">
-              <div className="hidden md:flex xl:hidden min-w-0 flex-col items-end text-right mr-1">
+              <div className="hidden min-w-0 flex-col items-end text-right mr-1">
                 <p className="text-[7px] font-bold text-gold uppercase tracking-[0.15em] leading-none">Igreja</p>
                 <p className="font-display text-xs font-black text-white leading-tight truncate max-w-[180px]">
                   {configGeral?.igrejaNome || 'Igreja Pro'}
