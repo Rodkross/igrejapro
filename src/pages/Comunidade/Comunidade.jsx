@@ -1,9 +1,28 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
-import { db, storage } from '../database/firebase';
+import { db, storage } from '../../database/firebase';
 import { collection, addDoc, onSnapshot, query, orderBy, serverTimestamp, doc, updateDoc, increment, deleteDoc, arrayUnion, arrayRemove } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL, deleteObject } from 'firebase/storage';
-import { MessageSquare, Send, X, UserCircle, Heart, MessageCircle, Loader2, ImagePlus, Trash2 } from 'lucide-react';
+import { MessageSquare, Send, X, UserCircle, Heart, MessageCircle, Loader2, ImagePlus, Trash2, Sparkles, BellRing } from 'lucide-react';
+import { useComunidadeAtividadeRecente } from '../../hooks/useComunidadeAtividadeRecente';
+
+const getTimeValue = (timestamp) => {
+  if (!timestamp) return null;
+  if (typeof timestamp.toMillis === 'function') return timestamp.toMillis();
+  if (timestamp instanceof Date) return timestamp.getTime();
+  if (typeof timestamp?.seconds === 'number') return (timestamp.seconds * 1000) + Math.floor((timestamp.nanoseconds || 0) / 1000000);
+  return null;
+};
+
+const isMaisRecenteQue = (timestamp, referencia) => {
+  const valorTimestamp = getTimeValue(timestamp);
+  const valorReferencia = getTimeValue(referencia);
+
+  if (valorTimestamp === null) return false;
+  if (valorReferencia === null) return true;
+
+  return valorTimestamp > valorReferencia;
+};
 
 export default function Comunidade() {
   const { usuario } = useOutletContext();
@@ -20,8 +39,36 @@ export default function Comunidade() {
   const [enviandoComentario, setEnviandoComentario] = useState(false);
 
   const [itemParaDeletar, setItemParaDeletar] = useState(null);
+  const [referenciaAtividade, setReferenciaAtividade] = useState(() => {
+    const ultimaVisualizacaoSalva = sessionStorage.getItem('comunidadeUltimaVisualizacaoAnterior');
+    if (ultimaVisualizacaoSalva) {
+      const valor = Number(ultimaVisualizacaoSalva);
+      if (!Number.isNaN(valor) && valor > 0) return new Date(valor);
+    }
+    return usuario?.comunidadeUltimaVisualizacao || null;
+  });
 
   const fileInputRef = useRef(null);
+  const atividadeRecente = useComunidadeAtividadeRecente({
+    usuarioId: usuario?.id,
+    ultimaVisualizacao: referenciaAtividade
+  });
+
+  useEffect(() => {
+    const ultimaVisualizacaoSalva = sessionStorage.getItem('comunidadeUltimaVisualizacaoAnterior');
+    if (ultimaVisualizacaoSalva) {
+      const valor = Number(ultimaVisualizacaoSalva);
+      if (!Number.isNaN(valor) && valor > 0) {
+        setReferenciaAtividade(new Date(valor));
+        sessionStorage.removeItem('comunidadeUltimaVisualizacaoAnterior');
+        return;
+      }
+    }
+
+    if (!referenciaAtividade && usuario?.comunidadeUltimaVisualizacao) {
+      setReferenciaAtividade(usuario.comunidadeUltimaVisualizacao);
+    }
+  }, [referenciaAtividade, usuario?.comunidadeUltimaVisualizacao]);
 
   useEffect(() => {
     const q = query(collection(db, 'comunidade_posts'), orderBy('createdAt', 'desc'));
@@ -180,6 +227,21 @@ export default function Comunidade() {
     return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
   };
 
+  const abrirPost = (post) => {
+    setPostAberto(post);
+  };
+
+  const totalDestaques = atividadeRecente.totalNovasPublicacoes + atividadeRecente.totalPostsComNovosComentarios;
+  const primeiroPostNovoId = posts.find((post) => atividadeRecente.novasPublicacoesIds.has(post.id))?.id || null;
+  const primeiroPostComComentarioNovoId = posts.find((post) => atividadeRecente.comentariosNovosPorPost[post.id]?.total > 0)?.id || null;
+
+  const navegarParaPost = (postId) => {
+    const elemento = document.querySelector(`[data-post-id="${postId}"]`);
+    if (elemento) {
+      elemento.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  };
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-12 italic text-left">
       <header className="flex flex-col justify-center items-start gap-2 border-b-2 border-slate-100 pb-6">
@@ -189,6 +251,31 @@ export default function Comunidade() {
         </h1>
         <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Compartilhe dúvidas, fotos e interaja com os irmãos</p>
       </header>
+
+      {totalDestaques > 0 && (
+        <div className="sticky top-2 z-20 flex flex-wrap gap-2">
+          {atividadeRecente.totalNovasPublicacoes > 0 && primeiroPostNovoId && (
+            <button
+              type="button"
+              onClick={() => navegarParaPost(primeiroPostNovoId)}
+              className="inline-flex items-center gap-2 rounded-full bg-blue-600 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-blue-200 transition-colors hover:bg-blue-700"
+            >
+              <Sparkles size={14} />
+              Ver {atividadeRecente.totalNovasPublicacoes} nova(s) publicacao(oes)
+            </button>
+          )}
+          {atividadeRecente.totalPostsComNovosComentarios > 0 && primeiroPostComComentarioNovoId && (
+            <button
+              type="button"
+              onClick={() => navegarParaPost(primeiroPostComComentarioNovoId)}
+              className="inline-flex items-center gap-2 rounded-full bg-amber-500 px-4 py-2 text-[10px] font-black uppercase tracking-[0.18em] text-white shadow-lg shadow-amber-200 transition-colors hover:bg-amber-600"
+            >
+              <BellRing size={14} />
+              Ver comentarios novos nos seus posts
+            </button>
+          )}
+        </div>
+      )}
 
       {/* CREATE POST */}
       <div className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm relative overflow-hidden">
@@ -241,8 +328,30 @@ export default function Comunidade() {
 
       {/* FEED */}
       <div className="space-y-6">
-        {posts.map(post => (
-          <div key={post.id} className="bg-white p-6 rounded-[2rem] border border-slate-100 shadow-sm space-y-4 hover:shadow-md transition-shadow cursor-pointer" onClick={() => setPostAberto(post)}>
+        {posts.map((post) => (
+          <React.Fragment key={post.id}>
+            {primeiroPostNovoId === post.id && atividadeRecente.totalNovasPublicacoes > 0 && (
+              <div className="flex items-center gap-3 py-1">
+                <div className="h-px flex-1 bg-blue-100"></div>
+                <span className="inline-flex items-center gap-2 rounded-full bg-blue-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-blue-700">
+                  <Sparkles size={12} />
+                  Novas publicacoes
+                </span>
+                <div className="h-px flex-1 bg-blue-100"></div>
+              </div>
+            )}
+
+            <div
+              data-post-id={post.id}
+              className={`bg-white p-6 rounded-[2rem] border shadow-sm space-y-4 hover:shadow-md transition-shadow cursor-pointer ${
+                atividadeRecente.novasPublicacoesIds.has(post.id)
+                  ? 'border-blue-200'
+                  : atividadeRecente.comentariosNovosPorPost[post.id]?.total > 0
+                    ? 'border-amber-200'
+                    : 'border-slate-100'
+              }`}
+              onClick={() => abrirPost(post)}
+            >
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden shrink-0 border border-slate-200 flex items-center justify-center">
@@ -260,6 +369,20 @@ export default function Comunidade() {
               )}
             </div>
 
+            {atividadeRecente.comentariosNovosPorPost[post.id]?.total > 0 && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  abrirPost(post);
+                }}
+                className="inline-flex items-center gap-2 rounded-full bg-amber-50 px-3 py-1.5 text-[10px] font-black uppercase tracking-[0.18em] text-amber-700 hover:bg-amber-100"
+              >
+                <BellRing size={12} />
+                {atividadeRecente.comentariosNovosPorPost[post.id].total} novo(s) comentario(s) nesta publicacao
+              </button>
+            )}
+
             {post.texto && <p className="text-slate-700 font-medium whitespace-pre-wrap">{post.texto}</p>}
             
             {post.fotoUrl && (
@@ -276,7 +399,8 @@ export default function Comunidade() {
                 <MessageCircle size={18} /> {post.comentariosCount || 0} Comentários
               </div>
             </div>
-          </div>
+            </div>
+          </React.Fragment>
         ))}
         {posts.length === 0 && (
           <div className="text-center py-12 text-slate-400 font-bold uppercase tracking-widest text-xs">
@@ -329,13 +453,27 @@ export default function Comunidade() {
                 <h3 className="font-black text-slate-400 uppercase tracking-widest text-[10px]">Comentários ({comentarios.length})</h3>
                 
                 {comentarios.map(com => (
-                  <div key={com.id} className="flex gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100">
+                  <div
+                    key={com.id}
+                    className={`flex gap-3 p-4 rounded-2xl border ${
+                      String(postAberto.autorId) === String(usuario?.id) && isMaisRecenteQue(com.createdAt, referenciaAtividade) && String(com.autorId) !== String(usuario?.id)
+                        ? 'bg-amber-50 border-amber-200'
+                        : 'bg-slate-50 border-slate-100'
+                    }`}
+                  >
                     <div className="w-8 h-8 rounded-full bg-white overflow-hidden shrink-0 border border-slate-200 flex items-center justify-center">
                        {com.autorFoto ? <img src={com.autorFoto} alt="Avatar" className="w-full h-full object-cover" /> : <UserCircle size={20} className="text-slate-300" />}
                     </div>
                     <div className="flex-1">
                       <div className="flex items-baseline justify-between gap-2">
-                        <p className="font-bold text-slate-800 text-xs">{com.autorNome}</p>
+                        <div className="flex items-center gap-2">
+                          <p className="font-bold text-slate-800 text-xs">{com.autorNome}</p>
+                          {String(postAberto.autorId) === String(usuario?.id) && isMaisRecenteQue(com.createdAt, referenciaAtividade) && String(com.autorId) !== String(usuario?.id) && (
+                            <span className="inline-flex items-center rounded-full bg-amber-500 px-2 py-0.5 text-[8px] font-black uppercase tracking-[0.18em] text-white">
+                              Novo
+                            </span>
+                          )}
+                        </div>
                         <div className="flex items-center gap-2">
                           <p className="text-[8px] text-slate-400 font-bold uppercase tracking-widest">{formatarData(com.createdAt)}</p>
                           {String(usuario?.id) === String(com.autorId) && (

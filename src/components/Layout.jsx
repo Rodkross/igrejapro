@@ -12,6 +12,7 @@ import ModalDestaque from './ModalDestaque';
 import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
 import ModalMeuPerfil from './ModalMeuPerfil';
+import { useComunidadeNaoVistos } from '../hooks/useComunidadeNaoVistos';
 
 export default function Layout({ usuario, aoSair }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
@@ -30,8 +31,18 @@ export default function Layout({ usuario, aoSair }) {
 
   const location = useLocation();
   const userMenuRef = useRef(null);
+  const ocultarDataNoMobileNaComunidade = location.pathname === '/comunidade';
+  const mostrarVoltarNoTabletNaComunidade = location.pathname === '/comunidade';
+  const estaNaComunidade = location.pathname.startsWith('/comunidade');
   
   const { exibirAniversario, finalizarAniversario, DURACAO_ANIMACAO } = useAniversarioAcesso(dadosSincronizados);
+  const comunidadeNaoVistos = useComunidadeNaoVistos({
+    usuarioId: dadosSincronizados?.id,
+    ultimaVisualizacao: dadosSincronizados?.comunidadeUltimaVisualizacao || null,
+    estaNaComunidade
+  });
+  const temNovidadesComunidade = comunidadeNaoVistos > 0;
+  const badgeComunidadeTexto = comunidadeNaoVistos > 99 ? '99+' : String(comunidadeNaoVistos);
 
   // --- 1. SINCRONIZAÇÃO COM FIREBASE ---
   useEffect(() => {
@@ -245,11 +256,25 @@ export default function Layout({ usuario, aoSair }) {
 
   const menuUsuarioRoutes = [
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, mobileVisible: true },
+    { to: '/comunidade', label: 'Comunidade', icon: MessageSquare, mobileVisible: true },
     ...cadastroRoutes,
     ...financeiroRoutes,
-    { to: '/comunidade', label: 'Comunidade', icon: MessageSquare, mobileVisible: true },
     { to: '/entretenimento/quiz', label: 'Quiz do Reino', icon: Trophy, mobileVisible: true },
   ];
+
+  const renderBadgeComunidade = (isActiveRoute = false) => {
+    if (!temNovidadesComunidade) return null;
+
+    return (
+      <span
+        className={`ml-auto inline-flex min-w-[1.5rem] items-center justify-center rounded-full px-1.5 py-0.5 text-[10px] font-black leading-none ${
+          isActiveRoute ? 'bg-white text-royal' : 'bg-rose-500 text-white'
+        }`}
+      >
+        {badgeComunidadeTexto}
+      </span>
+    );
+  };
 
   return (
     <div className="flex min-h-[100dvh] bg-background font-sans overflow-x-hidden">
@@ -290,7 +315,7 @@ export default function Layout({ usuario, aoSair }) {
           <Link to="/comunidade" onClick={fecharMenus} className={navLinkClass('/comunidade')}> 
             <MessageSquare size={18} />
             <span className="font-bold uppercase text-[11px] tracking-widest leading-none text-left">Comunidade</span>
-            {isActive('/comunidade') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
+            {temNovidadesComunidade ? renderBadgeComunidade(isActive('/comunidade')) : isActive('/comunidade') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
           </Link>
 
           {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('programacao')) && (
@@ -369,6 +394,13 @@ export default function Layout({ usuario, aoSair }) {
             </Link>
           )}
 
+          {mostrarVoltarNoTabletNaComunidade && (
+            <Link to="/" className="hidden md:flex xl:hidden items-center gap-2 hover:bg-white/10 p-2 rounded-2xl transition-all outline-none group relative z-10">
+              <ArrowLeft size={20} className="text-gold group-hover:text-white transition-colors" />
+              <span className="text-[9px] font-bold text-gold uppercase tracking-widest group-hover:text-white transition-colors">Voltar</span>
+            </Link>
+          )}
+
           {/* LOGO - ESQUERDA (OCULTO EM TABLETS E DESKTOP PARA EVITAR POLUIÇÃO VISUAL) */}
           <Link to="/" className="hidden items-center gap-3 mr-4 z-10 outline-none group">
             {configGeral?.igrejaLogo ? (
@@ -388,6 +420,10 @@ export default function Layout({ usuario, aoSair }) {
             location.pathname.startsWith('/cadastro') || location.pathname.startsWith('/entretenimento/quiz')
               ? 'hidden md:flex'
               : 'flex'
+          } ${
+            ocultarDataNoMobileNaComunidade ? 'hidden md:flex' : ''
+          } ${
+            mostrarVoltarNoTabletNaComunidade ? 'md:hidden xl:flex' : ''
           }`}>
             {eventoAoVivo ? (
               <>
@@ -408,7 +444,13 @@ export default function Layout({ usuario, aoSair }) {
                       return 'Boa noite';
                     })()}
                   </p>
-                  <p className="text-xs font-bold text-white capitalize leading-tight text-left">{new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}</p>
+                  <p
+                    className={`text-xs font-bold text-white capitalize leading-tight text-left ${
+                      ocultarDataNoMobileNaComunidade ? 'hidden md:block' : ''
+                    }`}
+                  >
+                    {new Date().toLocaleDateString('pt-BR', { weekday: 'long', day: '2-digit', month: 'long' })}
+                  </p>
                 </div>
               </>
             )}
@@ -427,6 +469,11 @@ export default function Layout({ usuario, aoSair }) {
                 <div className="w-12 h-12 rounded-2xl bg-white/10 backdrop-blur-sm border-2 border-gold/40 text-white flex items-center justify-center shadow-gold overflow-hidden text-left">
                   {dadosSincronizados?.fotoUrl ? <img src={dadosSincronizados.fotoUrl} alt="Avatar" className="w-full h-full object-cover" /> : <UserIcon size={22} />}
                 </div>
+                {temNovidadesComunidade && (
+                  <div className="absolute top-0 right-0 min-w-[1.35rem] h-[1.35rem] px-1 rounded-full bg-rose-500 border-2 border-navy flex items-center justify-center text-white text-[9px] font-black shadow-sm">
+                    {badgeComunidadeTexto}
+                  </div>
+                )}
                 <div className={`absolute -bottom-1 -right-1 w-5 h-5 bg-gradient-gold border-2 border-navy rounded-full flex items-center justify-center text-navy shadow-sm transition-transform duration-300 ${userMenuAberto ? 'rotate-180' : ''}`}>
                    <ChevronDown size={10} />
                 </div>
@@ -455,6 +502,7 @@ export default function Layout({ usuario, aoSair }) {
                       >
                         <Icone size={16} />
                         <span>{route.label}</span>
+                        {route.to === '/comunidade' && renderBadgeComunidade(isActive(route.to))}
                       </Link>
                     );
                   })}
