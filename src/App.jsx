@@ -6,6 +6,9 @@ import { ModalProvider } from "./contexts/ModalContext";
 import { db } from "./database/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
 
+import Comunidade from './pages/comunidade/Comunidade';
+
+
 // --- PÁGINAS DE CADASTRO ---
 import Dashboard from "./pages/Dashboard"; 
 import Usuarios from "./pages/Cadastros/Usuarios";
@@ -151,6 +154,8 @@ export default function App() {
           >
             <Route index element={<Dashboard />} />
 
+            {/* Rota da Comunidade */}
+            <Route path="comunidade" element={<Comunidade />} />
 
             {/* Bloco de Entretenimento */}
             <Route path="entretenimento/quiz" element={

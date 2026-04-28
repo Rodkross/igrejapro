@@ -5,7 +5,7 @@ import { doc, onSnapshot, collection, query, where, getDocs, updateDoc, arrayUni
 import {
   LayoutDashboard, Users, CreditCard, ChevronDown, ChevronUp,
   Settings, LogOut, User as UserIcon, CalendarDays, BookOpen,
-  ArrowRightLeft, BarChart3, Trophy, Gamepad2, ArrowLeft
+  ArrowRightLeft, BarChart3, Trophy, Gamepad2, ArrowLeft, MessageSquare
 } from 'lucide-react';
 import AniversarioOverlay from './AniversarioOverlay';
 import ModalDestaque from './ModalDestaque';
@@ -247,6 +247,7 @@ export default function Layout({ usuario, aoSair }) {
     { to: '/', label: 'Dashboard', icon: LayoutDashboard, mobileVisible: true },
     ...cadastroRoutes,
     ...financeiroRoutes,
+    { to: '/comunidade', label: 'Comunidade', icon: MessageSquare, mobileVisible: true },
     { to: '/entretenimento/quiz', label: 'Quiz do Reino', icon: Trophy, mobileVisible: true },
   ];
 
@@ -284,6 +285,12 @@ export default function Layout({ usuario, aoSair }) {
             <LayoutDashboard size={18} />
             <span className="font-bold uppercase text-[11px] tracking-widest leading-none text-left">Dashboard</span>
             {isActive('/') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
+          </Link>
+
+          <Link to="/comunidade" onClick={fecharMenus} className={navLinkClass('/comunidade')}> 
+            <MessageSquare size={18} />
+            <span className="font-bold uppercase text-[11px] tracking-widest leading-none text-left">Comunidade</span>
+            {isActive('/comunidade') && <span className="ml-auto w-1.5 h-1.5 rounded-full bg-gold text-left"></span>}
           </Link>
 
           {(temAcesso('usuarios') || temAcesso('cargos') || temAcesso('programacao')) && (
