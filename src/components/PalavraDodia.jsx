@@ -80,6 +80,38 @@ function obterPalavraDoDia() {
   };
 }
 
+async function gerarContextoGemini(referencia, texto) {
+  const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
+  if (!apiKey) return null;
+
+  try {
+    const prompt = `Atue como um pastor e teólogo inspirador. Vou exibir o versículo bíblico "${referencia}": "${texto}".
+Gere um devocional diário sobre ele, retornando estritamente um JSON com esta estrutura:
+{
+  "titulo": "Título curto e impactante (ex: A Promessa da Restauração)",
+  "significado": "O significado teológico e contexto deste versículo (2 parágrafos envolventes)",
+  "pratica": "Uma aplicação prática, clara e encorajadora para o cristão viver isso hoje (1 parágrafo)"
+}`;
+
+    const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: { responseMimeType: 'application/json' }
+      })
+    });
+    
+    if (!res.ok) throw new Error('Falha na API do Gemini');
+    const data = await res.json();
+    const textoJson = data.candidates[0].content.parts[0].text;
+    return JSON.parse(textoJson);
+  } catch (err) {
+    console.error('Erro ao gerar contexto com Gemini:', err);
+    return null;
+  }
+}
+
 function lerUsuarioLogado() {
   try {
     const salvo = sessionStorage.getItem('usuarioLogado');
@@ -102,11 +134,98 @@ export default function PalavraDodia({ compactTablet = false }) {
   const [carregandoUsuarios, setCarregandoUsuarios] = useState(false);
   const [devocionaisLidos, setDevocionaisLidos] = useState(0);
 
-  const palavraDoDia = useMemo(() => obterPalavraDoDia(), []);
+  const [palavraDoDia, setPalavraDoDia] = useState(null);
   const usuarioLogado = useMemo(() => lerUsuarioLogado(), []);
   const usuarioId = String(usuarioLogado?.id || '');
 
   useEffect(() => {
+    let montado = true;
+    const carregarPalavra = async () => {
+      try {
+        const chaveDia = formatarChaveDia();
+        const docRef = doc(db, 'palavraDodiaGeral', chaveDia);
+        const docSnap = await getDoc(docRef);
+
+        if (docSnap.exists()) {
+          const dados = docSnap.data();
+          
+          // Fallback caso já exista o documento hoje, mas a IA falhou anteriormente ou a API key não estava presente
+          if (!dados.aiTitulo && import.meta.env.VITE_GEMINI_API_KEY) {
+            try {
+              const aiContext = await gerarContextoGemini(dados.referencia, dados.texto);
+              if (aiContext) {
+                const novosDados = { 
+                  ...dados, 
+                  aiTitulo: aiContext.titulo, 
+                  aiSignificado: aiContext.significado, 
+                  aiPratica: aiContext.pratica 
+                };
+                
+                await runTransaction(db, async (transaction) => {
+                  transaction.update(docRef, {
+                    aiTitulo: aiContext.titulo,
+                    aiSignificado: aiContext.significado,
+                    aiPratica: aiContext.pratica
+                  });
+                });
+                
+                if (montado) {
+                  setPalavraDoDia(novosDados);
+                  return;
+                }
+              }
+            } catch (err) {
+              console.error('Erro ao gerar contexto fallback:', err);
+            }
+          }
+          
+          if (montado) setPalavraDoDia(dados);
+        } else {
+          const res = await fetch('https://bible-api.com/?random=verse&translation=almeida');
+          const data = await res.json();
+          const textoLimpo = data.text.trim();
+          
+          let aiContext = null;
+          if (import.meta.env.VITE_GEMINI_API_KEY) {
+             aiContext = await gerarContextoGemini(data.reference, textoLimpo);
+          }
+
+          const novaPalavra = {
+            texto: textoLimpo,
+            referencia: data.reference,
+            chaveDia,
+            id: `${chaveDia}_${data.reference.replace(/\s+/g, '_').replace(/[:]/g, '-')}`,
+            ...(aiContext ? { aiTitulo: aiContext.titulo, aiSignificado: aiContext.significado, aiPratica: aiContext.pratica } : {})
+          };
+          
+          try {
+            const finalPalavra = await runTransaction(db, async (transaction) => {
+              const snap = await transaction.get(docRef);
+              if (snap.exists()) {
+                return snap.data();
+              }
+              transaction.set(docRef, novaPalavra);
+              return novaPalavra;
+            });
+            if (montado) setPalavraDoDia(finalPalavra);
+          } catch (txError) {
+            console.error('Erro na transaction:', txError);
+            if (montado) setPalavraDoDia(novaPalavra);
+          }
+        }
+      } catch (error) {
+        console.error('Erro ao carregar palavra do dia:', error);
+        if (montado) setPalavraDoDia(obterPalavraDoDia());
+      }
+    };
+
+    carregarPalavra();
+    return () => { montado = false; };
+  }, []);
+
+  useEffect(() => {
+    if (!palavraDoDia) return;
+
     const curtidasRef = doc(db, 'palavraDodiaCurtidas', palavraDoDia.id);
     const unsubCurtidas = onSnapshot(curtidasRef, (docSnap) => {
       setTotalCurtidas(Number(docSnap.data()?.curtidas || 0));
@@ -137,7 +256,7 @@ export default function PalavraDodia({ compactTablet = false }) {
       unsubUsuario();
       unsubPerfil();
     };
-  }, [palavraDoDia.id, usuarioId]);
+  }, [palavraDoDia, usuarioId]);
 
   const getMedalhaInfo = () => {
     if (devocionaisLidos >= 365) return { nome: 'Diamante', image: imgMedalDiamond, cor: 'text-cyan-400', next: null };
@@ -254,7 +373,7 @@ export default function PalavraDodia({ compactTablet = false }) {
     }
   };
 
-  if (carregando) {
+  if (carregando || !palavraDoDia) {
     return (
       <div className={`bg-gradient-hero rounded-2xl border border-white/10 shadow-elegant flex items-center justify-center ${compactTablet ? 'p-5 md:p-5 xl:p-6 min-h-[120px]' : 'p-6 min-h-[120px]'}`}>
         <Loader2 className="animate-spin text-gold" size={24} />

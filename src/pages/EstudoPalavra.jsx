@@ -2,7 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../database/firebase';
-import { doc, updateDoc, onSnapshot, collection, query, where, orderBy } from 'firebase/firestore';
+import { doc, updateDoc, onSnapshot, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
 import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2, Trophy, Medal, Check, ChevronRight } from 'lucide-react';
 
 import imgMedalPaper from '../assets/medal-paper.png';
@@ -30,121 +30,8 @@ function formatarChaveDia() {
   return `${ano}-${mes}-${dia}`;
 }
 
-const livrosMetadata = {
-  'João': {
-    quem: 'O apóstolo João (conhecido como o discípulo amado).',
-    onde: 'Provavelmente em Éfeso (Ásia Menor).',
-    paraQuem: 'Cristãos em geral e não-cristãos, buscando provar a divindade de Jesus.',
-    curiosidade: 'Não possui muitas parábolas curtas, mas destaca discursos e as famosas 7 declarações de "Eu sou", enfatizando fortemente a deidade de Cristo.'
-  },
-  'Salmos': {
-    quem: 'Davi (na maioria), Asafe, filhos de Corá, Salomão e até Moisés.',
-    onde: 'Principalmente na região de Israel/Jerusalém.',
-    paraQuem: 'Para o povo de Deus, pois funcionava como o hinário de adoração original de Israel.',
-    curiosidade: 'É o livro mais longo da Bíblia. O Salmo 119 é o maior capítulo de todas as escrituras, organizado com base no alfabeto hebraico.'
-  },
-  'Romanos': {
-    quem: 'O apóstolo Paulo.',
-    onde: 'Foi escrita em Corinto.',
-    paraQuem: 'Para os cristãos e congregações da cidade de Roma.',
-    curiosidade: 'A Epístola aos Romanos é frequentemente referida como a obra-prima de Paulo. Foi a leitura de Romanos que catalisou o coração de Lutero na Reforma Protestante.'
-  },
-  'Efésios': {
-    quem: 'O apóstolo Paulo.',
-    onde: 'Escrita de sua prisão em Roma.',
-    paraQuem: 'Para a igreja na cidade de Éfeso e igrejas vizinhas.',
-    curiosidade: 'Muitos estudiosos a chamam de "A Carta Circular". É nela que Paulo destrincha profundamente sobre a Armadura de Deus.'
-  },
-  'Filipenses': {
-    quem: 'O apóstolo Paulo.',
-    onde: 'Também de sua prisão em Roma (é uma de suas epístolas da prisão).',
-    paraQuem: 'Para a igreja em Filipos, a primeira igreja que ele fundou na Europa.',
-    curiosidade: 'É conhecida como a "Carta da Alegria". Apesar de estar acorrentado enquanto escrevia, a palavra "alegria" ou "regozijo" aparece nela cerca de 16 vezes.'
-  },
-  '1 Pedro': {
-    quem: 'O apóstolo Pedro.',
-    onde: 'Provavelmente escrita na liternal cidade de Babilônia (ou Roma codificada).',
-    paraQuem: 'Cristãos dispersos em várias províncias da Ásia Menor.',
-    curiosidade: 'Foi escrita para encorajar os fiéis sob extrema perseguição de Nero, trazendo profundo conforto sobre a esperança através do sofrimento.'
-  },
-  'Mateus': {
-    quem: 'Mateus (ex-cobrador de impostos, também conhecido como Levi).',
-    onde: 'Provavelmente na região da Palestina/Judeia.',
-    paraQuem: 'Predominantemente aos Judeus.',
-    curiosidade: 'É o Evangelho que mais cita profecias e o Antigo Testamento, pois seu alvo principal era provar religiosamente aos Judeus que Jesus era de fato o Messias esperado.'
-  },
-  '1 João': {
-    quem: 'O apóstolo João.',
-    onde: 'Provavelmente em Éfeso.',
-    paraQuem: 'Igrejas ao redor da Ásia Menor combatendo heresias primitivas.',
-    curiosidade: 'Esta carta não tem a saudação inicial comum na época e é recheada com a palavra "amor". Se opunha fortemente à primeira nascente onda do que seria chamado Gnosticismo.'
-  },
-  'Tiago': {
-    quem: 'Tiago (o meio-irmão de Jesus, e líder da igreja em Jerusalém).',
-    onde: 'Jerusalém.',
-    paraQuem: 'Cristãos judeus espalhados pelas nações ("as doze tribos da Dispersão").',
-    curiosidade: 'Sua estrutura é comparada ao livro de Provérbios, focado amplamente em sabedoria prática e atitudes cristãs reais (fé sem obras é morta).'
-  },
-  'Marcos': {
-    quem: 'João Marcos (provavelmente guiado pelos relatos de Pedro).',
-    onde: 'Provavelmente em Roma.',
-    paraQuem: 'Predominantemente liderada aos Gentios (não-judeus, possivelmente romanos).',
-    curiosidade: 'É o Evangelho de mais "ação" e ritmo super-rápido, a palavra "logo" ou "imediatamente" aparece dezenas de vezes.'
-  }
-};
+import { livrosMetadata, versiculosContexto } from '../data/bibliaMetadata';
 
-const versiculosContexto = {
-  'João 3:16': {
-    titulo: 'O Resumo do Evangelho',
-    significado: 'Este é frequentemente chamado de "o evangelho em miniatura". Ele resume a mensagem central da Bíblia: o amor sacrificial de Deus impulsionou a entrega do Seu Bem mais precioso (Jesus) para garantir que tivéssemos a vida eterna. Não é sobre o que nós podemos fazer para alcançar a Deus, mas sobre o que Ele já fez para nos alcançar.',
-    pratica: 'Descanse no amor incondicional de Deus. Sua salvação foi comprada por um alto preço e oferecida como um presente.'
-  },
-  'Salmos 23:1': {
-    titulo: 'O Cuidado do Bom Pastor',
-    significado: 'Davi, que passou grande parte de sua juventude como pastor de ovelhas, usa sua própria profissão como metáfora para o cuidado de Deus. Ele declara que o Senhor é quem o guia, protege e alimenta. Se Deus está na liderança, não sentiremos falta de nada que nos seja essencial.',
-    pratica: 'Entregue o controle das suas ansiedades. O Bom Pastor sabe exatamente de quais pastos e águas você precisa hoje.'
-  },
-  'Romanos 3:23': {
-    titulo: 'A Igualdade Humana',
-    significado: 'Este versículo atua como o grande nivelador da humanidade. O apóstolo Paulo diz que não importam nossos esforços morais, virtudes ou religiosidade; absolutamente todos nós quebramos o padrão da perfeição e santidade de Deus e fomos destituídos.',
-    pratica: 'Essa verdade nos livra de qualquer tipo de superioridade ou orgulho, mostrando que nossa única chance está exclusivamente na Graça.'
-  },
-  'Efésios 2:8': {
-    titulo: 'O Presente Imerecido',
-    significado: 'A salvação é descrita usando a palavra "dom" (um presente absoluto). Isso anula qualquer ideia de que possamos comprá-la ou conquistá-la com o nosso próprio esforço e boas obras. A salvação vem pela Graça, e o único veículo para recebê-la é a nossa fé.',
-    pratica: 'Pare de tentar "pagar" a Deus pelos seus pecados com atitudes de penitência. Receba a salvação com gratidão.'
-  },
-  'Filipenses 4:13': {
-    titulo: 'O Poder do Contentamento',
-    significado: 'Embora frequentemente citado fora de contexto como uma frase para super-heróis vencerem desafios esportivos ou profissionais, Paulo escreveu isso enquanto estava acorrentado numa prisão! Ele estava dizendo que é capaz de suportar tanto a extrema fome e necessidade quanto a extrema fartura, sem nunca perder sua fé ou alegria, pois tem a força interior de Cristo.',
-    pratica: 'A verdadeira força cristã habita na sua resiliência mental e espiritual, dependendo de Jesus em qualquer circunstância adversa.'
-  },
-  '1 Pedro 1:3': {
-    titulo: 'A Nossa Viva Esperança',
-    significado: 'Para os cristãos do primeiro século que estavam sendo cruelmente perseguidos, Pedro não oferece um otimismo falso. Ele oferece uma "esperança viva". Por que viva? Porque ela não é baseada numa filosofia idealista, mas em um fato histórico inabalável provado: a ressurreição de Jesus Cristo dentre os mortos.',
-    pratica: 'O nosso futuro está garantido. Fixe seus olhos na eternidade e o sofrimento temporal perderá a sua gravidade emocional.'
-  },
-  'Mateus 5:14': {
-    titulo: 'O Seu Papel no Mundo',
-    significado: 'Nesta passagem do Sermão do Monte, Jesus chama seus seguidores à responsabilidade. A vida cristã não foi projetada para o isolamento. Assim como seria contra-intuitivo para uma cidade luminosa se construir num topo de monte mas se esconder da visão, a nossa fé deve impactar e clarear a sociedade ao nosso redor.',
-    pratica: 'Não tenha vergonha ou medo de brilhar e de fazer o bem nos lugares escuros em que você atua.'
-  },
-  '1 João 1:9': {
-    titulo: 'A Promessa da Restauração',
-    significado: 'Existe uma diferença entre um pecador impenitente e um cristão em queda. João nos dá uma fórmula incrivelmente compassiva: "SE confessarmos". Essa poderosa promessa tem a sua garantia não na bondade do homem que chora, mas na fidelidade e justiça do Próprio Deus que purifica toda quebra moral.',
-    pratica: 'Não fuja de Deus quando errar. Corra imediatamente até Ele com um coração transparente e arrependido e você achará o perdão garantido.'
-  },
-  'Tiago 1:22': {
-    titulo: 'Fé em Ação',
-    significado: 'Tiago faz um alerta duríssimo contra um perigoso auto-engano cristão: achar que sentar na igreja, escutar pregações maravilhosas ou ter alta capacidade teológica é sinônimo de santidade. Se o que entra pela nossa audição teológica não alterar as nossas mãos (nossas práticas e rotina), nós a recebemos em vão.',
-    pratica: 'A verdadeira espiritualidade é medida pela transformação das suas atitudes diárias, não apenas pelo seu tempo de estudo de Bíblia.'
-  },
-  'Marcos 11:24': {
-    titulo: 'O Limite do Milagre',
-    significado: 'Cristo lança uma instrução absolutamente profunda sobre o DNA da Oração e da Fé radical. Não se trata da barganha visual "só acredito vendo", mas o recesso apostólico original de "crer que JÁ RECEBEU", e, através desta convicção espiritual anterior do coração, a manifestação virá à tona.',
-    pratica: 'Aproxime-se de Deus não focado na falta ou nas evidências da sua dor, mas com a convicção vibrante de quem já foi abençoado em Cristo.'
-  }
-};
 
 export default function EstudoPalavra() {
   const [searchParams] = useSearchParams();
@@ -159,6 +46,7 @@ export default function EstudoPalavra() {
   const [targetVerseArr, setTargetVerseArr] = useState([]);
   const [copiado, setCopiado] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
+  const [aiContext, setAiContext] = useState(null);
   
   // States para Gamificação e Leitura
   const [usuarioData, setUsuarioData] = useState(null);
@@ -177,6 +65,28 @@ export default function EstudoPalavra() {
 
   const metadataLivro = livrosMetadata[livroPT] || null;
   const contextMsg = versiculosContexto[refUrl] || null;
+
+  useEffect(() => {
+    const fetchAiContext = async () => {
+      try {
+        const docRef = doc(db, 'palavraDodiaGeral', hoje);
+        const docSnap = await getDoc(docRef);
+        if (docSnap.exists()) {
+           const data = docSnap.data();
+           if (data.referencia === refUrl && data.aiTitulo) {
+              setAiContext({
+                titulo: data.aiTitulo,
+                significado: data.aiSignificado,
+                pratica: data.aiPratica
+              });
+           }
+        }
+      } catch (err) {
+        console.error('Erro ao buscar AI context', err);
+      }
+    };
+    fetchAiContext();
+  }, [hoje, refUrl]);
 
   useEffect(() => {
     if (usuarioLogado?.id) {
@@ -408,101 +318,107 @@ export default function EstudoPalavra() {
       </header>
 
       {/* GRID INTELEGENTE: Mensagem + Contexto Histórico */}
-      {(metadataLivro || contextMsg) && (
-        <section className="max-w-7xl mx-auto px-4 md:px-8 mb-20">
-          <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
-            
-            {/* Coluna Principal: Significado e Aplicação (Maior Impacto) */}
-            {contextMsg && (
-              <div className="xl:col-span-8 space-y-6">
-                <div className="bg-gradient-to-br from-slate-900 to-slate-800/80 rounded-3xl p-8 md:p-10 border border-blue-500/10 shadow-2xl relative overflow-hidden">
-                  <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none" />
-                  
-                  <div className="flex items-center gap-3 mb-8">
-                    <div className="bg-blue-500/20 p-2.5 rounded-xl border border-blue-500/30">
-                      <Sparkles className="text-blue-400" size={24} />
-                    </div>
-                    <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">O Significado</h3>
-                  </div>
-
-                  <h4 className="text-xl md:text-2xl font-bold text-blue-300 mb-4">{contextMsg.titulo}</h4>
-                  <p className="text-lg md:text-xl text-slate-300 leading-relaxed font-medium mb-10 pb-8 border-b border-white/5">
-                    {contextMsg.significado}
-                  </p>
-
-                  <div className="flex items-start gap-4 md:gap-5">
-                    <div className="bg-emerald-500/20 p-3 rounded-2xl shrink-0 mt-1 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.15)]">
-                      <HeartHandshake className="text-emerald-400" size={28} />
-                    </div>
-                    <div>
-                      <span className="block text-sm font-bold uppercase tracking-widest text-emerald-500 mb-2">Aplicação Prática em sua vida</span>
-                      <p className="text-base md:text-lg text-slate-200 leading-relaxed">
-                        {contextMsg.pratica}
-                      </p>
-                    </div>
-                  </div>
+      <section className="max-w-7xl mx-auto px-4 md:px-8 mb-20 relative z-10">
+        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+          
+          {/* Coluna Principal: Significado e Aplicação (Maior Impacto) */}
+          <div className="xl:col-span-8 space-y-6">
+            <div className="bg-gradient-to-br from-[#0A1128] to-[#121E3B] rounded-[2rem] p-8 md:p-10 border border-blue-500/15 shadow-2xl relative overflow-hidden group">
+              {/* Efeitos de Luz de Fundo */}
+              <div className="absolute top-0 right-0 w-72 h-72 bg-blue-500/10 blur-[80px] rounded-full pointer-events-none group-hover:bg-blue-500/20 transition-all duration-700" />
+              <div className="absolute bottom-0 left-0 w-48 h-48 bg-emerald-500/5 blur-[60px] rounded-full pointer-events-none group-hover:bg-emerald-500/15 transition-all duration-700" />
+              
+              <div className="flex items-center gap-3 mb-8 relative z-10">
+                <div className="bg-gradient-to-tr from-blue-600/30 to-blue-400/10 p-2.5 rounded-xl border border-blue-500/30 shadow-[0_0_15px_rgba(59,130,246,0.2)]">
+                  <Sparkles className="text-blue-400" size={24} />
                 </div>
+                <h3 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+                  {aiContext || contextMsg ? 'O Significado' : 'Meditação Diária'}
+                </h3>
               </div>
-            )}
 
-            {/* Coluna Lateral: Metadados Históricos (Fixa ou Lado Direito) */}
-            {metadataLivro && (
-              <div className={`xl:col-span-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4 ${!contextMsg && 'xl:col-span-12 md:grid-cols-3'}`}>
-                
-                {/* Linha Fina de Título na Lateral */}
-                <div className="col-span-full mb-2 xl:mb-4 flex items-center gap-2 px-2">
-                  <Info className="text-slate-500 shrink-0" size={18} />
-                  <span className="text-xs font-bold uppercase tracking-widest text-slate-500">Panorama de {livroPT}</span>
+              <h4 className="text-xl md:text-2xl font-bold text-blue-300 mb-4 relative z-10">
+                {aiContext ? aiContext.titulo : (contextMsg ? contextMsg.titulo : 'Ouvindo a Voz de Deus')}
+              </h4>
+              <p className="text-lg md:text-xl text-slate-300 leading-relaxed font-medium mb-10 pb-8 border-b border-white/10 relative z-10">
+                {aiContext ? aiContext.significado : (contextMsg 
+                  ? contextMsg.significado 
+                  : 'Deus fala conosco de maneira única todos os dias. Ao ler este versículo hoje, reserve um momento em silêncio. O que o Espírito Santo está ministrando ao seu coração através desta passagem específica? Toda a Escritura é viva e capaz de transformar nosso interior.')}
+              </p>
+
+              <div className="flex items-start gap-4 md:gap-5 relative z-10">
+                <div className="bg-gradient-to-tr from-emerald-600/30 to-emerald-400/10 p-3 rounded-2xl shrink-0 mt-1 border border-emerald-500/30 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+                  <HeartHandshake className="text-emerald-400" size={28} />
                 </div>
-
-                {/* Cards Menores de Contexto */}
-                <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors flex gap-4 items-center">
-                  <div className="bg-slate-800 p-3 rounded-full shrink-0">
-                    <User className="text-slate-300" size={20} />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Autor</span>
-                    <p className="text-sm font-medium text-slate-200">{metadataLivro.quem}</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors flex gap-4 items-center">
-                  <div className="bg-slate-800 p-3 rounded-full shrink-0">
-                    <MapPin className="text-slate-300" size={20} />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Escrito Em</span>
-                    <p className="text-sm font-medium text-slate-200">{metadataLivro.onde}</p>
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/60 p-5 rounded-2xl border border-white/5 hover:border-white/10 transition-colors flex gap-4 items-center md:col-span-2 xl:col-span-1">
-                  <div className="bg-slate-800 p-3 rounded-full shrink-0">
-                    <Users className="text-slate-300" size={20} />
-                  </div>
-                  <div>
-                    <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Para Quem</span>
-                    <p className="text-sm font-medium text-slate-200">{metadataLivro.paraQuem}</p>
-                  </div>
-                </div>
-
-                {/* Curiosidade Destaque Menor */}
-                <div className="bg-gradient-to-br from-gold/10 to-transparent p-6 rounded-2xl border border-gold/20 flex flex-col gap-3 mt-2 md:col-span-2 xl:col-span-1">
-                  <div className="flex items-center gap-2 text-gold">
-                    <Lightbulb size={20} />
-                    <span className="font-bold uppercase tracking-widest text-[11px]">Curiosidade</span>
-                  </div>
-                  <p className="text-sm md:text-base text-slate-300 italic leading-relaxed">
-                    {metadataLivro.curiosidade}
+                <div>
+                  <span className="block text-sm font-bold uppercase tracking-widest text-emerald-500 mb-2">Aplicação Prática em sua vida</span>
+                  <p className="text-base md:text-lg text-slate-200 leading-relaxed">
+                    {aiContext ? aiContext.pratica : (contextMsg 
+                      ? contextMsg.pratica 
+                      : 'Como você pode transformar a verdade que acabou de ler em atitudes reais ainda hoje? A fé genuína se revela em nossas obras. Pense em uma atitude simples, mas intencional, que você pode tomar hoje mesmo para viver o que está escrito neste versículo.')}
                   </p>
                 </div>
-
               </div>
-            )}
-
+            </div>
           </div>
-        </section>
-      )}
+
+          {/* Coluna Lateral: Metadados Históricos (Fixa ou Lado Direito) */}
+          {metadataLivro && (
+            <div className="xl:col-span-4 grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-4">
+              
+              {/* Linha Fina de Título na Lateral */}
+              <div className="col-span-full mb-1 xl:mb-3 flex items-center gap-2 px-2">
+                <Info className="text-slate-400 shrink-0" size={18} />
+                <span className="text-xs font-black uppercase tracking-widest text-slate-400">Panorama de {livroPT}</span>
+              </div>
+
+              {/* Cards Menores de Contexto */}
+              <div className="bg-[#121E3B]/40 backdrop-blur-md p-5 rounded-2xl border border-white/5 hover:border-white/15 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300 flex gap-4 items-center group">
+                <div className="bg-[#0A1128] p-3 rounded-xl shrink-0 border border-white/5 group-hover:border-blue-500/30 transition-colors">
+                  <User className="text-blue-400" size={20} />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Autor</span>
+                  <p className="text-sm font-semibold text-slate-200">{metadataLivro.quem}</p>
+                </div>
+              </div>
+
+              <div className="bg-[#121E3B]/40 backdrop-blur-md p-5 rounded-2xl border border-white/5 hover:border-white/15 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300 flex gap-4 items-center group">
+                <div className="bg-[#0A1128] p-3 rounded-xl shrink-0 border border-white/5 group-hover:border-rose-400/30 transition-colors">
+                  <MapPin className="text-rose-400" size={20} />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Escrito Em</span>
+                  <p className="text-sm font-semibold text-slate-200">{metadataLivro.onde}</p>
+                </div>
+              </div>
+
+              <div className="bg-[#121E3B]/40 backdrop-blur-md p-5 rounded-2xl border border-white/5 hover:border-white/15 hover:shadow-lg hover:-translate-y-1 transform transition-all duration-300 flex gap-4 items-center md:col-span-2 xl:col-span-1 group">
+                <div className="bg-[#0A1128] p-3 rounded-xl shrink-0 border border-white/5 group-hover:border-purple-400/30 transition-colors">
+                  <Users className="text-purple-400" size={20} />
+                </div>
+                <div>
+                  <span className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Para Quem</span>
+                  <p className="text-sm font-semibold text-slate-200">{metadataLivro.paraQuem}</p>
+                </div>
+              </div>
+
+              {/* Curiosidade Destaque Menor */}
+              <div className="bg-gradient-to-br from-gold/15 to-transparent p-6 rounded-2xl border border-gold/20 flex flex-col gap-3 mt-2 md:col-span-2 xl:col-span-1 hover:shadow-[0_0_20px_rgba(212,175,55,0.15)] transition-shadow duration-300">
+                <div className="flex items-center gap-2 text-gold">
+                  <Lightbulb size={20} className="drop-shadow-md" />
+                  <span className="font-bold uppercase tracking-widest text-[11px]">Curiosidade</span>
+                </div>
+                <p className="text-sm md:text-base text-slate-300 italic leading-relaxed font-serif">
+                  {metadataLivro.curiosidade}
+                </p>
+              </div>
+
+            </div>
+          )}
+
+        </div>
+      </section>
 
       {/* ÁREA DE LEITURA (O Capítulo Inteiro) */}
       <section className="max-w-4xl mx-auto px-4 md:px-8">
