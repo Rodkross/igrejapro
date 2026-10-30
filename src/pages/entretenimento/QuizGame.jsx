@@ -262,9 +262,17 @@ export default function QuizGame() {
       
       const perguntasNaoRespondidas = todas.filter(p => !acertadasIds.includes(String(p.id)));
       
-      // Pega 10 perguntas aleatórias que ainda não foram respondidas corretamente.
+      // Seleciona até 10 perguntas sem usar um comparador aleatório enviesado.
       // Se não houver mais perguntas inéditas, o jogo é considerado concluído.
-      const perguntasRodada = perguntasNaoRespondidas.sort(() => Math.random() - 0.5).slice(0, 10);
+      const perguntasEmbaralhadas = [...perguntasNaoRespondidas];
+      for (let indice = perguntasEmbaralhadas.length - 1; indice > 0; indice -= 1) {
+        const aleatorio = Math.floor(Math.random() * (indice + 1));
+        [perguntasEmbaralhadas[indice], perguntasEmbaralhadas[aleatorio]] = [
+          perguntasEmbaralhadas[aleatorio],
+          perguntasEmbaralhadas[indice],
+        ];
+      }
+      const perguntasRodada = perguntasEmbaralhadas.slice(0, 10);
 
       if (perguntasRodada.length > 0) {
         setPerguntas(perguntasRodada);
@@ -467,7 +475,10 @@ export default function QuizGame() {
     return () => clearInterval(timerId);
   }, [dicasCooldown]);
 
-  useEffect(() => { carregarJogo(); }, [carregarJogo]);
+  useEffect(() => {
+    const timerId = setTimeout(() => carregarJogo(), 0);
+    return () => clearTimeout(timerId);
+  }, [carregarJogo]);
 
   const renderUltimoCampeao = () => {
     if (!ultimoCampeao) return null;

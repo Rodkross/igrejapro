@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { db } from '../database/firebase';
+import { removerSenhaDoUsuario } from '../utils/usuario';
 import { doc, onSnapshot, runTransaction, serverTimestamp, collection, getDocs, query, orderBy, getDoc } from 'firebase/firestore';
 import { BookOpen, Cross, Heart, Loader2, X, Trophy, Medal } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -101,7 +102,7 @@ Gere um devocional diário sobre ele, retornando estritamente um JSON com esta e
         generationConfig: { responseMimeType: 'application/json' }
       })
     });
-    
+
     if (!res.ok) throw new Error('Falha na API do Gemini');
     const data = await res.json();
     const textoJson = data.candidates[0].content.parts[0].text;
@@ -114,8 +115,8 @@ Gere um devocional diário sobre ele, retornando estritamente um JSON com esta e
 
 function lerUsuarioLogado() {
   try {
-    const salvo = sessionStorage.getItem('usuarioLogado');
-    return salvo ? JSON.parse(salvo) : null;
+    const salvo = localStorage.getItem('usuarioLogado');
+    return salvo ? removerSenhaDoUsuario(JSON.parse(salvo)) : null;
   } catch (error) {
     console.error('Erro ao ler usuario da sessao:', error);
     return null;

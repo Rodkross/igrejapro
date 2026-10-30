@@ -69,12 +69,15 @@
 
 @layer base {
   html {
-    background: hsl(220 33% 98%);
+    min-height: 100%;
+    background: hsl(224 71% 8%);
     color-scheme: light;
   }
 
   body {
     min-height: 100%;
+    padding-top: env(safe-area-inset-top, 0px);
+    overscroll-behavior-y: none;
     background: hsl(220 33% 98%);
     color: hsl(222 47% 11%);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
@@ -85,6 +88,7 @@
   #root {
     min-height: 100dvh;
     background: hsl(220 33% 98%);
+    overflow-x: clip;
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { db } from '../../database/firebase';
 import {
   collection, query, orderBy, onSnapshot,
-  addDoc, deleteDoc, doc, writeBatch, updateDoc
+  deleteDoc, doc, writeBatch, updateDoc
 } from 'firebase/firestore';
 import {
   CheckCircle, Trash2, ArrowUpCircle, Plus, Loader2,
@@ -67,14 +67,23 @@ export default function ContasPagar() {
 
   const handleSalvar = async (e) => {
     e.preventDefault();
-    const nParcelas = parseInt(formData.parcelas, 10) || 1;
+    const nParcelas = Number.parseInt(formData.parcelas, 10);
 
-    if (!formData.fornecedorId || !formData.valorUnitario) {
-      return alertModal('Atenção', 'Preencha Fornecedor e Valor!', 'warning');
+    if (!formData.fornecedorId || !formData.valorUnitario || !Number.isInteger(nParcelas) || nParcelas < 1 || nParcelas > 500) {
+      return alertModal('Atenção', 'Informe fornecedor, valor e uma quantidade de parcelas entre 1 e 500.', 'warning');
     }
 
     const fornecedorSel = fornecedores.find((fornecedor) => fornecedor.id === formData.fornecedorId);
-    const valorParcela = parseFloat(String(formData.valorUnitario).replace(',', '.'));
+    if (!fornecedorSel) return alertModal('Atenção', 'Selecione um fornecedor válido.', 'warning');
+
+    const valorParcela = Number(String(formData.valorUnitario).replace(',', '.'));
+    if (!Number.isFinite(valorParcela) || valorParcela <= 0) {
+      return alertModal('Atenção', 'Informe um valor de parcela válido.', 'warning');
+    }
+
+    if (!formData.vencimentoBase) {
+      return alertModal('Atenção', 'Informe o vencimento da primeira parcela.', 'warning');
+    }
 
     try {
       const batch = writeBatch(db);
@@ -111,7 +120,7 @@ export default function ContasPagar() {
       }));
       setIsModalAberto(false);
       await alertModal('Sucesso', 'Parcelas geradas com sucesso!', 'success');
-    } catch (err) {
+    } catch {
       await alertModal('Erro', 'Erro ao salvar.', 'danger');
     }
   };
@@ -139,7 +148,7 @@ export default function ContasPagar() {
       });
       setIsModalEditAberto(false);
       await alertModal('Sucesso', 'Conta atualizada com sucesso!', 'success');
-    } catch (err) {
+    } catch {
       await alertModal('Erro', 'Erro ao atualizar a conta.', 'danger');
     }
   };
@@ -173,7 +182,7 @@ export default function ContasPagar() {
         });
       });
 
-      await addDoc(collection(db, 'financeiro'), {
+      batch.set(doc(collection(db, 'financeiro')), {
         origem: 'PAGAMENTO EM LOTE',
         descricao: `PGTO LOTE: ${itensParaBaixar.length} ITENS`,
         valor: totalLote,
@@ -188,7 +197,7 @@ export default function ContasPagar() {
       await batch.commit();
       setSelecionadas([]);
       await alertModal('Sucesso', 'Baixa em lote realizada!', 'success');
-    } catch (err) {
+    } catch {
       await alertModal('Erro', 'Erro na baixa.', 'danger');
     }
   };

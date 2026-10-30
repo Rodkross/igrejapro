@@ -13,13 +13,14 @@ import { useAniversarioAcesso } from '../hooks/useAniversarioAcesso';
 import ModalConfiguracoes from './ModalConfiguracoes';
 import ModalMeuPerfil from './ModalMeuPerfil';
 import { useComunidadeNaoVistos } from '../hooks/useComunidadeNaoVistos';
+import { removerSenhaDoUsuario, salvarUsuarioLocal } from '../utils/usuario';
 
 export default function Layout({ usuario, aoSair }) {
   const [dadosSincronizados, setDadosSincronizados] = useState(usuario);
   const [menuCadastroAberto, setMenuCadastroAberto] = useState(false);
   const [menuFinanceiroAberto, setMenuFinanceiroAberto] = useState(false);
   const [userMenuAberto, setUserMenuAberto] = useState(false);
-  
+
   const [eventosEspeciais, setEventosEspeciais] = useState([]);
   const [exibirModalEspecial, setExibirModalEspecial] = useState(false);
   const [eventoAoVivo, setEventoAoVivo] = useState(null);
@@ -34,7 +35,7 @@ export default function Layout({ usuario, aoSair }) {
   const ocultarDataNoMobileNaComunidade = location.pathname === '/comunidade';
   const mostrarVoltarNoTabletNaComunidade = location.pathname === '/comunidade';
   const estaNaComunidade = location.pathname.startsWith('/comunidade');
-  
+
   const { exibirAniversario, finalizarAniversario, DURACAO_ANIMACAO } = useAniversarioAcesso(dadosSincronizados);
   const comunidadeNaoVistos = useComunidadeNaoVistos({
     usuarioId: dadosSincronizados?.id,
@@ -49,7 +50,7 @@ export default function Layout({ usuario, aoSair }) {
     if (!usuario?.id) return;
     const unsub = onSnapshot(doc(db, "usuarios", String(usuario.id)), async (docSnap) => {
       if (docSnap.exists()) {
-        const userData = { id: docSnap.id, ...docSnap.data() };
+        const userData = removerSenhaDoUsuario({ id: docSnap.id, ...docSnap.data() });
         let finalUserData = { ...userData };
 
         // Sincroniza as permissões do cargo em tempo real
@@ -65,8 +66,8 @@ export default function Layout({ usuario, aoSair }) {
             console.error("Erro ao sincronizar permissões do cargo:", err);
           }
         }
-        setDadosSincronizados(finalUserData);
-        localStorage.setItem('usuarioLogado', JSON.stringify(finalUserData));
+        const usuarioSeguro = salvarUsuarioLocal(finalUserData);
+        setDadosSincronizados(usuarioSeguro);
       }
     });
 
@@ -383,7 +384,7 @@ export default function Layout({ usuario, aoSair }) {
 
       {/* CONTEÚDO PRINCIPAL */}
       <main className="flex-1 min-w-0 flex flex-col min-h-[100dvh] md:h-[100dvh] overflow-hidden text-left bg-background">
-        <header className="h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 shrink-0 z-40 shadow-elegant relative">
+        <header className="h-16 md:h-20 bg-gradient-hero border-b border-white/5 flex items-center px-4 md:px-5 xl:px-10 pt-[env(safe-area-inset-top)] box-content shrink-0 z-40 shadow-elegant relative">
           <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-gold/40 to-transparent"></div>
 
           {/* BOTÃO VOLTAR - ESQUERDA (APENAS MOBILE) */}

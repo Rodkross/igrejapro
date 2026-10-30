@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Image as ImageIcon, Loader2, Save, UploadCloud, UserCircle, KeyRound, CheckCircle2 } from 'lucide-react';
+import { X, Loader2, Save, UploadCloud, UserCircle, KeyRound, CheckCircle2 } from 'lucide-react';
 import { db, storage } from '../database/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
@@ -7,7 +7,7 @@ import { ref, uploadBytesResumable, getDownloadURL } from 'firebase/storage';
 export default function ModalMeuPerfil({ usuario, aoFechar }) {
   const [biografia, setBiografia] = useState(usuario?.biografia || '');
   const [senhaNova, setSenhaNova] = useState('');
-  const [fotoUrlAtual, setFotoUrlAtual] = useState(usuario?.fotoUrl || '');
+  const [fotoUrlAtual] = useState(usuario?.fotoUrl || '');
   const [novoArquivoFoto, setNovoArquivoFoto] = useState(null);
   
   const [salvando, setSalvando] = useState(false);
@@ -15,14 +15,31 @@ export default function ModalMeuPerfil({ usuario, aoFechar }) {
 
   const handleFotoMuda = (e) => {
     if (e.target.files && e.target.files[0]) {
-      setNovoArquivoFoto(e.target.files[0]);
+      const arquivo = e.target.files[0];
+      if (!arquivo.type.startsWith('image/')) {
+        alert('Selecione um arquivo de imagem válido.');
+        e.target.value = '';
+        return;
+      }
+      if (arquivo.size > 5 * 1024 * 1024) {
+        alert('A imagem deve ter no máximo 5 MB.');
+        e.target.value = '';
+        return;
+      }
+      setNovoArquivoFoto(arquivo);
     }
   };
 
   const handleSalvar = async (e) => {
     e.preventDefault();
+
+    if (senhaNova.trim() !== '' && senhaNova.length < 6) {
+      alert('A senha deve ter no mínimo 6 caracteres.');
+      return;
+    }
+
     setSalvando(true);
-    
+
     try {
       let fotoFinalUrl = fotoUrlAtual;
 
@@ -30,7 +47,7 @@ export default function ModalMeuPerfil({ usuario, aoFechar }) {
         const fileExtension = novoArquivoFoto.name.split('.').pop();
         const nomeArquivo = `perfil_${usuario.id}_${Date.now()}.${fileExtension}`;
         const storageRef = ref(storage, `fotos_membros/${nomeArquivo}`);
-        
+
         const uploadTask = uploadBytesResumable(storageRef, novoArquivoFoto);
 
         fotoFinalUrl = await new Promise((resolve, reject) => {

@@ -2,9 +2,9 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { db } from '../../database/firebase'; 
 import { 
   collection, query, where, onSnapshot, 
-  addDoc, doc, updateDoc, getDocs, limit, writeBatch, serverTimestamp
+  doc, getDocs, writeBatch, serverTimestamp
 } from 'firebase/firestore';
-import { 
+import {
   Search, Banknote, Landmark, ChevronDown, ChevronRight, ArrowDownCircle,
   ReceiptText, Wallet, Loader2, CheckSquare, Square, Star, AlertCircle
 } from 'lucide-react';
@@ -12,16 +12,15 @@ import { useModal } from '../../contexts/ModalContext';
 
 export default function ContasReceber() {
   const [filtroNome, setFiltroNome] = useState('');
-  const [filtroStatus, setFiltroStatus] = useState('aberto'); 
+  const [filtroStatus, setFiltroStatus] = useState('aberto');
   const [pessoaAberta, setPessoaAberta] = useState(null);
-  const [carregando, setCarregando] = useState(true);
   const [contas, setContas] = useState([]);
-  const [selecionados, setSelecionados] = useState([]); 
+  const [selecionados, setSelecionados] = useState([]);
   const [mapaSaldos, setMapaSaldos] = useState({});
-  
+
   const [pagamento, setPagamento] = useState({
-    valorPago: '', 
-    forma: 'Dinheiro', 
+    valorPago: '',
+    forma: 'Dinheiro',
     data: new Date().toISOString().split('T')[0],
     usarCredito: false
   });
@@ -38,7 +37,6 @@ export default function ContasReceber() {
         return (cat === 'convenio' || cat === 'fiado') && c.tipo === 'entrada';
       });
       setContas(filtrados);
-      setCarregando(false);
     });
     return () => unsub();
   }, [filtroStatus]);
@@ -47,7 +45,7 @@ export default function ContasReceber() {
   useEffect(() => {
     const unsub = onSnapshot(collection(db, "saldosCredito"), (snap) => {
       const mapa = {};
-      snap.docs.forEach(d => { 
+      snap.docs.forEach(d => {
         const nomeChave = d.data().origem?.trim().toUpperCase();
         const valorSaldo = Number(d.data().saldo || 0);
         if(nomeChave && valorSaldo >= 0) {
@@ -80,42 +78,58 @@ export default function ContasReceber() {
       if (!nomeChave.toLowerCase().includes(termo)) return acc;
 
       if (!acc[nomeChave]) {
-        acc[nomeChave] = { 
+        acc[nomeChave] = {
           nome: nomeChave, // Exibimos em caixa alta para padronizar
-          total: 0, 
-          itens: [] 
+          total: 0,
+          itens: []
         };
       }
-      
+
       acc[nomeChave].total += Number(curr.valor);
       acc[nomeChave].itens.push(curr);
       return acc;
     }, {});
-    
+
     return Object.values(grupos).sort((a, b) => b.total - a.total);
   }, [contas, filtroNome]);
 
-  const totalSelecionado = useMemo(() => 
+  const totalSelecionado = useMemo(() =>
     Number(selecionados.reduce((acc, cur) => acc + Number(cur.valor), 0).toFixed(2))
   , [selecionados]);
 
   // LÓGICA DE ABATIMENTO E DIFERENÇA
-  const vAbatimentoCredito = useMemo(() => 
+  const vAbatimentoCredito = useMemo(() =>
     pagamento.usarCredito ? Math.min(saldoDisponivel, totalSelecionado) : 0
   , [pagamento.usarCredito, saldoDisponivel, totalSelecionado]);
 
-  const diferencaACobrar = useMemo(() => 
+  const diferencaACobrar = useMemo(() =>
     Number((totalSelecionado - vAbatimentoCredito).toFixed(2))
   , [totalSelecionado, vAbatimentoCredito]);
 
   // 3. Função de Baixa
   const confirmarRecebimento = async () => {
-    const vDinheiroEmMaos = Number(String(pagamento.valorPago).replace(',', '.')) || 0;
+    if (selecionados.length === 0) {
+      return await alertModal("Atenção", "Selecione ao menos uma pendência.", "warning");
+    }
+
+    const valorInformado = Number(String(pagamento.valorPago).replace(',', '.'));
+    const vDinheiroEmMaos = Number.isFinite(valorInformado) ? valorInformado : 0;
+    if (vDinheiroEmMaos < 0) {
+      return await alertModal("Atenção", "O valor pago não pode ser negativo.", "warning");
+    }
+
     const vTotalSendoPago = Number((vDinheiroEmMaos + vAbatimentoCredito).toFixed(2));
+    if (vDinheiroEmMaos > diferencaACobrar + 0.01) {
+      return await alertModal("Atenção", "O pagamento não pode exceder o total selecionado.", "warning");
+    }
 
     if (vTotalSendoPago <= 0) return await alertModal("Atenção", "Informe um valor para o pagamento!", "warning");
 
-    const nomeMembro = selecionados[0]?.origem.trim().toUpperCase();
+    const nomeMembro = selecionados[0]?.origem?.trim().toUpperCase();
+    if (!nomeMembro) return await alertModal("Atenção", "Não foi possível identificar o membro.", "warning");
+    if (selecionados.some((item) => item.origem?.trim().toUpperCase() !== nomeMembro)) {
+      return await alertModal("Atenção", "Selecione pendências de um único membro por vez.", "warning");
+    }
     const batch = writeBatch(db);
 
     try {
@@ -133,41 +147,45 @@ export default function ContasReceber() {
 
         const novoSaldo = Number(((saldoDisponivel - vAbatimentoCredito) + trocoParaCredito).toFixed(2));
         const creditoDocId = mapaSaldos[nomeMembro]?.id;
-        
+
         if (creditoDocId) {
             batch.update(doc(db, "saldosCredito", creditoDocId), { saldo: novoSaldo, ultimaAtualizacao: new Date().toISOString() });
         } else if (novoSaldo > 0) {
             batch.set(doc(collection(db, "saldosCredito")), { origem: nomeMembro, saldo: novoSaldo, ultimaAtualizacao: new Date().toISOString() });
         }
-      } 
-      else {
-        const restoDevedor = Number((totalSelecionado - vTotalSendoPago).toFixed(2));
+      } else {
+        let valorRestanteDoPagamento = vTotalSendoPago;
+        let trocoParcialParaCredito = 0;
 
-        for (const item of selecionados) {
-          batch.update(doc(db, "financeiro", item.id), { status: 'pago', dataBaixa: pagamento.data, nota: 'Liquidado via Parcial' });
-          if (item.convenioUuid) {
+        for (const item of [...selecionados].sort((a, b) => Number(a.valor) - Number(b.valor))) {
+          const valorDoItem = Number(item.valor) || 0;
+          const valorPagoNesteItem = Math.min(valorDoItem, valorRestanteDoPagamento);
+          valorRestanteDoPagamento = Number((valorRestanteDoPagamento - valorPagoNesteItem).toFixed(2));
+          const saldoRestante = Number((valorDoItem - valorPagoNesteItem).toFixed(2));
+
+          if (saldoRestante <= 0.01) {
+            trocoParcialParaCredito = Number((trocoParcialParaCredito + Math.max(0, valorPagoNesteItem - valorDoItem)).toFixed(2));
+            batch.update(doc(db, "financeiro", item.id), { status: 'pago', dataBaixa: pagamento.data, nota: 'Liquidado via Pagamento Parcial' });
+          } else {
+            batch.update(doc(db, "financeiro", item.id), {
+              valor: saldoRestante,
+              status: 'aberto',
+              nota: 'Saldo restante após pagamento parcial'
+            });
+          }
+          if (item.convenioUuid && saldoRestante <= 0.01) {
             const qC = query(collection(db, "convenio"), where("uuid", "==", item.convenioUuid));
             const sC = await getDocs(qC);
             sC.forEach(d => batch.update(doc(db, "convenio", d.id), { status: 'pago' }));
           }
         }
 
-        batch.set(doc(collection(db, "financeiro")), {
-          origem: nomeMembro,
-          valor: restoDevedor,
-          descricao: `RESTANTE PENDENTE (REF. BAIXA PARCIAL)`,
-          categoria: 'Convenio',
-          status: 'aberto',
-          tipo: 'entrada',
-          dataCriacao: serverTimestamp(),
-          vencimento: new Date().toISOString().split('T')[0]
-        });
-
-        if (pagamento.usarCredito) {
-           const creditoDocId = mapaSaldos[nomeMembro]?.id;
-           if (creditoDocId) {
-               batch.update(doc(db, "saldosCredito", creditoDocId), { saldo: Math.max(0, saldoDisponivel - vAbatimentoCredito), ultimaAtualizacao: new Date().toISOString() });
-           }
+        const creditoDocId = mapaSaldos[nomeMembro]?.id;
+        const saldoCreditoFinal = Number((saldoDisponivel - vAbatimentoCredito + trocoParcialParaCredito).toFixed(2));
+        if (creditoDocId && (pagamento.usarCredito || trocoParcialParaCredito > 0)) {
+          batch.update(doc(db, "saldosCredito", creditoDocId), { saldo: Math.max(0, saldoCreditoFinal), ultimaAtualizacao: new Date().toISOString() });
+        } else if (!creditoDocId && trocoParcialParaCredito > 0) {
+          batch.set(doc(collection(db, "saldosCredito")), { origem: nomeMembro, saldo: trocoParcialParaCredito, ultimaAtualizacao: new Date().toISOString() });
         }
       }
 
@@ -188,7 +206,9 @@ export default function ContasReceber() {
       await batch.commit();
       await alertModal("Sucesso", "Recebimento processado!", "success");
       setSelecionados([]); setPessoaAberta(null); setPagamento({ ...pagamento, valorPago: '', usarCredito: false });
-    } catch (e) { await alertModal("Erro", "Erro na operação.", "danger"); }
+    } catch {
+      await alertModal("Erro", "Erro na operação.", "danger");
+    }
   };
 
   return (

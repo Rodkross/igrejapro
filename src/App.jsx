@@ -5,15 +5,16 @@ import Login from "./pages/Login";
 import { ModalProvider } from "./contexts/ModalContext";
 import { db } from "./database/firebase";
 import { doc, onSnapshot } from "firebase/firestore";
+import { removerSenhaDoUsuario, salvarUsuarioLocal } from "./utils/usuario";
 
 // --- PÁGINAS DE CADASTRO ---
-import Dashboard from "./pages/Dashboard"; 
+import Dashboard from "./pages/Dashboard";
 import Usuarios from "./pages/Cadastros/Usuarios";
 import NiveisAcesso from "./pages/Cadastros/NiveisAcesso";
 import PlanoContas from "./pages/Cadastros/PlanoContas";
-import Contas from "./pages/Cadastros/Contas"; 
+import Contas from "./pages/Cadastros/Contas";
 import Produtos from "./pages/Cadastros/Cantina";
-import Programacao from './pages/Cadastros/Programacao'; 
+import Programacao from './pages/Cadastros/Programacao';
 
 // --- PÁGINAS FINANCEIRAS ---
 import Convenio from './pages/Financeiro/Convenio';
@@ -21,7 +22,7 @@ import FluxoFinanceiro from './pages/Financeiro/FluxoFinanceiro';
 import Transferencias from './pages/Financeiro/Transferencias';
 import ContasPagar from './pages/Financeiro/ContasPagar';
 import ContasReceber from './pages/Financeiro/ContasReceber';
-import Lancamentos from './pages/Financeiro/Lancamentos'; 
+import Lancamentos from './pages/Financeiro/Lancamentos';
 import RelatoriosFinanceiros from "./pages/Relatorios/RelatoriosFinanceiros";
 
 // --- ÁREA DE ENTRETENIMENTO E UTILITÁRIOS ---
@@ -37,10 +38,10 @@ const RotaPrivada = ({ usuario, modulo, children }) => {
 
   if (userId === "1" && modulo === 'convenio') return <Navigate to="/" replace />;
 
-  const temAcessoMestre = 
-    userId === "1" || 
-    cargoUser.includes('pastor') || 
-    cargoUser.includes('admin') || 
+  const temAcessoMestre =
+    userId === "1" ||
+    cargoUser.includes('pastor') ||
+    cargoUser.includes('admin') ||
     cargoUser.includes('sistema') ||
     usuario?.nome?.toLowerCase() === 'rodrigo';
 
@@ -58,8 +59,9 @@ export default function App() {
   const [usuario, setUsuario] = useState(() => {
     try {
       const salvo = localStorage.getItem('usuarioLogado');
-      return salvo ? JSON.parse(salvo) : null;
-    } catch (error) {
+      return salvo ? removerSenhaDoUsuario(JSON.parse(salvo)) : null;
+    } catch {
+      localStorage.removeItem('usuarioLogado');
       return null;
     }
   });
@@ -73,8 +75,6 @@ export default function App() {
 
     const mediaQuery = window.matchMedia('(max-width: 767px)');
     const syncIsMobile = (event) => setIsMobile(event.matches);
-
-    setIsMobile(mediaQuery.matches);
 
     if (typeof mediaQuery.addEventListener === 'function') {
       mediaQuery.addEventListener('change', syncIsMobile);
@@ -91,12 +91,8 @@ export default function App() {
     const unsubUsuario = onSnapshot(doc(db, "usuarios", String(usuario.id)), (docSnap) => {
       if (!docSnap.exists()) return;
 
-      const dadosUsuario = { id: String(docSnap.id), ...docSnap.data() };
-      setUsuario((atual) => {
-        const proximo = { ...atual, ...dadosUsuario };
-        localStorage.setItem('usuarioLogado', JSON.stringify(proximo));
-        return proximo;
-      });
+      const dadosUsuario = removerSenhaDoUsuario({ id: String(docSnap.id), ...docSnap.data() });
+      setUsuario((atual) => salvarUsuarioLocal({ ...atual, ...dadosUsuario }));
     });
 
     return () => unsubUsuario();
@@ -113,14 +109,13 @@ export default function App() {
       setUsuario((atual) => {
         if (!atual) return atual;
 
-        const proximo = {
+        const proximo = removerSenhaDoUsuario({
           ...atual,
           cargoNome: cargoData.nome || atual.cargoNome || 'Membro',
           permissoes: cargoData.permissoes || {}
-        };
+        });
 
-        localStorage.setItem('usuarioLogado', JSON.stringify(proximo));
-        return proximo;
+        return salvarUsuarioLocal(proximo);
       });
     });
 

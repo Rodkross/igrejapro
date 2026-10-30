@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { db } from '../database/firebase';
 import { collection, query, where, getDocs, doc, updateDoc } from 'firebase/firestore';
 import { LogIn, Lock, User, ShieldCheck, AlertCircle, Loader2, KeyRound } from 'lucide-react';
+import { removerSenhaDoUsuario, salvarUsuarioLocal } from '../utils/usuario';
 
 export default function Login({ onLoginSucesso }) {
   const [idAcesso, setIdAcesso] = useState('');
@@ -55,21 +56,21 @@ export default function Login({ onLoginSucesso }) {
 
         // Criamos o objeto de sessão.
         // Agora o 'cargoNome' é a chave principal para as permissões no restante do app.
-        const sessaoUsuario = {
+        const sessaoUsuario = removerSenhaDoUsuario({
           ...usuarioData,
           cargoNome: cargoFinal,
           // Unimos as permissões do cargo com quaisquer permissões individuais do usuário
           permissoes: { ...usuarioData.permissoes, ...permissoesCargo },
           isAdmin: cargoFinal === "SISTEMA" || cargoFinal === "Administrador"
-        };
+        });
 
         if (usuarioData.senhaPrecisaReset === true) {
           setUsuarioPendente(sessaoUsuario);
           setPrecisaReset(true);
         } else {
-          localStorage.setItem('usuarioLogado', JSON.stringify(sessaoUsuario));
+          const usuarioSeguro = salvarUsuarioLocal(sessaoUsuario);
           if (onLoginSucesso) {
-            onLoginSucesso(sessaoUsuario);
+            onLoginSucesso(usuarioSeguro);
           }
         }
       } else {
@@ -103,9 +104,9 @@ export default function Login({ onLoginSucesso }) {
         senhaPrecisaReset: false
       });
 
-      const sessaoAtualizada = { ...usuarioPendente, senha: novaSenha, senhaPrecisaReset: false };
-      localStorage.setItem('usuarioLogado', JSON.stringify(sessaoAtualizada));
-      if (onLoginSucesso) onLoginSucesso(sessaoAtualizada);
+      const sessaoAtualizada = removerSenhaDoUsuario({ ...usuarioPendente, senhaPrecisaReset: false });
+      const usuarioSeguro = salvarUsuarioLocal(sessaoAtualizada);
+      if (onLoginSucesso) onLoginSucesso(usuarioSeguro);
     } catch (err) {
       console.error(err);
       setErro('Erro ao salvar a nova senha.');
@@ -115,9 +116,9 @@ export default function Login({ onLoginSucesso }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-hero flex items-center justify-center p-6 font-sans text-left relative overflow-hidden">
+    <div className="min-h-[100dvh] bg-gradient-hero flex items-center justify-center p-4 sm:p-6 font-sans text-left relative overflow-x-hidden overflow-y-auto">
       {/* O JSX que você já tem permanece o mesmo */}
-      <div className="max-w-md w-full bg-white p-10 rounded-[2.5rem] shadow-elegant border border-white/20 relative overflow-hidden animate-scale-in z-10">
+      <div className="max-w-md w-full bg-white p-6 sm:p-10 rounded-[2rem] sm:rounded-[2.5rem] shadow-elegant border border-white/20 relative overflow-hidden animate-scale-in z-10">
         <div className="absolute top-0 left-0 w-full h-1.5 bg-gradient-gold"></div>
 
         <div className="text-center mb-10">
@@ -126,7 +127,7 @@ export default function Login({ onLoginSucesso }) {
             <div className="absolute -top-1 -right-1 w-6 h-6 bg-gradient-gold rounded-full flex items-center justify-center text-navy text-xs font-black shadow-gold">✛</div>
           </div>
           <p className="text-[10px] font-bold text-gold uppercase tracking-[0.3em] mb-2">{precisaReset ? "Segurança" : "Bem-vindo de volta"}</p>
-          <h1 className="font-display text-4xl font-black text-navy tracking-tight">{precisaReset ? "Nova Senha" : "Igreja Pro"}</h1>
+          <h1 className="font-display text-3xl sm:text-4xl font-black text-navy tracking-tight">{precisaReset ? "Nova Senha" : "Igreja Pro"}</h1>
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-[0.2em] mt-2">{precisaReset ? "Crie uma senha forte" : "Gestão Pastoral & Financeira"}</p>
         </div>
 

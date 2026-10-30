@@ -2,6 +2,7 @@ import React, { useEffect, useState, useRef } from 'react';
 import * as htmlToImage from 'html-to-image';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import { db } from '../database/firebase';
+import { removerSenhaDoUsuario } from '../utils/usuario';
 import { doc, updateDoc, onSnapshot, collection, query, where, orderBy, getDoc } from 'firebase/firestore';
 import { BookOpen, ArrowLeft, Loader2, Quote, ScrollText, AlertCircle, Info, User, MapPin, Users, Lightbulb, Sparkles, HeartHandshake, Share2, CheckCircle2, Trophy, Medal, Check, ChevronRight } from 'lucide-react';
 
@@ -15,9 +16,9 @@ import imgMedalDiamond from '../assets/medal-diamond.png';
 
 function lerUsuarioLogado() {
   try {
-    const salvo = sessionStorage.getItem('usuarioLogado');
-    return salvo ? JSON.parse(salvo) : null;
-  } catch (error) {
+    const salvo = localStorage.getItem('usuarioLogado');
+    return salvo ? removerSenhaDoUsuario(JSON.parse(salvo)) : null;
+  } catch {
     return null;
   }
 }
@@ -47,14 +48,14 @@ export default function EstudoPalavra() {
   const [copiado, setCopiado] = useState(false);
   const [isCapturing, setIsCapturing] = useState(false);
   const [aiContext, setAiContext] = useState(null);
-  
+
   // States para Gamificação e Leitura
   const [usuarioData, setUsuarioData] = useState(null);
   const [concluindo, setConcluindo] = useState(false);
   const [showCelebration, setShowCelebration] = useState(null); // { medalha: 'Bronze', dias: 30 }
   const [leitores, setLeitores] = useState([]);
   const scrollContainerRef = useRef(null);
-  const usuarioLogado = lerUsuarioLogado();
+  const [usuarioLogado] = useState(lerUsuarioLogado);
   const hoje = formatarChaveDia();
 
   const printRef = useRef(null);
@@ -144,7 +145,7 @@ export default function EstudoPalavra() {
         devocionaisLidos: novosLidos,
         ultimoDevocionalLido: hoje
       });
-      
+
       // Checar se bateu alguma meta
       if (novosLidos === 5) setShowCelebration({ nome: 'Papel', nivel: 'O primeiro passo', dias: novosLidos, cor: 'text-stone-300', bg: 'bg-stone-300/20', border: 'border-stone-300/30', img: imgMedalPaper });
       else if (novosLidos === 10) setShowCelebration({ nome: 'Madeira', nivel: 'Criando Raízes', dias: novosLidos, cor: 'text-orange-300', bg: 'bg-orange-300/20', border: 'border-orange-300/30', img: imgMedalWood });
@@ -212,7 +213,7 @@ export default function EstudoPalavra() {
     if (!printRef.current) return;
     try {
       setIsCapturing(true);
-      
+
       // Aguardar render pra garantir font-serif carregada
       await new Promise(r => setTimeout(r, 100));
 
@@ -221,7 +222,7 @@ export default function EstudoPalavra() {
         pixelRatio: 2,
         backgroundColor: '#0A0F1C',
       });
-      
+
       setIsCapturing(false);
       if (!blob) throw new Error('Falha ao gerar imagem');
 
@@ -242,7 +243,7 @@ export default function EstudoPalavra() {
       a.download = file.name;
       a.click();
       URL.revokeObjectURL(a.href);
-      
+
       setCopiado(true);
       setTimeout(() => setCopiado(false), 3000);
 
@@ -250,7 +251,7 @@ export default function EstudoPalavra() {
       setIsCapturing(false);
       if (error?.name !== 'AbortError') {
         console.error('Erro ao compartilhar imagem:', error);
-        await navigator.clipboard.writeText(textoCompartilhamento).catch(e => null);
+        await navigator.clipboard.writeText(textoCompartilhamento).catch(() => null);
         setCopiado(true);
         setTimeout(() => setCopiado(false), 2200);
       }

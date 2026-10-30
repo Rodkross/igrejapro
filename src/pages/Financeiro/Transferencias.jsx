@@ -33,21 +33,23 @@ export default function Transferencias() {
     e.preventDefault();
     
     // Validações básicas
-    if (!formData.valor || Number(formData.valor) <= 0) return await alertModal("Atenção", "Insira um valor válido!", "warning");
+    const valorNumerico = Number(String(formData.valor).replace(',', '.'));
+    if (!Number.isFinite(valorNumerico) || valorNumerico <= 0) {
+      return await alertModal("Atenção", "Insira um valor válido!", "warning");
+    }
     if (formData.origem === formData.destino) return await alertModal("Atenção", "A conta de origem deve ser diferente da conta de destino!", "warning");
 
     setCarregando(true);
-    
-    // Batch garante que ou grava os dois (entrada e saída) ou não grava nada
-    const batch = writeBatch(db);
-    const transferenciaId = crypto.randomUUID();
 
     try {
+      // Batch garante que ou grava os dois (entrada e saída) ou não grava nada
+      const batch = writeBatch(db);
+      const transferenciaId = crypto.randomUUID();
       // 1. LANÇAMENTO DE SAÍDA (Tira da Origem)
       const refSaida = doc(collection(db, "financeiro"));
       batch.set(refSaida, {
         descricao: `TRANSFERÊNCIA PARA ${formData.destino.toUpperCase()}`,
-        valor: parseFloat(formData.valor),
+        valor: valorNumerico,
         tipo: 'saida',
         status: 'pago',
         formaPagamento: formData.origem,
@@ -64,7 +66,7 @@ export default function Transferencias() {
       const refEntrada = doc(collection(db, "financeiro"));
       batch.set(refEntrada, {
         descricao: `TRANSFERÊNCIA DE ${formData.origem.toUpperCase()}`,
-        valor: parseFloat(formData.valor),
+        valor: valorNumerico,
         tipo: 'entrada',
         status: 'pago',
         formaPagamento: formData.destino,
@@ -78,13 +80,13 @@ export default function Transferencias() {
       });
 
       await batch.commit();
-      
+
       await alertModal("Sucesso", "Transferência realizada com sucesso!", "success");
-      
+
       // Limpa o valor para evitar duplicidade acidental
       setFormData({
-        origem: 'Caixa Sede',
-        destino: 'Banco (Nubank)',
+        origem: 'Dinheiro',
+        destino: 'Banco',
         valor: '',
         data: new Date().toISOString().split('T')[0],
         observacao: ''
