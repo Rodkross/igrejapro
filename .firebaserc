@@ -1,1 +1,15 @@
-{ "projects": { "default": "igreja-pro-e911e" } }
+{
+  "projects": {
+    "default": "igreja-pro-e911e"
+  },
+  "targets": {
+    "igreja-pro-e911e": {
+      "hosting": {
+        "principal": [
+          "milagresdafe"
+        ]
+      }
+    }
+  },
+  "etags": {}
+}
