@@ -68,12 +68,23 @@
    ============================================================ */
 
 @layer base {
+  html {
+    background: hsl(220 33% 98%);
+    color-scheme: light;
+  }
+
   body {
+    min-height: 100%;
     background: hsl(220 33% 98%);
     color: hsl(222 47% 11%);
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
     -webkit-font-smoothing: antialiased;
     font-feature-settings: 'cv11', 'ss01', 'ss03';
+  }
+
+  #root {
+    min-height: 100dvh;
+    background: hsl(220 33% 98%);
   }
 
   h1, h2, h3, h4, h5, h6, .font-display {

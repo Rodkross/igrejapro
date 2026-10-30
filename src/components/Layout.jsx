@@ -66,7 +66,7 @@ export default function Layout({ usuario, aoSair }) {
           }
         }
         setDadosSincronizados(finalUserData);
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(finalUserData));
+        localStorage.setItem('usuarioLogado', JSON.stringify(finalUserData));
       }
     });
 

@@ -57,7 +57,7 @@ const RotaMobilePermitida = ({ isMobile, allowMobile = false, children }) => {
 export default function App() {
   const [usuario, setUsuario] = useState(() => {
     try {
-      const salvo = sessionStorage.getItem('usuarioLogado');
+      const salvo = localStorage.getItem('usuarioLogado');
       return salvo ? JSON.parse(salvo) : null;
     } catch (error) {
       return null;
@@ -94,7 +94,7 @@ export default function App() {
       const dadosUsuario = { id: String(docSnap.id), ...docSnap.data() };
       setUsuario((atual) => {
         const proximo = { ...atual, ...dadosUsuario };
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(proximo));
+        localStorage.setItem('usuarioLogado', JSON.stringify(proximo));
         return proximo;
       });
     });
@@ -119,7 +119,7 @@ export default function App() {
           permissoes: cargoData.permissoes || {}
         };
 
-        sessionStorage.setItem('usuarioLogado', JSON.stringify(proximo));
+        localStorage.setItem('usuarioLogado', JSON.stringify(proximo));
         return proximo;
       });
     });
@@ -128,6 +128,7 @@ export default function App() {
   }, [usuario?.cargoId]);
 
   const logout = () => {
+    localStorage.removeItem('usuarioLogado');
     sessionStorage.clear();
     setUsuario(null);
   };

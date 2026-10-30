@@ -14,10 +14,6 @@ export default function Login({ onLoginSucesso }) {
   const [confirmarSenha, setConfirmarSenha] = useState('');
   const [usuarioPendente, setUsuarioPendente] = useState(null);
 
-  useEffect(() => {
-    sessionStorage.clear();
-  }, []);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setErro('');
@@ -25,7 +21,7 @@ export default function Login({ onLoginSucesso }) {
 
     try {
       const usuariosRef = collection(db, "usuarios");
-      
+
       // Busca o usuário pela matrícula (idAcesso) e senha
       const q = query(
         usuariosRef,
@@ -41,7 +37,7 @@ export default function Login({ onLoginSucesso }) {
 
         // --- LÓGICA DE PERMISSÕES POR CARGONOME ---
         let cargoFinal = usuarioData.cargoNome || 'Membro';
-        
+
         // Verificação especial para Administrador do Sistema
         if (usuarioData.id === "1" || usuarioData.nome?.toLowerCase() === 'suporte') {
           cargoFinal = "SISTEMA";
@@ -57,10 +53,10 @@ export default function Login({ onLoginSucesso }) {
           }
         }
 
-        // Criamos o objeto de sessão. 
+        // Criamos o objeto de sessão.
         // Agora o 'cargoNome' é a chave principal para as permissões no restante do app.
-        const sessaoUsuario = { 
-          ...usuarioData, 
+        const sessaoUsuario = {
+          ...usuarioData,
           cargoNome: cargoFinal,
           // Unimos as permissões do cargo com quaisquer permissões individuais do usuário
           permissoes: { ...usuarioData.permissoes, ...permissoesCargo },
@@ -71,7 +67,7 @@ export default function Login({ onLoginSucesso }) {
           setUsuarioPendente(sessaoUsuario);
           setPrecisaReset(true);
         } else {
-          sessionStorage.setItem('usuarioLogado', JSON.stringify(sessaoUsuario));
+          localStorage.setItem('usuarioLogado', JSON.stringify(sessaoUsuario));
           if (onLoginSucesso) {
             onLoginSucesso(sessaoUsuario);
           }
@@ -106,9 +102,9 @@ export default function Login({ onLoginSucesso }) {
         senha: novaSenha,
         senhaPrecisaReset: false
       });
-      
+
       const sessaoAtualizada = { ...usuarioPendente, senha: novaSenha, senhaPrecisaReset: false };
-      sessionStorage.setItem('usuarioLogado', JSON.stringify(sessaoAtualizada));
+      localStorage.setItem('usuarioLogado', JSON.stringify(sessaoAtualizada));
       if (onLoginSucesso) onLoginSucesso(sessaoAtualizada);
     } catch (err) {
       console.error(err);
