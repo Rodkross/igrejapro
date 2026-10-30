@@ -193,11 +193,13 @@
 
 .animate-ticker {
   animation: ticker 180s linear infinite;
-  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
 }
 .animate-ticker:hover { animation-play-state: paused; }
 
-.animate-fade-in-up { animation: fade-in-up .5s ease-out both; }
+/* "backwards" (e nao "both"): evita manter transform permanente na pagina inteira, causa de retangulos brancos no Safari/iOS */
+.animate-fade-in-up { animation: fade-in-up .5s ease-out backwards; }
 
 .animate-shimmer {
   background: linear-gradient(90deg, transparent, hsl(43 65% 52% / 0.25), transparent);
